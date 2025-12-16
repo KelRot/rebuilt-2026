@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.util.Motors;
+package frc.robot.util.motors;
 
 import org.littletonrobotics.junction.AutoLog;
 
@@ -21,23 +21,18 @@ public interface MotorIO {
         public MotorIOData motorData = new MotorIOData(false, 0, null, false);
     }
 
-    record MotorIOData(boolean isConnected, int canID, MotorType motorType, boolean hasError) {}
+    record MotorIOData(boolean isConnected, int canID, ControllerType controllerType, boolean hasError) {}
 
-    enum MotorType { 
+    enum ControllerType { 
         TALON,
         SPARKMAX,
         SPARKFLEX
     }
+    
+    record Motor(ControllerType controllerType, int canID) {
+
+}
 
     public default void updateInputs(MotorIOInputs inputs) {}
-
-    public default void setOpenLoop(double output) {}
-
-    public default void setDutyCycle(double dutyCycle) {}
-
-    public default void setCoastMode(boolean coastMode) {}
-
-    public default void applyConfig(MotorConfig config) {}
-
 
 }

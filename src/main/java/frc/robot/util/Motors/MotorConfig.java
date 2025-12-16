@@ -1,4 +1,4 @@
-package frc.robot.util.Motors;
+package frc.robot.util.motors;
 
 public class MotorConfig {
     
