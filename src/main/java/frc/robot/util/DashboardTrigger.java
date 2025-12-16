@@ -2,6 +2,7 @@ package frc.robot.util;
 
 
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -27,7 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 * - whileTrue / continuous commands
 * - toggle or latch-style behaviors
 */
-public final class AutoResetDashboardTrigger {
+public final class DashboardTrigger {
 
 
 /** NetworkTables-backed boolean entry shown on Shuffleboard */
@@ -44,12 +45,12 @@ private boolean previousValue = false;
 * @param tabName Shuffleboard tab name
 * @param buttonName Label displayed on the dashboard
 */
-public AutoResetDashboardTrigger(String tabName, String buttonName) {
+public DashboardTrigger(String tabName, String buttonName) {
 ShuffleboardTab tab = Shuffleboard.getTab(tabName);
 
 
 this.buttonEntry = tab.add(buttonName, false)
-.withWidget("Toggle Button")
+.withWidget(BuiltInWidgets.kToggleButton)
 .getEntry();
 }
 
