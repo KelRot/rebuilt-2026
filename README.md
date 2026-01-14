@@ -32,7 +32,7 @@ To develop code for this project, you must interpret the official WPILib develop
 
 #### 1. Download the Installer
 - Visit the official [WPILib Releases Page on GitHub](https://github.com/wpilibsuite/allwpilib/releases).
-- Download the latest release installer for your operating system (e.g., `WPILib_Windows-2025.x.x.iso`).
+- Download the latest release installer for your operating system (e.g., `WPILib_Windows-2026.x.x.iso`).
 
 #### 2. Run the Installer
 - **Windows**: Right-click the downloaded `.iso` file and select **Mount**. Open the mounted drive and run `WPILibInstaller.exe`.
