@@ -1,9 +1,9 @@
-// Copyright (c) 2025-2026 Littleton Robotics
+// Copyright (c) 2021-2026 Littleton Robotics
 // http://github.com/Mechanical-Advantage
 //
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
+// Use of this source code is governed by a BSD
+// license that can be found in the LICENSE file
+// at the root directory of this project.
 
 package frc.robot.subsystems.vision;
 
@@ -31,10 +31,10 @@ public class Vision extends SubsystemBase {
     private final Alert[] disconnectedAlerts;
 
     public Vision(VisionConsumer consumer, VisionIO... io) {
-        System.out.println("[Vision] Constructing Vision Subsystem...");
         this.consumer = consumer;
         this.io = io;
 
+        System.out.println("[Vision] Constructing Vision Subsystem...");
         // Initialize inputs
         this.inputs = new VisionIOInputsAutoLogged[io.length];
         for (int i = 0; i < inputs.length; i++) {
@@ -44,8 +44,8 @@ public class Vision extends SubsystemBase {
         // Initialize disconnected alerts
         this.disconnectedAlerts = new Alert[io.length];
         for (int i = 0; i < inputs.length; i++) {
-            disconnectedAlerts[i] = new Alert("Vision camera " + Integer.toString(i) + " is disconnected.",
-                    AlertType.kWarning);
+            disconnectedAlerts[i] = new Alert(
+                    "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
         }
     }
 
@@ -138,19 +138,19 @@ public class Vision extends SubsystemBase {
                         VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
             }
 
-            // Log camera datadata
+            // Log camera metadata
             Logger.recordOutput(
                     "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
-                    tagPoses.toArray(new Pose3d[tagPoses.size()]));
+                    tagPoses.toArray(new Pose3d[0]));
             Logger.recordOutput(
                     "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPoses",
-                    robotPoses.toArray(new Pose3d[robotPoses.size()]));
+                    robotPoses.toArray(new Pose3d[0]));
             Logger.recordOutput(
                     "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesAccepted",
-                    robotPosesAccepted.toArray(new Pose3d[robotPosesAccepted.size()]));
+                    robotPosesAccepted.toArray(new Pose3d[0]));
             Logger.recordOutput(
                     "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesRejected",
-                    robotPosesRejected.toArray(new Pose3d[robotPosesRejected.size()]));
+                    robotPosesRejected.toArray(new Pose3d[0]));
             allTagPoses.addAll(tagPoses);
             allRobotPoses.addAll(robotPoses);
             allRobotPosesAccepted.addAll(robotPosesAccepted);
@@ -158,19 +158,19 @@ public class Vision extends SubsystemBase {
         }
 
         // Log summary data
-        Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
-        Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[allRobotPoses.size()]));
+        Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
+        Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
         Logger.recordOutput(
-                "Vision/Summary/RobotPosesAccepted",
-                allRobotPosesAccepted.toArray(new Pose3d[allRobotPosesAccepted.size()]));
+                "Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
         Logger.recordOutput(
-                "Vision/Summary/RobotPosesRejected",
-                allRobotPosesRejected.toArray(new Pose3d[allRobotPosesRejected.size()]));
+                "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
     }
 
     @FunctionalInterface
     public static interface VisionConsumer {
         public void accept(
-                Pose2d visionRobotPoseMeters, double timestampSeconds, Matrix<N3, N1> visionMeasurementStdDevs);
+                Pose2d visionRobotPoseMeters,
+                double timestampSeconds,
+                Matrix<N3, N1> visionMeasurementStdDevs);
     }
 }

@@ -1,9 +1,9 @@
-// Copyright (c) 2025-2026 Littleton Robotics
+// Copyright (c) 2021-2026 Littleton Robotics
 // http://github.com/Mechanical-Advantage
 //
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
+// Use of this source code is governed by a BSD
+// license that can be found in the LICENSE file
+// at the root directory of this project.
 
 package frc.robot.subsystems.drive;
 
@@ -22,34 +22,38 @@ import java.util.Queue;
 
 /** IO implementation for Pigeon 2. */
 public class GyroIOPigeon2 implements GyroIO {
-    private final Pigeon2 pigeon = new Pigeon2(pigeonCanId);
-    private final StatusSignal<Angle> yaw = pigeon.getYaw();
-    private final Queue<Double> yawPositionQueue;
-    private final Queue<Double> yawTimestampQueue;
-    private final StatusSignal<AngularVelocity> yawVelocity = pigeon.getAngularVelocityZWorld();
+  private final Pigeon2 pigeon = new Pigeon2(pigeonCanId);
+  private final StatusSignal<Angle> yaw = pigeon.getYaw();
+  private final Queue<Double> yawPositionQueue;
+  private final Queue<Double> yawTimestampQueue;
+  private final StatusSignal<AngularVelocity> yawVelocity = pigeon.getAngularVelocityZWorld();
 
-    public GyroIOPigeon2() {
-        pigeon.getConfigurator().apply(new Pigeon2Configuration());
-        pigeon.getConfigurator().setYaw(0.0);
-        yaw.setUpdateFrequency(odometryFrequency);
-        yawVelocity.setUpdateFrequency(50.0);
-        pigeon.optimizeBusUtilization();
-        yawTimestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
-        yawPositionQueue = SparkOdometryThread.getInstance().registerSignal(yaw::getValueAsDouble);
-    }
+  public GyroIOPigeon2() {
+    pigeon.getConfigurator().apply(new Pigeon2Configuration());
+    pigeon.getConfigurator().setYaw(0.0);
+    yaw.setUpdateFrequency(odometryFrequency);
+    yawVelocity.setUpdateFrequency(50.0);
+    pigeon.optimizeBusUtilization();
+    yawTimestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
+    var yawClone = yaw.clone(); // Status signals are not thread-safe
+    yawPositionQueue =
+        SparkOdometryThread.getInstance()
+            .registerSignal(() -> yawClone.refresh().getValueAsDouble());
+  }
 
-    @Override
-    public void updateInputs(GyroIOInputs inputs) {
-        inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity).equals(StatusCode.OK);
-        inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
-        inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
+  @Override
+  public void updateInputs(GyroIOInputs inputs) {
+    inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity).equals(StatusCode.OK);
+    inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
+    inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
 
-        inputs.odometryYawTimestamps =
-                yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
-        inputs.odometryYawPositions = yawPositionQueue.stream()
-                .map((Double value) -> Rotation2d.fromDegrees(value))
-                .toArray(Rotation2d[]::new);
-        yawTimestampQueue.clear();
-        yawPositionQueue.clear();
-    }
+    inputs.odometryYawTimestamps =
+        yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+    inputs.odometryYawPositions =
+        yawPositionQueue.stream()
+            .map((Double value) -> Rotation2d.fromDegrees(value))
+            .toArray(Rotation2d[]::new);
+    yawTimestampQueue.clear();
+    yawPositionQueue.clear();
+  }
 }

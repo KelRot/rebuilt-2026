@@ -1,9 +1,9 @@
-// Copyright (c) 2025-2026 Littleton Robotics
+// Copyright (c) 2021-2026 Littleton Robotics
 // http://github.com/Mechanical-Advantage
 //
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
+// Use of this source code is governed by a BSD
+// license that can be found in the LICENSE file
+// at the root directory of this project.
 
 package frc.robot.subsystems.vision;
 
@@ -26,10 +26,11 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
     /**
      * Creates a new VisionIOPhotonVisionSim.
      *
-     * @param name The name of the camera.
+     * @param name         The name of the camera.
      * @param poseSupplier Supplier for the robot pose to use in simulation.
      */
-    public VisionIOPhotonVisionSim(String name, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier) {
+    public VisionIOPhotonVisionSim(
+            String name, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier) {
         super(name, robotToCamera);
         this.poseSupplier = poseSupplier;
 

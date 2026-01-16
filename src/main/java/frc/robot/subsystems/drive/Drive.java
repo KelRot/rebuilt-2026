@@ -304,7 +304,6 @@ public class Drive extends SubsystemBase {
     } // todo: will add more later
 
     private DriveState driveState = DriveState.JOYSTICK_VELOCITY;
-    private Rotation2d targetHeading = new Rotation2d();
 
     public DriveState getDriveState() {
         return driveState;
@@ -312,18 +311,5 @@ public class Drive extends SubsystemBase {
 
     public void setDriveState(DriveState state) {
         this.driveState = state;
-    }
-
-    public Rotation2d getTargetHeading() {
-        return targetHeading;
-    }
-
-    public void setTargetHeading(Rotation2d targetHeading) {
-        this.targetHeading = targetHeading;
-    }
-
-    public void runOpenLoop(ChassisSpeeds speeds) {
-        runVelocity(speeds); // Fallback to velocity control for now, or implement true open loop if modules
-                             // support it.
     }
 }
