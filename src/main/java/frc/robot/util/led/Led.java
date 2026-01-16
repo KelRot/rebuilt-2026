@@ -7,16 +7,17 @@
 
 package frc.robot.util.led;
 
+import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.Constants.LedConstants;
 import frc.robot.util.led.patterns.LedPattern;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * Hardware-independent LED subsystem. Uses an AnimationController to manage patterns and LedIO for hardware
+ * Hardware-independent LED subsystem. Uses an AnimationController to manage
+ * patterns and LedIO for hardware
  * abstraction.
  */
 public class Led extends SubsystemBase {
@@ -27,23 +28,12 @@ public class Led extends SubsystemBase {
     private final AnimationController controller;
 
     public Led() {
-        switch (Constants.currentMode) {
-            case REAL:
-                io = new LedIOReal(LedConstants.kLedPort, LedConstants.kLedLength);
-                break;
-            case SIM:
-                io = new LedIO() {};
-                break;
-            default:
-                io = new LedIO() {};
-                break;
-        }
-
+        System.out.println("[Led] Constructing Led Subsystem...");
+        io = new LedIOReal(LedConstants.kLedPort, LedConstants.kLedLength);
         buffer = new AddressableLEDBuffer(LedConstants.kLedLength);
         controller = new AnimationController();
 
         // Default to black/off
-        setStaticColor(Color.kBlack);
     }
 
     @Override
@@ -73,9 +63,9 @@ public class Led extends SubsystemBase {
     /**
      * Sets a segment of the strip to a static color.
      *
-     * @param color The color to set.
+     * @param color      The color to set.
      * @param startIndex Start index.
-     * @param length Length of the segment.
+     * @param length     Length of the segment.
      */
     public void setStaticColor(Color color, int startIndex, int length) {
         LedPattern.SolidColor solid = new LedPattern.SolidColor(color);
@@ -118,9 +108,9 @@ public class Led extends SubsystemBase {
     /**
      * Starts a new animation on a segment of the LED strip.
      *
-     * @param pattern The pattern to run.
+     * @param pattern    The pattern to run.
      * @param startIndex Start index for the pattern.
-     * @param length The number of LEDs in the segment.
+     * @param length     The number of LEDs in the segment.
      */
     public void setAnimation(LedPattern pattern, int startIndex, int length) {
         if (pattern != null) {
@@ -132,9 +122,10 @@ public class Led extends SubsystemBase {
     }
 
     /**
-     * Starts a new animation on a segment of the LED strip, using the remaining length.
+     * Starts a new animation on a segment of the LED strip, using the remaining
+     * length.
      *
-     * @param pattern The pattern to run.
+     * @param pattern    The pattern to run.
      * @param startIndex Start index for the pattern.
      */
     public void setAnimation(LedPattern pattern, int startIndex) {

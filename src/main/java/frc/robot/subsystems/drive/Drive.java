@@ -15,9 +15,6 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
-import edu.wpi.first.hal.FRCNetComm.tInstances;
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
-import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -50,20 +47,20 @@ public class Drive extends SubsystemBase {
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
     private final Module[] modules = new Module[4]; // FL, FR, BL, BR
     private final SysIdRoutine sysId;
-    private final Alert gyroDisconnectedAlert =
-            new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
+    private final Alert gyroDisconnectedAlert = new Alert("Disconnected gyro, using kinematics as fallback.",
+            AlertType.kError);
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
     private Rotation2d rawGyroRotation = new Rotation2d();
     private SwerveModulePosition[] lastModulePositions = // For delta tracking
             new SwerveModulePosition[] {
-                new SwerveModulePosition(),
-                new SwerveModulePosition(),
-                new SwerveModulePosition(),
-                new SwerveModulePosition()
+                    new SwerveModulePosition(),
+                    new SwerveModulePosition(),
+                    new SwerveModulePosition(),
+                    new SwerveModulePosition()
             };
-    private SwerveDrivePoseEstimator poseEstimator =
-            new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+    private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation,
+            lastModulePositions, new Pose2d());
 
     public Drive(GyroIO gyroIO, ModuleIO flModuleIO, ModuleIO frModuleIO, ModuleIO blModuleIO, ModuleIO brModuleIO) {
         this.gyroIO = gyroIO;
@@ -71,9 +68,6 @@ public class Drive extends SubsystemBase {
         modules[1] = new Module(frModuleIO, 1);
         modules[2] = new Module(blModuleIO, 2);
         modules[3] = new Module(brModuleIO, 3);
-
-        // Usage reporting for swerve template
-        HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
 
         // Start odometry thread
         SparkOdometryThread.getInstance().start();
@@ -196,7 +190,8 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Stops the drive and turns the modules to an X arrangement to resist movement. The modules will return to their
+     * Stops the drive and turns the modules to an X arrangement to resist movement.
+     * The modules will return to their
      * normal orientations the next time a nonzero velocity is requested.
      */
     public void stopWithX() {
@@ -218,7 +213,10 @@ public class Drive extends SubsystemBase {
         return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.dynamic(direction));
     }
 
-    /** Returns the module states (turn angles and drive velocities) for all of the modules. */
+    /**
+     * Returns the module states (turn angles and drive velocities) for all of the
+     * modules.
+     */
     @AutoLogOutput(key = "SwerveStates/Measured")
     private SwerveModuleState[] getModuleStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
@@ -228,7 +226,10 @@ public class Drive extends SubsystemBase {
         return states;
     }
 
-    /** Returns the module positions (turn angles and drive positions) for all of the modules. */
+    /**
+     * Returns the module positions (turn angles and drive positions) for all of the
+     * modules.
+     */
     private SwerveModulePosition[] getModulePositions() {
         SwerveModulePosition[] states = new SwerveModulePosition[4];
         for (int i = 0; i < 4; i++) {
@@ -291,5 +292,37 @@ public class Drive extends SubsystemBase {
     /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec() {
         return maxSpeedMetersPerSec / driveBaseRadius;
+    }
+
+    public static enum DriveState {
+        JOYSTICK_OPENLOOP,
+        JOYSTICK_VELOCITY,
+        SNAP_HEADING,
+        MAINTAIN_HEADING,
+        HUB
+    } // todo: will add more later
+
+    private DriveState driveState = DriveState.JOYSTICK_VELOCITY;
+    private Rotation2d targetHeading = new Rotation2d();
+
+    public DriveState getDriveState() {
+        return driveState;
+    }
+
+    public void setDriveState(DriveState state) {
+        this.driveState = state;
+    }
+
+    public Rotation2d getTargetHeading() {
+        return targetHeading;
+    }
+
+    public void setTargetHeading(Rotation2d targetHeading) {
+        this.targetHeading = targetHeading;
+    }
+
+    public void runOpenLoop(ChassisSpeeds speeds) {
+        runVelocity(speeds); // Fallback to velocity control for now, or implement true open loop if modules
+                             // support it.
     }
 }

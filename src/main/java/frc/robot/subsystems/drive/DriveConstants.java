@@ -15,7 +15,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 
 public class DriveConstants {
-    public static final double maxSpeedMetersPerSec = Units.feetToMeters(16.9); // 16.9 ft/s = 5.15 m/s
+    public static final double maxSpeedMetersPerSec = Units.feetToMeters(15); // 16.9 ft/s = 5.15 m/s
     public static final double odometryFrequency = 100.0; // Hz
     public static final double trackWidth = Units.inchesToMeters(26.5);
     public static final double wheelBase = Units.inchesToMeters(26.5);
@@ -28,10 +28,10 @@ public class DriveConstants {
     };
 
     // Zeroed rotation values for each module, see setup instructions
-    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(0);
-    public static final Rotation2d frontRightZeroRotation = new Rotation2d(0);
-    public static final Rotation2d backLeftZeroRotation = new Rotation2d(0);
-    public static final Rotation2d backRightZeroRotation = new Rotation2d(-1.14);
+    public static final Rotation2d frontLeftZeroRotation = new Rotation2d(1.26);
+    public static final Rotation2d frontRightZeroRotation = new Rotation2d(0.5306);
+    public static final Rotation2d backLeftZeroRotation = new Rotation2d(0.556138);
+    public static final Rotation2d backRightZeroRotation = new Rotation2d(1.868928);
 
     // Device CAN IDs
     public static final int pigeonCanId = 31;
@@ -94,8 +94,8 @@ public class DriveConstants {
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
     // PathPlanner configuration
-    public static final double robotMassKg = 59.0;
-    public static final double robotMOI = 6.883;
+    public static final double robotMassKg = 25;
+    public static final double robotMOI = 3;
     public static final double wheelCOF = 1.2;
     public static final RobotConfig ppConfig = new RobotConfig(
             robotMassKg,

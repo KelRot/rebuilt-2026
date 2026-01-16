@@ -23,8 +23,8 @@ public final class Constants {
     public static final boolean tuningMode = true;
 
     public static class LedConstants {
-        public static final int kLedPort = 9;
-        public static final int kLedLength = 60;
+        public static final int kLedPort = 0;
+        public static final int kLedLength = 24;
         public static final Distance kLedSpacing = Meters.of(0.05);
     }
 

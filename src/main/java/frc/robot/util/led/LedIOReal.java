@@ -17,6 +17,8 @@ public class LedIOReal implements LedIO {
         m_led = new AddressableLED(port);
         m_led.setLength(length);
         m_led.start();
+        System.out.println("[LedIOReal] Initialized on PWM Port " + port + " with Length " + length
+                + ", Verify this matches your wiring!");
     }
 
     @Override

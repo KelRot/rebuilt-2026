@@ -13,7 +13,7 @@ import org.littletonrobotics.junction.AutoLog;
 public interface LedIO {
     @AutoLog
     public static class LedIOInputs {
-        public boolean connected = true;
+        public boolean connected = false;
         public String activePatternName = "";
     }
 
