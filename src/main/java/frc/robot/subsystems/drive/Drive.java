@@ -63,6 +63,7 @@ public class Drive extends SubsystemBase {
             lastModulePositions, new Pose2d());
 
     public Drive(GyroIO gyroIO, ModuleIO flModuleIO, ModuleIO frModuleIO, ModuleIO blModuleIO, ModuleIO brModuleIO) {
+        System.out.println("[Drive] Constructing Drive Subsystem...");
         this.gyroIO = gyroIO;
         modules[0] = new Module(flModuleIO, 0);
         modules[1] = new Module(frModuleIO, 1);

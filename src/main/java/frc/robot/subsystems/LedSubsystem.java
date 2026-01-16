@@ -14,6 +14,7 @@ import frc.robot.util.led.Led;
 public class LedSubsystem extends SubsystemBase {
         @SuppressWarnings("unchecked")
         public LedSubsystem(Led led) {
-                led.setStaticColor(Color.kAliceBlue);;
+                System.out.println("[LedSubsystem] Constructing LedSubsystem...");
+                led.setStaticColor(Color.kAliceBlue);
         }
 }
