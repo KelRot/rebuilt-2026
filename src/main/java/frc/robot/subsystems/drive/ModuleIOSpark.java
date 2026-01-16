@@ -33,13 +33,11 @@ import edu.wpi.first.wpilibj.RobotController;
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
 
-
 /**
  * Module IO implementation for Spark Flex drive motor controller, Spark Max
  * turn motor controller, and thrifty absolute
  * encoder.
  */
-@SuppressWarnings("removal")
 public class ModuleIOSpark implements ModuleIO {
         private final Rotation2d zeroRotation;
 
@@ -115,9 +113,9 @@ public class ModuleIOSpark implements ModuleIO {
                                 .uvwAverageDepth(2);
                 driveConfig.closedLoop
                                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                                .pidf(
+                                .pid(
                                                 driveKp, 0.0,
-                                                driveKd, 0.0);
+                                                driveKd);
                 driveConfig.signals
                                 .primaryEncoderPositionAlwaysOn(true)
                                 .primaryEncoderPositionPeriodMs((int) (1000.0 / odometryFrequency))
@@ -150,7 +148,7 @@ public class ModuleIOSpark implements ModuleIO {
                                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                                 .positionWrappingEnabled(true)
                                 .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput)
-                                .pidf(turnKp, 0.0, turnKd, 0.0);
+                                .pid(turnKp, 0.0, turnKd);
                 turnConfig.signals
                                 .primaryEncoderPositionAlwaysOn(true)
                                 .primaryEncoderPositionPeriodMs((int) (1000.0 / odometryFrequency))
