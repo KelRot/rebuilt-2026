@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.led.Led;
 
 public class LedSubsystem extends SubsystemBase {
-        @SuppressWarnings("unchecked")
         public LedSubsystem(Led led) {
                 System.out.println("[LedSubsystem] Constructing LedSubsystem...");
                 led.setStaticColor(Color.kAliceBlue);

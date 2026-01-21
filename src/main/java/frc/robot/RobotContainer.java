@@ -139,7 +139,7 @@ public class RobotContainer {
          */
         private void configureButtonBindings() {
               
-                PIDController aimController = new PIDController(2, 0.0, 0.0);
+                PIDController aimController = new PIDController(1, 0.0, 0.0);
                 aimController.enableContinuousInput(-Math.PI, Math.PI);
                 controller
                                 .button(5)
