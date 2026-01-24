@@ -33,6 +33,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.led.Led;
+import lombok.Getter;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -46,11 +47,13 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
 
-        private final Vision vision;
-
         // Subsystems
-        private final Drive drive;
-        private final Led led;
+        @Getter
+        private static Drive drive;
+        @Getter
+        private static Vision vision;
+        @Getter
+        private static Led led;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -138,7 +141,7 @@ public class RobotContainer {
          * {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
          */
         private void configureButtonBindings() {
-              
+
                 PIDController aimController = new PIDController(2, 0.0, 0.0);
                 aimController.enableContinuousInput(-Math.PI, Math.PI);
                 controller
@@ -146,7 +149,7 @@ public class RobotContainer {
                                 .whileTrue(DriveCommands.joystickDriveAtAngle(
                                                 drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(),
                                                 () -> new Rotation2d(aimController.calculate(vision
-                                                                                        .getTargetX(0).getRadians()))));
+                                                                .getTargetX(0).getRadians()))));
                 led.setStaticColor(Color.kBlue);
                 // Old bindings commented out for reference
                 drive.setDefaultCommand(DriveCommands.joystickDrive(
@@ -181,4 +184,5 @@ public class RobotContainer {
         public Command getAutonomousCommand() {
                 return autoChooser.get();
         }
+
 }
