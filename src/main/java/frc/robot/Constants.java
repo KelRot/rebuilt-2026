@@ -28,6 +28,12 @@ public final class Constants {
         public static final Distance kLedSpacing = Meters.of(0.05);
     }
 
+    public static class IndexConstants {
+        public static final int spinnerMotorID = 3;
+        public static final double zeroWaitSeconds = 2;
+        public static final double zeroVoltage = 0;
+    }
+
     public static enum Mode {
         /** Running on a real robot. */
         REAL,
