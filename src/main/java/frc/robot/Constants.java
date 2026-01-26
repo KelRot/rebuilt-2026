@@ -10,6 +10,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -21,11 +22,19 @@ public final class Constants {
     public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
     public static final int PDH_ID = 1;
     public static final boolean tuningMode = true;
+    public static final String Intake = null;
 
     public static class LedConstants {
         public static final int kLedPort = 0;
         public static final int kLedLength = 24;
         public static final Distance kLedSpacing = Meters.of(0.05);
+    }
+    public static class IntakeConstants {
+        public static final int rollerMotorID = 0;
+        public static final int openerMotorID = 1;
+        public static final double zeroWaitSeconds = 2;
+        public static final double zeroVoltage = 0;
+        public static double openerGearRatio = 1.0;
     }
 
     public static enum Mode {
@@ -38,4 +47,5 @@ public final class Constants {
         /** Replaying from a log file. */
         REPLAY
     }
+
 }
