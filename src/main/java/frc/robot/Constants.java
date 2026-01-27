@@ -30,8 +30,7 @@ public final class Constants {
 
     public static class IndexConstants {
         public static final int spinnerMotorID = 3;
-        public static final double zeroWaitSeconds = 2;
-        public static final double zeroVoltage = 0;
+        public static final double spinnerAmpsLimit = 15.0;
     }
 
     public static enum Mode {

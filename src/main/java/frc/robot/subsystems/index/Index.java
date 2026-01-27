@@ -5,6 +5,7 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class Index extends SubsystemBase {
 
@@ -16,14 +17,13 @@ public class Index extends SubsystemBase {
     private IndexMode currentMode = IndexMode.NO_BALL;
     private final IndexIO io;
     private final IndexIOInputsAutoLogged inputs = new IndexIOInputsAutoLogged();
-    private final IndexVisualizer measuredVisualizer = new IndexVisualizer("Measured", Color.kRed); // Picked Red for index visualizer (may change later)
 
   public Index(IndexIO io) {
     this.io = io;
   }
 
    private void checkMode() {
-    if (inputs.spinnerMotorCurrentAmps >= 15.0) {
+    if (inputs.spinnerMotorCurrentAmps >= Constants.IndexConstants.spinnerAmpsLimit) {
       currentMode = IndexMode.BALL;
     } else {
       currentMode = IndexMode.NO_BALL;
@@ -32,10 +32,6 @@ public class Index extends SubsystemBase {
 
   public void setSpinnerVoltage(double volts) {
     io.setSpinnerVoltage(volts);
-  }
-
-  public void zeroEncoder() {
-    io.zeroEncoder();
   }
 
   private void runStateMachine() {
@@ -54,10 +50,6 @@ public class Index extends SubsystemBase {
   public Command setSpinnerVoltageCommand(double volts) {
     return this.runEnd(() -> setSpinnerVoltage(volts), () -> setSpinnerVoltage(0.0));
   }
-
-  public Command zeroEncoderCommand() {
-    return this.runOnce(() -> zeroEncoder());
-  }
   
 
   @Override
@@ -67,7 +59,6 @@ public void periodic() {
   checkMode();               
   runStateMachine();     
 
-  measuredVisualizer.update();
   Logger.processInputs("Index", inputs);
 }
 

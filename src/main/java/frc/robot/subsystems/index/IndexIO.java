@@ -18,9 +18,6 @@ public interface IndexIO {
     public default void setSpinnerVoltage(double volts) {
     }
 
-    public default void zeroEncoder() {
-    }
-
     public default void stopAllMotors() {
     }
 

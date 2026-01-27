@@ -25,10 +25,6 @@ public class IndexIOSpark implements IndexIO {
     spinnerMotor.setVoltage(volts);
   }
 
-  public void zeroEncoder() {
-     spinnerMotor.getEncoder().setPosition(0);
-  }
-
   public void stopAllMotors() {
     spinnerMotor.setVoltage(0.0);
   }
@@ -36,7 +32,7 @@ public class IndexIOSpark implements IndexIO {
   public void config() {
     SparkMaxConfig spinnerConfig = new SparkMaxConfig();
 
-    spinnerConfig.voltageCompensation(12).idleMode(IdleMode.kBrake).smartCurrentLimit(20);
+    spinnerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(20);
 
     tryUntilOk(
         spinnerMotor,
