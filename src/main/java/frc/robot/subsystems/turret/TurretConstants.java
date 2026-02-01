@@ -9,7 +9,8 @@ public class TurretConstants {
     public static final double ff = 0.0;
     
     public static final int turretID = 0;
-    public static final int absEncoderID = 0;
+    public static final int absEncoder1ID = 0;
+    public static final int absEncoder2ID = 0;
     public static final int hallEffectID = 0;
 
     public static final double positionConversionFactor = 0; // Example conversion factor
@@ -27,6 +28,11 @@ public class TurretConstants {
     public static final double maxAcceleration = 0.0;
 
     public static final Translation2d hubPose = new Translation2d(0.0, 0.0);
-    public static final Translation2d trenchPoseUpper = new Translation2d(0.0, 0.0);
-    public static final Translation2d trenchPoseLower = new Translation2d(0.0, 0.0);
+    public static final Translation2d trenchPoseRight = new Translation2d(0.0, 0.0);
+    public static final Translation2d trenchPoseLeft = new Translation2d(0.0, 0.0);
+    public static final double zoneLine = 0.0;
+
+    public static final int turretGearboxTeeth = 0;
+    public static final int absEncoder1Teeth = 0;
+    public static final int absEncoder2Teeth = 0;
 }

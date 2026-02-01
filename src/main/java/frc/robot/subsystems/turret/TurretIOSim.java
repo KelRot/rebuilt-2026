@@ -1,6 +1,7 @@
 package frc.robot.subsystems.turret;
 
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.DutyCycleEncoderSim;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -10,6 +11,8 @@ public class TurretIOSim implements TurretIO {
     private final DCMotorSim turretMotorSim;
 
     private PIDController turretController = new PIDController(kP, 0, kD);
+    private DutyCycleEncoderSim absEncoder1Sim = new DutyCycleEncoderSim(TurretConstants.absEncoder1ID);
+    private DutyCycleEncoderSim absEncoder2Sim = new DutyCycleEncoderSim(TurretConstants.absEncoder2ID);
     private boolean turretClosedLoop = false;
     private double turretFFVolts = 0.0;
     private double turretAppliedVolts = 0.0;
@@ -32,7 +35,8 @@ public class TurretIOSim implements TurretIO {
 
         inputs.motorConnected = true;
         inputs.positionRads = turretMotorSim.getAngularPositionRad();
-        inputs.absolutePositionRads = turretMotorSim.getAngularPositionRad(); //this would come from an absolute encoder
+        inputs.absPositionTours1 = absEncoder1Sim.get();
+        inputs.absPositionTours2 = absEncoder2Sim.get();
         inputs.velocityRadsPerSec = turretMotorSim.getAngularVelocityRadPerSec();
         inputs.appliedVolts = turretAppliedVolts;
         inputs.supplyCurrentAmps = Math.abs(turretMotorSim.getCurrentDrawAmps());

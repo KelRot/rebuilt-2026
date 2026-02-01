@@ -19,16 +19,15 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
 
 import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.RobotController;
-import frc.robot.subsystems.turret.TurretConstants.*;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 public class TurretIOSpark implements TurretIO {
     //Hardware components
     private final SparkMax turretMotor;
     private final RelativeEncoder turretEncoder;
-    private final AnalogInput absEncoder;
+    private final DutyCycleEncoder absEncoder1;
+    private final DutyCycleEncoder absEncoder2;
     private final DigitalInput hallEffect;
 
     private IdleMode idleMode;
@@ -40,7 +39,8 @@ public class TurretIOSpark implements TurretIO {
     public TurretIOSpark(){
         turretMotor = new SparkMax(TurretConstants.turretID, MotorType.kBrushless);
         turretEncoder = turretMotor.getEncoder();
-        absEncoder = new AnalogInput(TurretConstants.absEncoderID);
+        absEncoder1 = new DutyCycleEncoder(TurretConstants.absEncoder1ID);
+        absEncoder2 = new DutyCycleEncoder(TurretConstants.absEncoder2ID);
         hallEffect = new DigitalInput(TurretConstants.hallEffectID);
 
         idleMode = IdleMode.kBrake;
@@ -59,11 +59,8 @@ public class TurretIOSpark implements TurretIO {
             (values)-> inputs.appliedVolts = values[0] * values[1]);
         ifOk(turretMotor, turretMotor::getOutputCurrent, (value)-> inputs.supplyCurrentAmps = value);
         inputs.motorConnected = turretDebouncer.calculate(!sparkStickyFault);
-
-        double voltage = absEncoder.getAverageVoltage();
-        double ratio = voltage / RobotController.getVoltage5V();
-        double absposition = ratio * 2.0 * Math.PI - TurretConstants.absolutePositionOffsetRads;
-        inputs.absolutePositionRads = absposition;
+        inputs.absPositionTours1 = absEncoder1.get();
+        inputs.absPositionTours2 = absEncoder2.get();
 
         inputs.hallEffectTriggered = hallEffect.get();
     }
@@ -79,8 +76,8 @@ public class TurretIOSpark implements TurretIO {
     }
 
     @Override
-    public void zeroEncoder(){
-        turretEncoder.setPosition(0.0);
+    public void setEncoder(double position){
+        turretEncoder.setPosition(position);
     }
 
     @Override

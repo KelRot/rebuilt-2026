@@ -3,8 +3,6 @@ package frc.robot.subsystems.turret;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
@@ -16,13 +14,13 @@ public class Turret extends SubsystemBase {
     private double lastPosition;
     private double deltaPosition;
     private int stillCounter;
-    private enum homeModes{
+    private enum homeHallEffectModes{
         START,
         MOVE_FORWARD,
         MOVE_REVERSE,
         DONE
     }
-    private homeModes homeMode = homeModes.START;
+    private homeHallEffectModes homeHallEffectMode = homeHallEffectModes.START;
     private boolean homeDone = false;
 
     private enum botZones{
@@ -31,14 +29,8 @@ public class Turret extends SubsystemBase {
         OPPONENT
     }
     private Pose2d botPose;
-    private Translation2d hubPose = TurretConstants.hubPose;
-    private Translation2d trenchPoseUpper = TurretConstants.trenchPoseUpper;
-    private Translation2d trenchPoseLower = TurretConstants.trenchPoseLower;
-    private double botToHubX;
-    private double botToHubY;
-    private double botToTrenchX;
-    private double botToTrenchY;
     private botZones botZone = botZones.NEUTRAL;
+    private double setPoint;
 
     private enum turretModes{
         HOMING,
@@ -59,11 +51,13 @@ public class Turret extends SubsystemBase {
 
         switch (turretMode){
             case HOMING:
-                home();
+                homeWithHallEffect();
                 break;
             case TRACKING_HUB:
+                targetHub();
                 break;
             case TRACKING_FEED:
+                targetFeed();
                 break;
             case SHOOTING_HUB:
                 break;
@@ -76,13 +70,13 @@ public class Turret extends SubsystemBase {
         turretMode = mode;
     }
 
-    public void home(){
-        switch(homeMode){
+    public void homeWithHallEffect(){
+        switch(homeHallEffectMode){
             case START:
                 io.setIdleMode(IdleMode.kCoast);
                 stillCounter = 0;
                 lastPosition = inputs.positionRads;
-                homeMode = homeModes.MOVE_FORWARD;
+                homeHallEffectMode = homeHallEffectModes.MOVE_FORWARD;
                 break;
             case MOVE_FORWARD:
                 io.setVoltage(2.0);
@@ -97,12 +91,12 @@ public class Turret extends SubsystemBase {
                 if(stillCounter > 50){
                         io.stop();
                         stillCounter = 0;
-                        homeMode = homeModes.MOVE_REVERSE;
+                        homeHallEffectMode = homeHallEffectModes.MOVE_REVERSE;
                 }
                 if(inputs.hallEffectTriggered){
                     io.stop();
-                    io.zeroEncoder();
-                    homeMode = homeModes.DONE;
+                    io.setEncoder(0.0);
+                    homeHallEffectMode = homeHallEffectModes.DONE;
                 }
                 break;
             case MOVE_REVERSE:
@@ -117,12 +111,12 @@ public class Turret extends SubsystemBase {
                 if(stillCounter > 50){
                     io.stop();
                     stillCounter = 0;
-                    homeMode = homeModes.MOVE_FORWARD;
+                    homeHallEffectMode = homeHallEffectModes.MOVE_FORWARD;
                 }
                 if(inputs.hallEffectTriggered){
                     io.stop();
-                    io.zeroEncoder();
-                    homeMode = homeModes.DONE;
+                    io.setEncoder(0.0);
+                    homeHallEffectMode = homeHallEffectModes.DONE;
                 }
                 break;
             case DONE:
@@ -135,27 +129,95 @@ public class Turret extends SubsystemBase {
         
     }
 
-    public void targetHub(){
-        botToHubX = hubPose.getX() - botPose.getX();
-        botToHubY = hubPose.getY() - botPose.getY();
+    public void homeWithAbsEncoders(){
+        double absEncoder1GR = (double)TurretConstants.turretGearboxTeeth / (double)TurretConstants.absEncoder1Teeth;
+        double absEncoder2GR = (double)TurretConstants.turretGearboxTeeth / (double)TurretConstants.absEncoder2Teeth;
 
-        double botAngleToHub = Math.atan2(botToHubY, botToHubX);
-        double setPoint = botAngleToHub - hubPose.getZ();
+        double n = solveEquation(absEncoder1GR, absEncoder2GR, inputs.absPositionTours1, inputs.absPositionTours2);
+        
+        double turretTours = (n+inputs.absPositionTours1) * absEncoder1GR;
+        double turretPosition = turretTours - Math.floor(turretTours);
+        double positionRads = turretPosition * 2.0 * Math.PI;
+
+        io.setEncoder(positionRads);
+    }
+
+    public void targetHub(){
+        setPoint = setpointCalculation(TurretConstants.hubPose);
         io.setPosition(setPoint);
     }
 
     public void targetFeed(){
         switch(botZone){
             case ALLIANCE:
-
                 break;
             case NEUTRAL:
-
+                if(botPose.getY() < TurretConstants.zoneLine){
+                    setPoint = setpointCalculation(TurretConstants.trenchPoseRight);
+                    io.setPosition(setPoint);
+                }
+                else{
+                    setPoint = setpointCalculation(TurretConstants.trenchPoseLeft);
+                    io.setPosition(setPoint);
+                }
                 break;
             case OPPONENT:
-
+                if(botPose.getY() < TurretConstants.zoneLine){
+                    setPoint = setpointCalculation(TurretConstants.trenchPoseRight);
+                    io.setPosition(setPoint);
+                }
+                else{
+                    setPoint = setpointCalculation(TurretConstants.trenchPoseLeft);
+                    io.setPosition(setPoint);
+                }
                 break;
         }
+    }
+
+    public Translation2d getBotPose(){
+        if(turretMode == turretModes.TRACKING_HUB){
+            return TurretConstants.hubPose;
+        }
+        else if(turretMode == turretModes.TRACKING_FEED){
+            if(botZone == botZones.ALLIANCE){
+                return null;
+            }
+            else if(botZone == botZones.NEUTRAL){
+                if(botPose.getY() < TurretConstants.zoneLine){
+                    return TurretConstants.trenchPoseRight;
+                }
+                else{
+                    return TurretConstants.trenchPoseLeft;
+                }
+            }
+            else{
+                if(botPose.getY() < TurretConstants.zoneLine){
+                    return TurretConstants.trenchPoseRight;
+                }
+                else{
+                    return TurretConstants.trenchPoseLeft;
+                }
+            }
+        }
+        return null;
+    }
+
+    public double solveEquation(int gr1, int gr2, double absPos1, double absPos2){
+        int a = gr1;
+        double b = absPos1;
+        int c = gr2;
+        double d = absPos2;
+
+        double n = ((c*d)-(b*a))/(a - c);
+        return n;
+    }
+
+    public double setpointCalculation(Translation2d targetPose){
+        double botToTargetX = targetPose.getX() - botPose.getX();
+        double botToTargetY = targetPose.getY() - botPose.getY();
+
+        double botAngleToTarget = Math.atan2(botToTargetY, botToTargetX);
+        return botAngleToTarget - botPose.getRotation().getRadians();
     }
 
 }
