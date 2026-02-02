@@ -202,10 +202,10 @@ public class Turret extends SubsystemBase {
         return null;
     }
 
-    public double solveEquation(int gr1, int gr2, double absPos1, double absPos2){
-        int a = gr1;
+    public double solveEquation(double gr1, double gr2, double absPos1, double absPos2){
+        double a = gr1;
         double b = absPos1;
-        int c = gr2;
+        double c = gr2;
         double d = absPos2;
 
         double n = ((c*d)-(b*a))/(a - c);
