@@ -18,9 +18,6 @@ public interface KickerIO {
     public default void setRollerVoltage(double volts) {
     }
 
-    public default void zeroEncoder() {
-    }
-
     public default void stopAllMotors() {
     }
 
