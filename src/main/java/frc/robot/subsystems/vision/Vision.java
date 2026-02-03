@@ -12,10 +12,13 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import java.util.LinkedList;
@@ -28,6 +31,10 @@ public class Vision extends SubsystemBase {
     private final VisionIOInputsAutoLogged[] inputs;
     private final Alert[] disconnectedAlerts;
 
+    private final RobotState state;
+    private boolean useVision = true;
+
+    /** Creates a new vision subsystem. */
     public Vision(VisionConsumer consumer, VisionIO... io) {
         this.consumer = consumer;
         this.io = io;
@@ -48,6 +55,67 @@ public class Vision extends SubsystemBase {
     public Rotation2d getTargetX(int cameraIndex) {
         return inputs[cameraIndex].latestTargetObservation.tx();
     }
+private VisionFieldPoseEstimate fuseEstimates(
+        VisionFieldPoseEstimate a, VisionFieldPoseEstimate b) {
+
+    // Ensure b is newer
+    if (b.getTimestampSeconds() < a.getTimestampSeconds()) {
+        VisionFieldPoseEstimate tmp = a;
+        a = b;
+        b = tmp;
+    }
+
+    Pose2d poseA = a.getVisionRobotPoseMeters();
+    Pose2d poseB = b.getVisionRobotPoseMeters();
+
+    // Variances
+    var varianceA =
+            a.getVisionMeasurementStdDevs().elementTimes(a.getVisionMeasurementStdDevs());
+    var varianceB =
+            b.getVisionMeasurementStdDevs().elementTimes(b.getVisionMeasurementStdDevs());
+
+    // Rotation: trust newer unless both are good
+    Rotation2d fusedHeading = poseB.getRotation();
+    if (varianceA.get(2, 0) < VisionConstants.kLargeVariance
+            && varianceB.get(2, 0) < VisionConstants.kLargeVariance) {
+        fusedHeading =
+                new Rotation2d(
+                        poseA.getRotation().getCos() / varianceA.get(2, 0)
+                                + poseB.getRotation().getCos() / varianceB.get(2, 0),
+                        poseA.getRotation().getSin() / varianceA.get(2, 0)
+                                + poseB.getRotation().getSin() / varianceB.get(2, 0));
+    }
+
+    // Translation weights
+    double weightAx = 1.0 / varianceA.get(0, 0);
+    double weightAy = 1.0 / varianceA.get(1, 0);
+    double weightBx = 1.0 / varianceB.get(0, 0);
+    double weightBy = 1.0 / varianceB.get(1, 0);
+
+    Pose2d fusedPose =
+            new Pose2d(
+                    new Translation2d(
+                            (poseA.getX() * weightAx + poseB.getX() * weightBx)
+                                    / (weightAx + weightBx),
+                            (poseA.getY() * weightAy + poseB.getY() * weightBy)
+                                    / (weightAy + weightBy)),
+                    fusedHeading);
+
+    Matrix<N3, N1> fusedStdDev =
+            VecBuilder.fill(
+                    Math.sqrt(1.0 / (weightAx + weightBx)),
+                    Math.sqrt(1.0 / (weightAy + weightBy)),
+                    Math.sqrt(
+                            1.0
+                                    / (1.0 / varianceA.get(2, 0)
+                                            + 1.0 / varianceB.get(2, 0))));
+
+    return new VisionFieldPoseEstimate(
+            fusedPose,
+            b.getTimestampSeconds(),
+            fusedStdDev,
+            a.getNumTags() + b.getNumTags());
+}
 
     @Override
     public void periodic() {
