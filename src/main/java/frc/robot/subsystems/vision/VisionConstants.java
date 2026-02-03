@@ -15,8 +15,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.Filesystem;
 
 public class VisionConstants {
+    public static final double kLargeVariance = 1e6;
 
-    
     // AprilTag layout
     public static Path path = Filesystem.getDeployDirectory()
             .toPath()
