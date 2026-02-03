@@ -15,6 +15,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.Filesystem;
 
 public class VisionConstants {
+
+    
     // AprilTag layout
     public static Path path = Filesystem.getDeployDirectory()
             .toPath()
