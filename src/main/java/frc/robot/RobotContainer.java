@@ -27,6 +27,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
+import frc.robot.subsystems.kicker.Kicker;
+import frc.robot.subsystems.kicker.KickerIO;
+import frc.robot.subsystems.kicker.KickerIOSpark;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
@@ -49,6 +52,8 @@ public class RobotContainer {
 
         // Subsystems
         @Getter
+        private static Kicker kicker;
+        @Getter
         private static Drive drive;
         @Getter
         private static Vision vision;
@@ -64,6 +69,7 @@ public class RobotContainer {
          * The container for the robot. Contains subsystems, OI devices, and commands.
          */
         public RobotContainer() {
+                kicker = new Kicker(new KickerIOSpark());
                 led = new Led();
                 DriverStation.silenceJoystickConnectionWarning(true);
                 switch (Constants.currentMode) {
