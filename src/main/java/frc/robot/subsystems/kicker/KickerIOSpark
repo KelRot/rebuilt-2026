@@ -4,11 +4,9 @@ import static frc.robot.util.SparkUtil.*;
 import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.SparkMax;
 
 import frc.robot.Constants;
@@ -16,7 +14,6 @@ import frc.robot.Constants;
 public class KickerIOSpark implements KickerIO {
     private static SparkMax rollerMotor = new SparkMax(Constants.KickerConstants.rollerMotorID, MotorType.kBrushless);
 
-  /** Creates a new ExampleSubsystem. */
   public KickerIOSpark() {
 
   }
@@ -24,10 +21,6 @@ public class KickerIOSpark implements KickerIO {
   @Override
   public void setRollerVoltage(double volts) {
     rollerMotor.setVoltage(volts);
-  }
-
-  public void zeroEncoder() {
-     rollerMotor.getEncoder().setPosition(0);
   }
 
   public void stopAllMotors() {
