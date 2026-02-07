@@ -28,6 +28,14 @@ public final class Constants {
         public static final Distance kLedSpacing = Meters.of(0.05);
     }
 
+    public static class FlywheelConstants {
+        public static final int kMasterMotorId = 0;
+        public static final int kFollowerMotorId = 0;
+        public static final double kp =0;
+        public static final double ki =0;
+        public static final double kd =0;
+    }
+
     public static enum Mode {
         /** Running on a real robot. */
         REAL,
