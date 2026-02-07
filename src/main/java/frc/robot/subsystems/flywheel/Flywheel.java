@@ -7,6 +7,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Flywheel extends SubsystemBase {
 
+    private wantedState goal = wantedState.IDLE;
+    private double targetDistanceMeters = 0.0;
+
     private final FlyWheelIO io;
     private final FlyWheelIO.FlywheelIOInputs inputs =
             new FlyWheelIO.FlywheelIOInputs();
@@ -14,6 +17,19 @@ public class Flywheel extends SubsystemBase {
     public Flywheel(FlyWheelIO io) {
         this.io = io;
     }
+
+    public enum wantedState {
+        IDLE,
+        SHOOTING
+    }
+    public void setGoal(wantedState goal) {
+        this.goal = goal;
+}
+
+    public void setTargetDistance(double distanceMeters) {
+        this.targetDistanceMeters = distanceMeters;
+}
+
 
     // tune
     private static final TreeMap<Double, Double> distanceToRPM = new TreeMap<>();
@@ -56,14 +72,26 @@ public class Flywheel extends SubsystemBase {
 
     @Override
     public void periodic() {
-        io.updateInputs(inputs);
+    io.updateInputs(inputs);
 
-        double rpm =
-            inputs.velocityRadsPerSec * 60.0 / (2.0 * Math.PI);
+    switch (goal) {
+        case SHOOTING -> {
+            double targetRPM = getRPMForDistance(targetDistanceMeters);
+            io.setRpm(targetRPM);
+        }
 
-        SmartDashboard.putNumber("Flywheel RPM", rpm);
-        SmartDashboard.putNumber("Flywheel Applied Voltage", inputs.appliedVoltage);
-        SmartDashboard.putNumber("Flywheel Output Current (Amps)", inputs.outputCurrentAmps);
-        SmartDashboard.putNumber("Flywheel Lead Target RPM", inputs.leadTargetRpm);
+        case IDLE -> {
+            io.setRpm(0.0);
+        }
     }
+
+    double rpm =
+        inputs.velocityRadsPerSec * 60.0 / (2.0 * Math.PI);
+
+    SmartDashboard.putNumber("Flywheel RPM", rpm);
+    SmartDashboard.putNumber("Flywheel Applied Voltage", inputs.appliedVoltage);
+    SmartDashboard.putNumber("Flywheel Output Current (Amps)", inputs.outputCurrentAmps);
+    SmartDashboard.putNumber("Flywheel Lead Target RPM", inputs.leadTargetRpm);
+
+}
 }
