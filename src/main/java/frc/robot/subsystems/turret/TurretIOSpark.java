@@ -28,7 +28,6 @@ public class TurretIOSpark implements TurretIO {
     private final RelativeEncoder turretEncoder;
     private final DutyCycleEncoder absEncoder1;
     private final DutyCycleEncoder absEncoder2;
-    private final DigitalInput hallEffect;
 
     private IdleMode idleMode;
 
@@ -41,7 +40,6 @@ public class TurretIOSpark implements TurretIO {
         turretEncoder = turretMotor.getEncoder();
         absEncoder1 = new DutyCycleEncoder(TurretConstants.absEncoder1ID);
         absEncoder2 = new DutyCycleEncoder(TurretConstants.absEncoder2ID);
-        hallEffect = new DigitalInput(TurretConstants.hallEffectID);
 
         idleMode = IdleMode.kBrake;
 
@@ -61,8 +59,6 @@ public class TurretIOSpark implements TurretIO {
         inputs.motorConnected = turretDebouncer.calculate(!sparkStickyFault);
         inputs.absPositionTours1 = absEncoder1.get();
         inputs.absPositionTours2 = absEncoder2.get();
-
-        inputs.hallEffectTriggered = hallEffect.get();
     }
 
     @Override
@@ -99,7 +95,7 @@ public class TurretIOSpark implements TurretIO {
         turretConfig
             .idleMode(idleMode)
             .voltageCompensation(12)
-            .smartCurrentLimit(40)
+            .smartCurrentLimit(20)
             .apply(closedLoopConfig);
         turretConfig
             .encoder.positionConversionFactor(TurretConstants.positionConversionFactor)

@@ -129,19 +129,6 @@ public class Turret extends SubsystemBase {
         
     }
 
-    public void homeWithAbsEncoders(){
-        double absEncoder1GR = (double)TurretConstants.turretGearboxTeeth / (double)TurretConstants.absEncoder1Teeth;
-        double absEncoder2GR = (double)TurretConstants.turretGearboxTeeth / (double)TurretConstants.absEncoder2Teeth;
-
-        double n = solveEquation(absEncoder1GR, absEncoder2GR, inputs.absPositionTours1, inputs.absPositionTours2);
-        
-        double turretTours = (n+inputs.absPositionTours1) * absEncoder1GR;
-        double turretPosition = turretTours - Math.floor(turretTours);
-        double positionRads = turretPosition * 2.0 * Math.PI;
-
-        io.setEncoder(positionRads);
-    }
-
     public void targetHub(){
         setPoint = setpointCalculation(TurretConstants.hubPose);
         io.setPosition(setPoint);
@@ -219,5 +206,4 @@ public class Turret extends SubsystemBase {
         double botAngleToTarget = Math.atan2(botToTargetY, botToTargetX);
         return botAngleToTarget - botPose.getRotation().getRadians();
     }
-
 }

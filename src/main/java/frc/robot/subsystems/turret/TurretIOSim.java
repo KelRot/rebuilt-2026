@@ -41,8 +41,6 @@ public class TurretIOSim implements TurretIO {
         inputs.appliedVolts = turretAppliedVolts;
         inputs.supplyCurrentAmps = Math.abs(turretMotorSim.getCurrentDrawAmps());
 
-        inputs.hallEffectTriggered = Math.abs(turretMotorSim.getAngularPositionRad()) < 0.02;
-
     }
 
     @Override
