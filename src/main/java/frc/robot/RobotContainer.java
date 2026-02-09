@@ -69,7 +69,6 @@ public class RobotContainer {
          * The container for the robot. Contains subsystems, OI devices, and commands.
          */
         public RobotContainer() {
-                kicker = new Kicker(new KickerIOSpark());
                 led = new Led();
                 DriverStation.silenceJoystickConnectionWarning(true);
                 switch (Constants.currentMode) {
@@ -86,6 +85,8 @@ public class RobotContainer {
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1));
+
+                                kicker = new Kicker(new KickerIOSpark());
                                 break;
 
                         case SIM:
@@ -99,6 +100,8 @@ public class RobotContainer {
                                                 new VisionIOPhotonVisionSim(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1,
                                                                 drive::getPose));
+
+                                kicker = new Kicker(new KickerIOSpark());
                                 break;
 
                         default:
@@ -111,6 +114,9 @@ public class RobotContainer {
                                                 }, new ModuleIO() {
                                                 });
                                 vision = new Vision(drive::addVisionMeasurement, new VisionIO() {
+                                });
+
+                                kicker = new Kicker(new KickerIO() {
                                 });
                                 break;
                 }
