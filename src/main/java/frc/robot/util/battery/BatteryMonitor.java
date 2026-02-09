@@ -55,4 +55,8 @@ public class BatteryMonitor extends Command {
             alert.set(false);
         }
     }
+
+    public boolean isFinished() {
+        return DriverStation.isEnabled();
+    }
 }

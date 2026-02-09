@@ -27,12 +27,26 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
+import frc.robot.subsystems.flywheel.Flywheel;
+import frc.robot.subsystems.flywheel.FlywheelIO;
+import frc.robot.subsystems.flywheel.FlywheelIOSparkFlex;
+import frc.robot.subsystems.kicker.Kicker;
+import frc.robot.subsystems.kicker.KickerIO;
+import frc.robot.subsystems.kicker.KickerIOSpark;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSpark;
+import frc.robot.subsystems.index.Index;
+import frc.robot.subsystems.index.IndexIO;
+import frc.robot.subsystems.index.IndexIOSpark;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.led.Led;
+import lombok.Getter;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -46,11 +60,19 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
 
-        private final Vision vision;
-
         // Subsystems
-        private final Drive drive;
-        private final Led led;
+        @Getter
+        public static Kicker kicker;
+        @Getter
+        public static Drive drive;
+        @Getter
+        public static Vision vision;
+        @Getter
+        public static Led led;
+        @Getter
+        public static Intake intake;
+        @Getter
+        public static Index index;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -73,10 +95,16 @@ public class RobotContainer {
                                                 new ModuleIOSpark(2),
                                                 new ModuleIOSpark(3));
 
+                                index = new Index(new IndexIOSpark());
+
                                 vision = new Vision(
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1));
+                                flywheel = new Flywheel(new FlywheelIOSparkFlex());
+
+                                kicker = new Kicker(new KickerIOSpark());
+                                intake = new Intake(new IntakeIOSpark());
                                 break;
 
                         case SIM:
@@ -90,6 +118,11 @@ public class RobotContainer {
                                                 new VisionIOPhotonVisionSim(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1,
                                                                 drive::getPose));
+
+                                kicker = new Kicker(new KickerIOSpark());
+                                flywheel = new Flywheel(new FlywheelIOSparkFlex());
+                                intake = new Intake(new IntakeIOSim());
+                                index = new Index(new IndexIOSpark());
                                 break;
 
                         default:
@@ -102,6 +135,13 @@ public class RobotContainer {
                                                 }, new ModuleIO() {
                                                 });
                                 vision = new Vision(drive::addVisionMeasurement, new VisionIO() {
+                                });
+
+                                kicker = new Kicker(new KickerIO() {
+                                intake = new Intake(new IntakeIO() {
+                                index = new Index(new IndexIO() {
+                                });
+                                flywheel = new Flywheel(new FlywheelIO() {
                                 });
                                 break;
                 }
@@ -140,13 +180,15 @@ public class RobotContainer {
         private void configureButtonBindings() {
               
                 PIDController aimController = new PIDController(1, 0.0, 0.0);
+
+                PIDController aimController = new PIDController(2, 0.0, 0.0);
                 aimController.enableContinuousInput(-Math.PI, Math.PI);
                 controller
                                 .button(5)
                                 .whileTrue(DriveCommands.joystickDriveAtAngle(
                                                 drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(),
                                                 () -> new Rotation2d(aimController.calculate(vision
-                                                                                        .getTargetX(0).getRadians()))));
+                                                                .getTargetX(0).getRadians()))));
                 led.setStaticColor(Color.kBlue);
                 // Old bindings commented out for reference
                 drive.setDefaultCommand(DriveCommands.joystickDrive(
@@ -181,4 +223,5 @@ public class RobotContainer {
         public Command getAutonomousCommand() {
                 return autoChooser.get();
         }
+
 }

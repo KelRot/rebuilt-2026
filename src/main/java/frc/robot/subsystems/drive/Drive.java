@@ -26,6 +26,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -36,6 +37,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.rebuilt.field.Field;
+
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -120,7 +123,7 @@ public class Drive extends SubsystemBase {
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
             Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
         }
-
+            Logger.recordOutput("Drive/RobotZone", getRobotZone().toString());
         // Update odometry
         double[] sampleTimestamps = modules[0].getOdometryTimestamps(); // All signals are sampled together
         int sampleCount = sampleTimestamps.length;
@@ -295,21 +298,23 @@ public class Drive extends SubsystemBase {
         return maxSpeedMetersPerSec / driveBaseRadius;
     }
 
-    public static enum DriveState {
-        JOYSTICK_OPENLOOP,
-        JOYSTICK_VELOCITY,
-        SNAP_HEADING,
-        MAINTAIN_HEADING,
-        HUB
-    } // todo: will add more later
-
-    private DriveState driveState = DriveState.JOYSTICK_VELOCITY;
-
-    public DriveState getDriveState() {
-        return driveState;
+       public static enum RobotZone {
+        BLUE_ALLIANCE_ZONE,
+        RED_ALLIANCE_ZONE,
+        NEUTRAL_ZONE
     }
 
-    public void setDriveState(DriveState state) {
-        this.driveState = state;
+    public RobotZone getRobotZone() {
+        double robotX = getPose().getX();
+        if (robotX < Field.getHalfLength() - Units.inchesToMeters(60)) {
+            // Blue Alliance Zone
+            return RobotZone.BLUE_ALLIANCE_ZONE;
+        } else if (robotX > Field.getHalfLength() + Units.inchesToMeters(60)) {
+            // Red Alliance Zone
+            return RobotZone.RED_ALLIANCE_ZONE;
+        } else {
+            // Neutral Zone
+            return RobotZone.NEUTRAL_ZONE;
+        }
     }
 }
