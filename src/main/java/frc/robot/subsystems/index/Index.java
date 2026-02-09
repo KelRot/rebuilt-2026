@@ -21,6 +21,7 @@ public class Index extends SubsystemBase {
 
   public Index(IndexIO io) {
     this.io = io;
+    System.out.println("Index subsystem created with IO: " + io.getClass().getSimpleName());
   }
 
 
