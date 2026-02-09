@@ -13,11 +13,11 @@ import frc.robot.Constants;
 
 public class IndexIOSpark implements IndexIO {
 
-  private static SparkMax spinnerMotor = new SparkMax(Constants.IndexConstants.spinnerMotorID, MotorType.kBrushless);
+  private static SparkMax spinnerMotor;
 
   /** Creates a new ExampleSubsystem. */
   public IndexIOSpark() {
-
+    spinnerMotor = new SparkMax(Constants.IndexConstants.spinnerMotorID, MotorType.kBrushless);
   }
 
   @Override
@@ -32,7 +32,7 @@ public class IndexIOSpark implements IndexIO {
   public void config() {
     SparkMaxConfig spinnerConfig = new SparkMaxConfig();
 
-    spinnerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(20);
+    spinnerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(30);
 
     tryUntilOk(
         spinnerMotor,

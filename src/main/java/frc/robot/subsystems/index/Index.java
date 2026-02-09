@@ -14,8 +14,8 @@ public class Index extends SubsystemBase {
     OFF
   }
 
-  private IndexSystemState systemState = IndexSystemState.OFF;
-
+  private IndexSystemState systemState = IndexSystemState.PASSIVE_MODE;
+  private double voltage = 0.0;
   private final IndexIO io;
   private final IndexIOInputsAutoLogged inputs = new IndexIOInputsAutoLogged();
 
@@ -23,17 +23,23 @@ public class Index extends SubsystemBase {
     this.io = io;
   }
 
-  private void updateState() {
-    if (inputs.spinnerMotorCurrentAmps > Constants.IndexConstants.spinnerAmpsLimit) {
-      systemState = IndexSystemState.INDEXING_BALL;
-    } 
-    else {
-      systemState = IndexSystemState.PASSIVE_MODE;
-    }
-  }
-  private void runStateMachine() {
-    double voltage = 0.0;
 
+  public void setState(IndexSystemState state) {
+    this.systemState = state;
+  }
+
+  public Command setStateCommand(IndexSystemState state) {
+    return this.runOnce(() -> setState(state));
+  }
+
+  public Command stopCommand() {
+    return setStateCommand(IndexSystemState.OFF);
+  }
+
+  @Override
+  public void periodic() {
+
+    io.updateInputs(inputs);
     switch (systemState) {
       case INDEXING_BALL:
         voltage = Constants.IndexConstants.INDEXING_VOLTAGE;
@@ -50,30 +56,12 @@ public class Index extends SubsystemBase {
     }
 
     io.setSpinnerVoltage(voltage);
-  }
 
-  public void setState(IndexSystemState state) {
-    this.systemState = state;
-  }
-
-  public Command setStateCommand(IndexSystemState state) {
-    return this.runOnce(() -> setState(state));
-  }
-
-  public Command stopCommand() {
-    return setStateCommand(IndexSystemState.OFF);
-  }
-
-  @Override
-  public void periodic() {
-    io.updateInputs(inputs);
-    updateState();
-    runStateMachine();
-
-    Logger.processInputs("Index", inputs); 
+    Logger.processInputs("Index", inputs);
     Logger.recordOutput("Index/SystemState", systemState.toString());
   }
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+  }
 }
