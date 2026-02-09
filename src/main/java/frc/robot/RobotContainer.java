@@ -27,6 +27,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
+import frc.robot.subsystems.flywheel.Flywheel;
+import frc.robot.subsystems.flywheel.FlywheelIO;
+import frc.robot.subsystems.flywheel.FlywheelIOSparkFlex;
 import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.kicker.KickerIO;
 import frc.robot.subsystems.kicker.KickerIOSpark;
@@ -59,16 +62,17 @@ public class RobotContainer {
 
         // Subsystems
         @Getter
-        private static Kicker kicker;
+        public static Kicker kicker;
         @Getter
-        private static Drive drive;
+        public static Drive drive;
         @Getter
-        private static Vision vision;
+        public static Vision vision;
         @Getter
-        private static Led led;
+        public static Led led;
         @Getter
-        private static Intake intake;
-        private static Index index;
+        public static Intake intake;
+        @Getter
+        public static Index index;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -97,6 +101,7 @@ public class RobotContainer {
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1));
+                                flywheel = new Flywheel(new FlywheelIOSparkFlex());
 
                                 kicker = new Kicker(new KickerIOSpark());
                                 intake = new Intake(new IntakeIOSpark());
@@ -115,6 +120,7 @@ public class RobotContainer {
                                                                 drive::getPose));
 
                                 kicker = new Kicker(new KickerIOSpark());
+                                flywheel = new Flywheel(new FlywheelIOSparkFlex());
                                 intake = new Intake(new IntakeIOSim());
                                 index = new Index(new IndexIOSpark());
                                 break;
@@ -134,6 +140,8 @@ public class RobotContainer {
                                 kicker = new Kicker(new KickerIO() {
                                 intake = new Intake(new IntakeIO() {
                                 index = new Index(new IndexIO() {
+                                });
+                                flywheel = new Flywheel(new FlywheelIO() {
                                 });
                                 break;
                 }
