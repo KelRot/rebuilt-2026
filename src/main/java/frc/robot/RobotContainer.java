@@ -30,6 +30,13 @@ import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.kicker.KickerIO;
 import frc.robot.subsystems.kicker.KickerIOSpark;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSpark;
+import frc.robot.subsystems.index.Index;
+import frc.robot.subsystems.index.IndexIO;
+import frc.robot.subsystems.index.IndexIOSpark;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
@@ -59,6 +66,9 @@ public class RobotContainer {
         private static Vision vision;
         @Getter
         private static Led led;
+        @Getter
+        private static Intake intake;
+        private static Index index;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -81,12 +91,15 @@ public class RobotContainer {
                                                 new ModuleIOSpark(2),
                                                 new ModuleIOSpark(3));
 
+                                index = new Index(new IndexIOSpark());
+
                                 vision = new Vision(
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1));
 
                                 kicker = new Kicker(new KickerIOSpark());
+                                intake = new Intake(new IntakeIOSpark());
                                 break;
 
                         case SIM:
@@ -102,6 +115,8 @@ public class RobotContainer {
                                                                 drive::getPose));
 
                                 kicker = new Kicker(new KickerIOSpark());
+                                intake = new Intake(new IntakeIOSim());
+                                index = new Index(new IndexIOSpark());
                                 break;
 
                         default:
@@ -117,6 +132,8 @@ public class RobotContainer {
                                 });
 
                                 kicker = new Kicker(new KickerIO() {
+                                intake = new Intake(new IntakeIO() {
+                                index = new Index(new IndexIO() {
                                 });
                                 break;
                 }
