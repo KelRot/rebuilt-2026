@@ -70,7 +70,7 @@ public class Index extends SubsystemBase {
     updateState();
     runStateMachine();
 
-    Logger.processInputs("Index", inputs);
+    Logger.processInputs("Index", inputs); 
     Logger.recordOutput("Index/SystemState", systemState.toString());
   }
 
