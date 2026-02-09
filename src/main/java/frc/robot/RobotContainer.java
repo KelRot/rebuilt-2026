@@ -27,6 +27,10 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSpark;
 import frc.robot.subsystems.index.Index;
 import frc.robot.subsystems.index.IndexIO;
 import frc.robot.subsystems.index.IndexIOSpark;
@@ -58,6 +62,7 @@ public class RobotContainer {
         @Getter
         private static Led led;
         @Getter
+        private static Intake intake;
         private static Index index;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
@@ -87,6 +92,8 @@ public class RobotContainer {
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1));
+
+                                intake = new Intake(new IntakeIOSpark());
                                 break;
 
                         case SIM:
@@ -100,6 +107,8 @@ public class RobotContainer {
                                                 new VisionIOPhotonVisionSim(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1,
                                                                 drive::getPose));
+
+                                intake = new Intake(new IntakeIOSim());
                                 index = new Index(new IndexIOSpark());
                                 break;
 
@@ -114,6 +123,7 @@ public class RobotContainer {
                                                 });
                                 vision = new Vision(drive::addVisionMeasurement, new VisionIO() {
                                 });
+                                intake = new Intake(new IntakeIO() {
                                 index = new Index(new IndexIO() {
                                 });
                                 break;
