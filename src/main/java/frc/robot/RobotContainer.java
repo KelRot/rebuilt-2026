@@ -30,6 +30,16 @@ import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.flywheel.FlywheelIO;
 import frc.robot.subsystems.flywheel.FlywheelIOSparkFlex;
+import frc.robot.subsystems.kicker.Kicker;
+import frc.robot.subsystems.kicker.KickerIO;
+import frc.robot.subsystems.kicker.KickerIOSpark;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSpark;
+import frc.robot.subsystems.index.Index;
+import frc.robot.subsystems.index.IndexIO;
+import frc.robot.subsystems.index.IndexIOSpark;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
@@ -52,13 +62,17 @@ public class RobotContainer {
 
         // Subsystems
         @Getter
-        private static Drive drive;
+        public static Kicker kicker;
         @Getter
-        private static Vision vision;
+        public static Drive drive;
         @Getter
-        private static Led led;
+        public static Vision vision;
         @Getter
-        private static Flywheel flywheel;
+        public static Led led;
+        @Getter
+        public static Intake intake;
+        @Getter
+        public static Index index;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -81,11 +95,16 @@ public class RobotContainer {
                                                 new ModuleIOSpark(2),
                                                 new ModuleIOSpark(3));
 
+                                index = new Index(new IndexIOSpark());
+
                                 vision = new Vision(
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1));
                                 flywheel = new Flywheel(new FlywheelIOSparkFlex());
+
+                                kicker = new Kicker(new KickerIOSpark());
+                                intake = new Intake(new IntakeIOSpark());
                                 break;
 
                         case SIM:
@@ -99,6 +118,11 @@ public class RobotContainer {
                                                 new VisionIOPhotonVisionSim(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1,
                                                                 drive::getPose));
+
+                                kicker = new Kicker(new KickerIOSpark());
+                                flywheel = new Flywheel(new FlywheelIOSparkFlex());
+                                intake = new Intake(new IntakeIOSim());
+                                index = new Index(new IndexIOSpark());
                                 break;
 
                         default:
@@ -111,6 +135,13 @@ public class RobotContainer {
                                                 }, new ModuleIO() {
                                                 });
                                 vision = new Vision(drive::addVisionMeasurement, new VisionIO() {
+                                });
+
+                                kicker = new Kicker(new KickerIO() {
+                                intake = new Intake(new IntakeIO() {
+                                index = new Index(new IndexIO() {
+                                });
+                                flywheel = new Flywheel(new FlywheelIO() {
                                 });
                                 break;
                 }
