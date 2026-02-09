@@ -31,6 +31,9 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSpark;
+import frc.robot.subsystems.index.Index;
+import frc.robot.subsystems.index.IndexIO;
+import frc.robot.subsystems.index.IndexIOSpark;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
@@ -60,6 +63,7 @@ public class RobotContainer {
         private static Led led;
         @Getter
         private static Intake intake;
+        private static Index index;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -82,6 +86,8 @@ public class RobotContainer {
                                                 new ModuleIOSpark(2),
                                                 new ModuleIOSpark(3));
 
+                                index = new Index(new IndexIOSpark());
+
                                 vision = new Vision(
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name,
@@ -103,6 +109,7 @@ public class RobotContainer {
                                                                 drive::getPose));
 
                                 intake = new Intake(new IntakeIOSim());
+                                index = new Index(new IndexIOSpark());
                                 break;
 
                         default:
@@ -117,6 +124,7 @@ public class RobotContainer {
                                 vision = new Vision(drive::addVisionMeasurement, new VisionIO() {
                                 });
                                 intake = new Intake(new IntakeIO() {
+                                index = new Index(new IndexIO() {
                                 });
                                 break;
                 }
