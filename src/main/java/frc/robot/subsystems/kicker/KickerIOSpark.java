@@ -30,7 +30,7 @@ public class KickerIOSpark implements KickerIO {
   public void config() {
     SparkMaxConfig rollerConfig = new SparkMaxConfig();
 
-    rollerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(20);
+    rollerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(40);
 
     tryUntilOk(
         rollerMotor,
