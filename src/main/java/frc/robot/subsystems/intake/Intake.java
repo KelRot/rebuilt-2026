@@ -49,7 +49,7 @@ public class Intake extends SubsystemBase {
   /* ---------------- Commands ---------------- */
 
   public Command setRollerVoltageCommand(double volts) {
-    return this.runEnd(
+    return this.startEnd(
         () -> setRollerVoltage(volts),
         () -> setRollerVoltage(0.0));
   }
@@ -79,7 +79,7 @@ public class Intake extends SubsystemBase {
   }
 
   public Command setOpenerVoltageCommand(double volts) {
-    return this.runEnd(
+    return this.startEnd(
         () -> {
           systemState = IntakeSystemState.MANUAL_CONTROL;
           setOpenerVoltage(volts);
