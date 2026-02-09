@@ -1,53 +1,57 @@
 package frc.robot.subsystems.flywheel;
 
 import java.util.TreeMap;
-
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Flywheel extends SubsystemBase {
 
-    private wantedState goal = wantedState.IDLE;
-    private double targetDistanceMeters = 0.0;
+    /* ---------------- State ---------------- */
 
-    private final FlyWheelIO io;
-    private final FlyWheelIO.FlywheelIOInputs inputs =
-            new FlyWheelIO.FlywheelIOInputs();
-
-    public Flywheel(FlyWheelIO io) {
-        this.io = io;
-    }
-
-    public enum wantedState {
+    public enum FlywheelState {
         IDLE,
         SHOOTING
     }
-    public void setGoal(wantedState goal) {
-        this.goal = goal;
-}
 
-    public void setTargetDistance(double distanceMeters) {
-        this.targetDistanceMeters = distanceMeters;
-}
+    private FlywheelState state = FlywheelState.IDLE;
+    private double targetDistanceMeters = 0.0;
 
+    /* ---------------- IO ---------------- */
 
-    // tune
-    private static final TreeMap<Double, Double> distanceToRPM = new TreeMap<>();
+    private final FlywheelIO io;
+    private final FlywheelIO.FlywheelIOInputs inputs = new FlywheelIO.FlywheelIOInputs();
 
-    static {
-        distanceToRPM.put(1.5, 2800.0);
-        distanceToRPM.put(2.0, 3100.0);
-        distanceToRPM.put(2.5, 3500.0);
-        distanceToRPM.put(3.0, 3900.0);
-        distanceToRPM.put(3.5, 4300.0);
+    public Flywheel(FlywheelIO io) {
+        this.io = io;
     }
 
-    public static double getRPMForDistance(double distanceMeters) {
-        var low = distanceToRPM.floorEntry(distanceMeters);
-        var high = distanceToRPM.ceilingEntry(distanceMeters);
+    /* ---------------- State setters ---------------- */
+
+    public void setState(FlywheelState state) {
+        this.state = state;
+    }
+
+    public void setTargetDistanceMeters(double distanceMeters) {
+        this.targetDistanceMeters = distanceMeters;
+    }
+
+    /* ---------------- Distance → RPM mapping ---------------- */
+
+    private static final TreeMap<Double, Double> kDistanceToRpmMap = new TreeMap<>();
+
+    static {
+        kDistanceToRpmMap.put(1.5, 2800.0);
+        kDistanceToRpmMap.put(2.0, 3100.0);
+        kDistanceToRpmMap.put(2.5, 3500.0);
+        kDistanceToRpmMap.put(3.0, 3900.0);
+        kDistanceToRpmMap.put(3.5, 4300.0);
+    }
+
+    public static double calculateRpmForDistance(double distanceMeters) {
+        var low = kDistanceToRpmMap.floorEntry(distanceMeters);
+        var high = kDistanceToRpmMap.ceilingEntry(distanceMeters);
 
         if (low == null) {
-            return distanceToRPM.firstEntry().getValue();
+            return kDistanceToRpmMap.firstEntry().getValue();
         }
 
         if (high == null) {
@@ -58,40 +62,28 @@ public class Flywheel extends SubsystemBase {
             return low.getValue();
         }
 
-        // Linear interpolation
         double t = (distanceMeters - low.getKey())
-                 / (high.getKey() - low.getKey());
+                / (high.getKey() - low.getKey());
 
         return low.getValue() + t * (high.getValue() - low.getValue());
     }
 
-    public void setRPMFromDistance(double distanceMeters) {
-        double rpm = getRPMForDistance(distanceMeters);
-        io.setRpm(rpm);
-    }
+    /* ---------------- Periodic ---------------- */
 
     @Override
     public void periodic() {
-    io.updateInputs(inputs);
+        io.updateInputs(inputs);
 
-    switch (goal) {
-        case SHOOTING -> {
-            double targetRPM = getRPMForDistance(targetDistanceMeters);
-            io.setRpm(targetRPM);
-        }
+        switch (state) {
+            case SHOOTING -> {
+                double targetRpm = calculateRpmForDistance(targetDistanceMeters);
+                io.setRpm(targetRpm);
+            }
 
-        case IDLE -> {
-            io.setRpm(0.0);
+            case IDLE -> {
+                // Idle RPM to prevent stalling
+                io.setRpm(500.0);
+            }
         }
     }
-
-    double rpm =
-        inputs.velocityRadsPerSec * 60.0 / (2.0 * Math.PI);
-
-    SmartDashboard.putNumber("Flywheel RPM", rpm);
-    SmartDashboard.putNumber("Flywheel Applied Voltage", inputs.appliedVoltage);
-    SmartDashboard.putNumber("Flywheel Output Current (Amps)", inputs.outputCurrentAmps);
-    SmartDashboard.putNumber("Flywheel Lead Target RPM", inputs.leadTargetRpm);
-
-}
 }

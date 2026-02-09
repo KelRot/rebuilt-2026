@@ -27,6 +27,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
+import frc.robot.subsystems.flywheel.Flywheel;
+import frc.robot.subsystems.flywheel.FlywheelIO;
+import frc.robot.subsystems.flywheel.FlywheelIOSparkFlex;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
@@ -54,6 +57,8 @@ public class RobotContainer {
         private static Vision vision;
         @Getter
         private static Led led;
+        @Getter
+        private static Flywheel flywheel;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -80,6 +85,7 @@ public class RobotContainer {
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1));
+                                flywheel = new Flywheel(new FlywheelIOSparkFlex());
                                 break;
 
                         case SIM:

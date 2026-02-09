@@ -2,39 +2,33 @@ package frc.robot.subsystems.flywheel;
 
 import org.littletonrobotics.junction.AutoLog;
 
-public interface FlyWheelIO {
+public interface FlywheelIO {
 
   @AutoLog
-
   public static class FlywheelIOInputs {
-    public boolean masterConnected;
-    public double velocityRadsPerSec;
-    public double appliedVoltage;
-    public double outputCurrentAmps;
-    public double tempCelsius;  
-    public double leadcurrentRpm;
+    public boolean leadConnected;
+    public double leadVelocityPerSec;
+    public double leadAppliedVoltage;
+    public double leadCurrentAmps;
+    public double leadCurrentRpm;
     public double leadTargetRpm;
-
     public boolean followerConnected;
-    public double followerSupplyCurrentAmps;
-    public double followercurrentRpm;
+    public double followerVelocityPerSec;
+    public double followerAppliedVoltage;
+    public double followerCurrentAmps;
+    public double followerCurrentRpm;
     public double followerTargetRpm;
-    public double followerTempCelsius;
   }
-    default void updateInputs(FlywheelIOInputs inputs) {
-    }
 
-    public default void stopAllMotors() {
-    }
+  default void updateInputs(FlywheelIOInputs inputs) {}
 
-    public default void setVoltage(double volts) {
-    }
-    
-    public default double getLeadVelocity(double leadTargetRpm) {
-          return leadTargetRpm;
-    }
-    public default void setRpm(double targetRpm) {
-    }
+  default void stop() {}
 
-    
+  default void setAppliedVoltage(double volts) {}
+
+  default double getLeadVelocityRpm() {
+    return 0.0;
+  }
+
+  default void setRpm(double targetRpm) {}
 }
