@@ -73,6 +73,8 @@ public class RobotContainer {
         public static Intake intake;
         @Getter
         public static Index index;
+        @Getter 
+        public static Flywheel flywheel;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -138,7 +140,9 @@ public class RobotContainer {
                                 });
 
                                 kicker = new Kicker(new KickerIO() {
+                                });
                                 intake = new Intake(new IntakeIO() {
+                                });
                                 index = new Index(new IndexIO() {
                                 });
                                 flywheel = new Flywheel(new FlywheelIO() {
