@@ -27,6 +27,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
+import frc.robot.subsystems.index.Index;
+import frc.robot.subsystems.index.IndexIO;
+import frc.robot.subsystems.index.IndexIOSpark;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
@@ -54,6 +57,8 @@ public class RobotContainer {
         private static Vision vision;
         @Getter
         private static Led led;
+        @Getter
+        private static Index index;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -76,6 +81,8 @@ public class RobotContainer {
                                                 new ModuleIOSpark(2),
                                                 new ModuleIOSpark(3));
 
+                                index = new Index(new IndexIOSpark());
+
                                 vision = new Vision(
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name,
@@ -93,6 +100,7 @@ public class RobotContainer {
                                                 new VisionIOPhotonVisionSim(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1,
                                                                 drive::getPose));
+                                index = new Index(new IndexIOSpark());
                                 break;
 
                         default:
@@ -105,6 +113,8 @@ public class RobotContainer {
                                                 }, new ModuleIO() {
                                                 });
                                 vision = new Vision(drive::addVisionMeasurement, new VisionIO() {
+                                });
+                                index = new Index(new IndexIO() {
                                 });
                                 break;
                 }
