@@ -50,6 +50,15 @@ public final class Constants {
         public static final double INDEXING_VOLTAGE = 10.0;
     }
 
+     public static class KickerConstants {
+         public static final int rollerMotorID = 4;
+        public static final double zeroWaitSeconds = 2;
+        public static final double zeroVoltage = 0;
+        public static double openerGearRatio = 1.0;
+        public static final double rollerAmpsLimit = 15.0;
+        public static final double defaultRollerVoltage = 10.0;
+    }
+
     public static enum Mode {
         /** Running on a real robot. */
         REAL,

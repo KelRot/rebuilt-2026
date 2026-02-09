@@ -27,6 +27,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
+import frc.robot.subsystems.kicker.Kicker;
+import frc.robot.subsystems.kicker.KickerIO;
+import frc.robot.subsystems.kicker.KickerIOSpark;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
@@ -55,6 +58,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
 
         // Subsystems
+        @Getter
+        private static Kicker kicker;
         @Getter
         private static Drive drive;
         @Getter
@@ -93,6 +98,7 @@ public class RobotContainer {
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1));
 
+                                kicker = new Kicker(new KickerIOSpark());
                                 intake = new Intake(new IntakeIOSpark());
                                 break;
 
@@ -108,6 +114,7 @@ public class RobotContainer {
                                                                 VisionConstants.robotToCamera1,
                                                                 drive::getPose));
 
+                                kicker = new Kicker(new KickerIOSpark());
                                 intake = new Intake(new IntakeIOSim());
                                 index = new Index(new IndexIOSpark());
                                 break;
@@ -123,6 +130,8 @@ public class RobotContainer {
                                                 });
                                 vision = new Vision(drive::addVisionMeasurement, new VisionIO() {
                                 });
+
+                                kicker = new Kicker(new KickerIO() {
                                 intake = new Intake(new IntakeIO() {
                                 index = new Index(new IndexIO() {
                                 });
