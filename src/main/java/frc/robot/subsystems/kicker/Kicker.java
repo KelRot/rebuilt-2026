@@ -13,7 +13,7 @@ public class Kicker extends SubsystemBase {
     KICKER_DISABLED,
   }
 
-  private KickerMode currentMode = KickerMode.KICKER_DISABLED;
+  private KickerMode systemState = KickerMode.KICKER_DISABLED;
 
   private final KickerIO io;
   private final KickerIOInputsAutoLogged inputs = new KickerIOInputsAutoLogged();
@@ -27,7 +27,7 @@ public class Kicker extends SubsystemBase {
   }
 
   public void setState(KickerMode mode) {
-    this.currentMode = mode;
+    this.systemState = mode;
   }
 
   public Command setRollerVoltageCommand(double volts) {
@@ -35,14 +35,14 @@ public class Kicker extends SubsystemBase {
   }
 
   public Command setStateCommand(KickerMode mode) {
-    return this.runOnce(() -> currentMode = mode);
+    return this.runOnce(() -> systemState = mode);
   }
 
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
-    switch (currentMode) {
+    switch (systemState) {
 
       case KICKER_DISABLED:
         setRollerVoltage(0.0);
@@ -52,6 +52,7 @@ public class Kicker extends SubsystemBase {
         setRollerVoltage(Constants.KickerConstants.defaultRollerVoltage);
         break;
     }
+    Logger.recordOutput("Kicker/SystemState", systemState.toString());
     Logger.processInputs("Kicker", inputs);
   }
 
