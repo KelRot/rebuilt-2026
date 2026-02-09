@@ -34,7 +34,13 @@ public final class Constants {
         public static final int openerMotorID = 1;
         public static final double zeroWaitSeconds = 2;
         public static final double zeroVoltage = 0;
-        public static double openerGearRatio = 1.0;
+        public static double openerGearRatio = 3.2;
+        public static double INTAKING_VOLTAGE;
+        public static double OUTTAKING_VOLTAGE;
+        public static double intakeOpenPosition;
+        public static double openVoltage;
+        public static Time openWaitSeconds;
+        public static final int secondOpenerMotorID = 2;
     }
 
     public static enum Mode {
