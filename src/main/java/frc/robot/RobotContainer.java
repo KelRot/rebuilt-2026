@@ -8,6 +8,8 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -79,7 +81,8 @@ public class RobotContainer {
                                 vision = new Vision(
                                                 drive::addVisionMeasurement,
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name,
-                                                                VisionConstants.robotToCamera1));
+                                                                VisionConstants.robotToCamera1), new VisionIOPhotonVision(VisionConstants.camera0Name,
+                                                                VisionConstants.robotToCamera0));
                                 break;
 
                         case SIM:
@@ -127,6 +130,7 @@ public class RobotContainer {
                                 drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
                 autoChooser.addOption("Drive SysId (Dynamic Reverse)",
                                 drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+                autoChooser.addOption("1m", new PathPlannerAuto("undertrench"));
 
                 // Configure the button bindings
                 configureButtonBindings();
@@ -142,7 +146,7 @@ public class RobotContainer {
          */
         private void configureButtonBindings() {
 
-                PIDController aimController = new PIDController(2, 0.0, 0.0);
+                PIDController aimController = new PIDController(0.5, 0.0, 0.0);
                 aimController.enableContinuousInput(-Math.PI, Math.PI);
                 controller
                                 .button(5)
