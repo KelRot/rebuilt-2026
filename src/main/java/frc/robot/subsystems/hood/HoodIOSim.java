@@ -45,7 +45,7 @@ public class HoodIOSim implements HoodIO {
     @Override
     public void setVoltage(double voltage){
         hoodClosedLoop = false;
-        hoodAppliedVolts = voltage; 
+        hoodAppliedVolts = voltage;
     }
 
     @Override
