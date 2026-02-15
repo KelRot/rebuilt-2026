@@ -22,6 +22,9 @@ public interface TurretIO {
     /* Set voltage to turret motor */
     public default void setVoltage(double voltage){}
 
+    /* Set turret velocity */
+    public default void setVelocity(double velocity){}
+
     /* Set turret position */
     public default void setPosition(double setpoint){}
 
@@ -30,9 +33,6 @@ public interface TurretIO {
 
     /* Stop the turret motor */
     public default void stop(){}
-
-    /* Set idle mode */
-    public default void setIdleMode(IdleMode mode){}
 
 
 

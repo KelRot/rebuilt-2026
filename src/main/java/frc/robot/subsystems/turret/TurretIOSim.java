@@ -5,16 +5,16 @@ import edu.wpi.first.wpilibj.simulation.DutyCycleEncoderSim;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import static frc.robot.subsystems.turret.TurretConstants.*;
+
+import frc.robot.Constants.TurretConstants;
 
 public class TurretIOSim implements TurretIO {
     private final DCMotorSim turretMotorSim;
 
-    private PIDController turretController = new PIDController(kP, 0, kD);
+    private PIDController turretController = new PIDController(TurretConstants.kP, 0, TurretConstants.kD);
     private DutyCycleEncoderSim absEncoder1Sim = new DutyCycleEncoderSim(TurretConstants.absEncoder1ID);
     private DutyCycleEncoderSim absEncoder2Sim = new DutyCycleEncoderSim(TurretConstants.absEncoder2ID);
     private boolean turretClosedLoop = false;
-    private double turretFFVolts = 0.0;
     private double turretAppliedVolts = 0.0;
 
     public TurretIOSim(){
@@ -25,7 +25,7 @@ public class TurretIOSim implements TurretIO {
     @Override
     public void updateInputs(TurretIOInputs inputs){
         if(turretClosedLoop){
-            turretAppliedVolts = turretFFVolts + turretController.calculate(turretMotorSim.getAngularPositionRad());
+            turretAppliedVolts = turretController.calculate(turretMotorSim.getAngularPositionRad());
         } else {
             turretController.reset();
         }

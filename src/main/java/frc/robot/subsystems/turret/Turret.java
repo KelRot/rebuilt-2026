@@ -23,7 +23,27 @@ public class Turret extends SubsystemBase {
 
     }
 
-    public void home(){
-        
+    public void homeTurret(){
+
+    }
+
+    public void setVoltage(double volts){
+        io.setVoltage(volts);
+    }
+
+    public void setVelocity(double velocity){
+        io.setVelocity(velocity);
+    }
+
+    public void setPosition(double position){
+        io.setPosition(position);
+    }
+
+    public void stop(){
+        io.stop();
+    }
+
+    public void resetEncoder(){
+        io.setEncoder(0);
     }
 }

@@ -65,6 +65,11 @@ public class TurretIOSpark implements TurretIO {
     }
 
     @Override
+    public void setVelocity(double velocity){
+        turretController.setSetpoint(velocity, ControlType.kVelocity);
+    }
+
+    @Override
     public void setPosition(double setpoint){
         turretController.setSetpoint(setpoint, ControlType.kMAXMotionPositionControl);
     }
