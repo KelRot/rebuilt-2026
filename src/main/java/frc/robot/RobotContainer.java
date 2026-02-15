@@ -7,9 +7,10 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -21,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.subsystems.LedSubsystem;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -30,16 +32,16 @@ import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.flywheel.FlywheelIO;
 import frc.robot.subsystems.flywheel.FlywheelIOSparkFlex;
-import frc.robot.subsystems.kicker.Kicker;
-import frc.robot.subsystems.kicker.KickerIO;
-import frc.robot.subsystems.kicker.KickerIOSpark;
+import frc.robot.subsystems.index.Index;
+import frc.robot.subsystems.index.IndexIO;
+import frc.robot.subsystems.index.IndexIOSpark;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSpark;
-import frc.robot.subsystems.index.Index;
-import frc.robot.subsystems.index.IndexIO;
-import frc.robot.subsystems.index.IndexIOSpark;
+import frc.robot.subsystems.kicker.Kicker;
+import frc.robot.subsystems.kicker.KickerIO;
+import frc.robot.subsystems.kicker.KickerIOSpark;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
@@ -47,8 +49,6 @@ import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.led.Led;
 import lombok.Getter;
-
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -73,6 +73,8 @@ public class RobotContainer {
         public static Intake intake;
         @Getter
         public static Index index;
+        @Getter
+        public static Flywheel flywheel;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -84,6 +86,7 @@ public class RobotContainer {
          */
         public RobotContainer() {
                 led = new Led();
+                LedSubsystem ledsub = new LedSubsystem(led);
                 DriverStation.silenceJoystickConnectionWarning(true);
                 switch (Constants.currentMode) {
                         case REAL:
@@ -137,8 +140,8 @@ public class RobotContainer {
                                 vision = new Vision(drive::addVisionMeasurement, new VisionIO() {
                                 });
 
-                                kicker = new Kicker(new KickerIO() {
-                                intake = new Intake(new IntakeIO() {
+                                kicker = new Kicker(new KickerIO() {});
+                                intake = new Intake(new IntakeIO() {});
                                 index = new Index(new IndexIO() {
                                 });
                                 flywheel = new Flywheel(new FlywheelIO() {
@@ -178,17 +181,7 @@ public class RobotContainer {
          * {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
          */
         private void configureButtonBindings() {
-              
-                PIDController aimController = new PIDController(1, 0.0, 0.0);
 
-                PIDController aimController = new PIDController(2, 0.0, 0.0);
-                aimController.enableContinuousInput(-Math.PI, Math.PI);
-                controller
-                                .button(5)
-                                .whileTrue(DriveCommands.joystickDriveAtAngle(
-                                                drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(),
-                                                () -> new Rotation2d(aimController.calculate(vision
-                                                                .getTargetX(0).getRadians()))));
                 led.setStaticColor(Color.kBlue);
                 // Old bindings commented out for reference
                 drive.setDefaultCommand(DriveCommands.joystickDrive(

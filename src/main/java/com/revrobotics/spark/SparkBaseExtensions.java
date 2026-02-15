@@ -2,6 +2,7 @@ package com.revrobotics.spark;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.jni.CANSparkJNI;
+import com.revrobotics.spark.config.SparkParameters;
 
 public class SparkBaseExtensions {
 
@@ -56,7 +57,11 @@ public class SparkBaseExtensions {
         return REVLibError.fromInt(
                 CANSparkJNI.c_Spark_SetParameterUint32(
                         sparkBase.sparkHandle,
-                        6,
+                        SparkParameters.kIdleMode.value,
                         brake ? 1 : 0));
+    }
+
+    public static long getSparkHandle(SparkBase sparkBase) {
+        return sparkBase.sparkHandle;
     }
 }
