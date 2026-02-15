@@ -73,7 +73,7 @@ public class RobotContainer {
         public static Intake intake;
         @Getter
         public static Index index;
-        @Getter
+        @Getter 
         public static Flywheel flywheel;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
