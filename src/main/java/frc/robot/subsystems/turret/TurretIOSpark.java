@@ -6,6 +6,8 @@ import static frc.robot.util.SparkUtil.tryUntilOk;
 
 import java.util.function.DoubleSupplier;
 
+import frc.robot.Constants.TurretConstants;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
@@ -29,8 +31,6 @@ public class TurretIOSpark implements TurretIO {
     private final DutyCycleEncoder absEncoder1;
     private final DutyCycleEncoder absEncoder2;
 
-    private IdleMode idleMode;
-
     private final SparkClosedLoopController turretController;
 
     private final Debouncer turretDebouncer = new Debouncer(0.5);
@@ -40,8 +40,6 @@ public class TurretIOSpark implements TurretIO {
         turretEncoder = turretMotor.getEncoder();
         absEncoder1 = new DutyCycleEncoder(TurretConstants.absEncoder1ID);
         absEncoder2 = new DutyCycleEncoder(TurretConstants.absEncoder2ID);
-
-        idleMode = IdleMode.kBrake;
 
         turretController = turretMotor.getClosedLoopController();
 
@@ -81,19 +79,13 @@ public class TurretIOSpark implements TurretIO {
         turretMotor.setVoltage(0.0);
     }
 
-    @Override
-    public void setIdleMode(IdleMode mode){
-        idleMode = mode;
-        configure();
-    }
-
     private void configure(){
         ClosedLoopConfig closedLoopConfig = new ClosedLoopConfig();
-        closedLoopConfig.pid(TurretConstants.kP, 0, TurretConstants.kD).velocityFF(TurretConstants.ff);
+        closedLoopConfig.pid(TurretConstants.kP, 0, TurretConstants.kD);
 
         SparkMaxConfig turretConfig = new SparkMaxConfig();
         turretConfig
-            .idleMode(idleMode)
+            .idleMode(IdleMode.kBrake)
             .voltageCompensation(12)
             .smartCurrentLimit(20)
             .apply(closedLoopConfig);

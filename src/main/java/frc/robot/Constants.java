@@ -33,7 +33,6 @@ public final class Constants {
     public static class TurretConstants {
         public static final double kP = 0.0;
         public static final double kD = 0.0;
-        public static final double ff = 0.0;
     
         public static final int turretID = 0;
         public static final int absEncoder1ID = 0;
@@ -59,6 +58,8 @@ public final class Constants {
         public static final int absEncoder1Teeth = 0;
         public static final int absEncoder2Teeth = 0;
     }
+
+    
 
     public static enum Mode {
         /** Running on a real robot. */
