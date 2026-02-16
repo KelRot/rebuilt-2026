@@ -110,13 +110,12 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
 
     @Override
     public void setRpm(double targetRpm) {
-
-        double targetRadsPerSec = targetRpm * (2.0 * Math.PI / 60.0);
-
-        double currentRadsPerSec = leadEncoder.getVelocity() * (2.0 * Math.PI / 60.0);
-
-        double outputVolts = pid.calculate(currentRadsPerSec, targetRadsPerSec);
-
+        double currentRPM = leadEncoder.getVelocity();
+        double outputVolts = pid.calculate(currentRPM, targetRpm);
         setAppliedVoltage(outputVolts);
+    }
+
+    public boolean isAtSetpoint() {
+        return pid.atSetpoint();
     }
 }

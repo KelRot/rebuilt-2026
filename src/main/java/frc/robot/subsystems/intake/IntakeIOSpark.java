@@ -89,6 +89,7 @@ public class IntakeIOSpark implements IntakeIO {
     inputs.rollerMotorCurrentAmps = rollerMotor.getOutputCurrent();
     inputs.rollerMotorVoltageVolts = rollerMotor.getBusVoltage();
     inputs.rollerMotorSpeedRpm = rollerMotor.getEncoder().getVelocity();
+    inputs.openerMotorVelocityRPS = openerMotor.getEncoder().getVelocity() / 60;
     inputs.openerMotorCurrentAmps = openerMotor.getOutputCurrent();
     inputs.openerMotorVoltageVolts = openerMotor.getBusVoltage();
     inputs.IntakePosition = openerMotor.getEncoder().getPosition();

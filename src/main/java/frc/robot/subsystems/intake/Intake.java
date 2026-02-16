@@ -2,172 +2,139 @@ package frc.robot.subsystems.intake;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Intake extends SubsystemBase {
 
-  private final IntakeIO io;
-  private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
-  private final IntakeVisualizer measuredVisualizer = new IntakeVisualizer("Measured", Color.kGreen);
-
-  public IntakeSystemState systemState = IntakeSystemState.OFF;
-
-  public enum IntakeSystemState {
+  public enum SystemState {
+    IDLE,
     INTAKING,
     OUTTAKING,
+    OPENING,
+    CLOSING,
     POSITION_CONTROL,
     ZEROING,
-    MANUAL_CONTROL,
-    OFF
+    MANUAL
   }
+
+  
+
+  private SystemState systemState = SystemState.IDLE;
+
+  private final IntakeIO io;
+  private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
+  private final IntakeVisualizer visualizer = new IntakeVisualizer("Measured", Color.kGreen);
+
+  private double zeroStillTime = 0.0;
 
   public Intake(IntakeIO io) {
     this.io = io;
   }
 
-  /* ---------------- Low-level setters ---------------- */
-
-  public void setRollerVoltage(double volts) {
-    io.setRollerVoltage(volts);
+  public void requestState(SystemState wantedState) {
+    if (DriverStation.isDisabled() && wantedState != SystemState.ZEROING) {
+      return;
+    }
+    systemState = wantedState;
   }
 
-  public void setOpenerSetPoint(double setPoint) {
-    io.setOpenerSetPoint(setPoint);
+  public void moveToPosition(double position) {
+    io.setOpenerSetPoint(position);
+    systemState = SystemState.POSITION_CONTROL;
   }
 
-  public void setOpenerVoltage(double volts) {
+  public void manualOpener(double volts) {
     io.setOpenerVoltage(volts);
+    systemState = SystemState.MANUAL;
   }
 
-  public void zeroEncoder() {
-    io.zeroEncoder();
+  private void handleIntaking(double rollerVoltage) {
+    if (!inputs.isIntakeOpen) {
+      io.setRollerVoltage(0.0);
+      io.setOpenerSetPoint(Constants.IntakeConstants.intakeOpenPosition);
+    } else {
+      io.setRollerVoltage(rollerVoltage);
+    }
   }
-
-  /* ---------------- Commands ---------------- */
-
-  public Command setRollerVoltageCommand(double volts) {
-    return this.startEnd(
-        () -> setRollerVoltage(volts),
-        () -> setRollerVoltage(0.0));
-  }
-
-  public Command intakeCommand() {
-    return this.startEnd(
-        () -> systemState = IntakeSystemState.INTAKING,
-        () -> systemState = IntakeSystemState.OFF);
-  }
-
-  public Command outtakeCommand() {
-    return this.startEnd(
-        () -> systemState = IntakeSystemState.OUTTAKING,
-        () -> systemState = IntakeSystemState.OFF);
-  }
-
-  public Command setOpenerSetPointCommand(double setPoint) {
-    return this.runOnce(() -> {
-      systemState = IntakeSystemState.POSITION_CONTROL;
-      setOpenerSetPoint(setPoint);
-    })
-        .until(io::isOpenerAtSetpoint)
-        .finallyDo(() -> {
-          setOpenerVoltage(0.0);
-          systemState = IntakeSystemState.OFF;
-        });
-  }
-
-  public Command setOpenerVoltageCommand(double volts) {
-    return this.startEnd(
-        () -> {
-          systemState = IntakeSystemState.MANUAL_CONTROL;
-          setOpenerVoltage(volts);
-        },
-        () -> {
-          setOpenerVoltage(0.0);
-          systemState = IntakeSystemState.OFF;
-        });
-  }
-
-  public Command zeroIntakeCommand() {
-    return this.run(() -> {
-      systemState = IntakeSystemState.ZEROING;
-      setOpenerVoltage(Constants.IntakeConstants.zeroVoltage);
-    })
-        .withTimeout(Constants.IntakeConstants.zeroWaitSeconds)
-        .finallyDo(() -> {
-          setOpenerVoltage(0.0);
-          zeroEncoder();
-          systemState = IntakeSystemState.OFF;
-          setRollerVoltage(0.0);
-        });
-  }
-
-  public Command openIntakeCommandWithPosition() {
-    return this.runOnce(() -> setOpenerSetPoint(Constants.IntakeConstants.intakeOpenPosition))
-        .until(io::isOpenerAtSetpoint)
-        .finallyDo(() -> setOpenerVoltage(0.0));
-  }
-
-  public Command openIntakeCommandWithVoltage() {
-    return this.run(() -> {
-      setOpenerVoltage(Constants.IntakeConstants.openVoltage);
-    })
-        .withTimeout(Constants.IntakeConstants.openWaitSeconds)
-        .finallyDo(() -> {
-          setOpenerVoltage(0.0);
-          zeroEncoder();
-        });
-  }
-
-  /* ---------------- Periodic ---------------- */
 
   @Override
   public void periodic() {
-    // ALWAYS FIRST
     io.updateInputs(inputs);
 
-    measuredVisualizer.setAngleDeg(inputs.IntakePosition);
-    measuredVisualizer.update();
+    visualizer.setAngleDeg(inputs.IntakePosition);
+    visualizer.update();
+
+    if (DriverStation.isDisabled()) {
+      systemState = SystemState.IDLE;
+    }
 
     switch (systemState) {
+
       case INTAKING:
-        if (inputs.isIntakeOpen) {
-          setRollerVoltage(Constants.IntakeConstants.INTAKING_VOLTAGE);
-        } else {
-          openIntakeCommandWithPosition().schedule();
-        }
+        handleIntaking(Constants.IntakeConstants.INTAKING_VOLTAGE);
         break;
 
       case OUTTAKING:
-        if (inputs.isIntakeOpen) {
-          setRollerVoltage(Constants.IntakeConstants.OUTTAKING_VOLTAGE);
-        } else {
-          openIntakeCommandWithPosition().schedule();
+        handleIntaking(Constants.IntakeConstants.OUTTAKING_VOLTAGE);
+        break;
+
+      case OPENING:
+        io.setRollerVoltage(0.0);
+        io.setOpenerSetPoint(Constants.IntakeConstants.intakeOpenPosition);
+        if (io.isOpenerAtSetpoint()) {
+          systemState = SystemState.IDLE;
+        }
+        break;
+
+      case CLOSING:
+        io.setRollerVoltage(0.0);
+        io.setOpenerSetPoint(Constants.IntakeConstants.intakeClosedPosition);
+        if (io.isOpenerAtSetpoint()) {
+          systemState = SystemState.IDLE;
         }
         break;
 
       case POSITION_CONTROL:
-        // Motor PID assumed to be inside IO
+        io.setRollerVoltage(0.0);
+        if (io.isOpenerAtSetpoint()) {
+          io.setOpenerVoltage(0.0);
+          systemState = SystemState.IDLE;
+        }
         break;
 
       case ZEROING:
-      case MANUAL_CONTROL:
-        // Voltage is driven by active command
+        io.setRollerVoltage(0.0);
+        io.setOpenerVoltage(Constants.IntakeConstants.zeroVoltage);
+
+        if (Math.abs(inputs.openerMotorVelocityRPS) < Constants.IntakeConstants.ZERO_VELOCITY_EPS) {
+          zeroStillTime += 0.02;
+        } else {
+          zeroStillTime = 0.0;
+        }
+
+        if (zeroStillTime >= Constants.IntakeConstants.ZERO_CONFIRM_TIME) {
+          io.setOpenerVoltage(0.0);
+          io.zeroEncoder();
+          zeroStillTime = 0.0;
+          systemState = SystemState.IDLE;
+        }
         break;
 
-      case OFF:
+      case MANUAL:
+        io.setRollerVoltage(0.0);
+        break;
+
+      case IDLE:
       default:
-        setRollerVoltage(0.0);
+        io.setRollerVoltage(0.0);
+        io.setOpenerVoltage(0.0);
         break;
     }
 
     Logger.recordOutput("Intake/SystemState", systemState.toString());
     Logger.processInputs("Intake", inputs);
-  }
-
-  @Override
-  public void simulationPeriodic() {
   }
 }

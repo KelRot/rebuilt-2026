@@ -1,4 +1,3 @@
-
 package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -12,46 +11,39 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 public class IntakeIOSim implements IntakeIO {
 
-    /* ---------------- Constants ---------------- */
-
     private static final double LOOP_PERIOD = 0.02;
     private static final double MAX_VOLTAGE = 12.0;
 
-
-    /* ---------------- Simulation ---------------- */
-
-    private final DCMotor openerMotor = DCMotor.getNEO(1);
     private static final double MIN_ANGLE_RAD = Degrees.of(0).in(Radians);
     private static final double MAX_ANGLE_RAD = Degrees.of(110).in(Radians);
-    private static final double ARM_LENGTH_METERS = 0.48; // ~19 in
+
+    private static final double ARM_LENGTH_METERS = 0.48;
     private static final double GEAR_RATIO = 10.0;
 
-    // Sim
+    private static final double ZERO_VELOCITY_RAD_PER_SEC = 0.05;
+    private static final double ZERO_ANGLE_EPSILON_RAD = Degrees.of(2).in(Radians);
+    private static final double ZERO_TIME_REQUIRED = 0.25; // seconds
+
+    private final DCMotor openerMotor = DCMotor.getNEO(1);
     private final SingleJointedArmSim openerSim = new SingleJointedArmSim(
-            LinearSystemId.createSingleJointedArmSystem(
-                    openerMotor,
-                    0.12, // moment of inertia (kg·m²)
-                    ARM_LENGTH_METERS),
             openerMotor,
             GEAR_RATIO,
+            0.12,
             ARM_LENGTH_METERS,
             MIN_ANGLE_RAD,
             MAX_ANGLE_RAD,
-            true, // gravity ON (intake düşer)
-            MIN_ANGLE_RAD // start closed
-    );
+            true,
+            MIN_ANGLE_RAD);
 
     private final DCMotor rollerMotor = DCMotor.getNEO(1);
-    private final DCMotorSim rollerSim = new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(rollerMotor, 0.0005, 3),
+    private final DCMotorSim rollerSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(rollerMotor, 0.0005, 1),
             rollerMotor);
 
+    private double zeroTimerSeconds = 0.0;
+    private boolean isZeroed = false;
 
     @Override
-    public void setOpenerSetPoint(double anglesDegrees) {
-        double anglesRadians = Degrees.of(anglesDegrees).in(Radians);
-        double openerSetpointRads = MathUtil.clamp(anglesRadians, MIN_ANGLE_RAD, MAX_ANGLE_RAD);
-        openerSim.setState(openerSetpointRads, 0.0);
+    public void setOpenerSetPoint(double degrees) {
     }
 
     @Override
@@ -75,26 +67,46 @@ public class IntakeIOSim implements IntakeIO {
     @Override
     public void zeroEncoder() {
         openerSim.setState(0.0, 0.0);
+        isZeroed = true;
+        zeroTimerSeconds = 0.0;
     }
 
     @Override
     public void updateInputs(IntakeIOInputs inputs) {
 
-        /* ---- Step simulation ---- */
         openerSim.update(LOOP_PERIOD);
         rollerSim.update(LOOP_PERIOD);
 
-        /* ---- Inputs ---- */
+        double angle = openerSim.getAngleRads();
+        double velocity = Math.abs(openerSim.getVelocityRadPerSec());
+
+        boolean nearZeroAngle = Math.abs(angle - MIN_ANGLE_RAD) < ZERO_ANGLE_EPSILON_RAD;
+
+        boolean stopped = velocity < ZERO_VELOCITY_RAD_PER_SEC;
+
+        if (nearZeroAngle && stopped) {
+            zeroTimerSeconds += LOOP_PERIOD;
+            if (zeroTimerSeconds >= ZERO_TIME_REQUIRED) {
+                isZeroed = true;
+            }
+        } else {
+            zeroTimerSeconds = 0.0;
+            isZeroed = false;
+        }
+
         inputs.openerConnected = true;
         inputs.rollerConnected = true;
 
-        inputs.IntakePosition = Radians.of(openerSim.getAngleRads()).in(Degrees);
+        inputs.IntakePosition = Radians.of(angle).in(Degrees);
+
+        inputs.isIntakeOpen = angle > Degrees.of(80).in(Radians);
+
+        inputs.isZeroed = isZeroed;
+
         inputs.openerMotorCurrentAmps = openerSim.getCurrentDrawAmps();
 
         inputs.rollerMotorSpeedRpm = rollerSim.getAngularVelocityRPM();
         inputs.rollerMotorCurrentAmps = rollerSim.getCurrentDrawAmps();
         inputs.rollerMotorVoltageVolts = rollerSim.getInputVoltage();
-
     }
-
 }

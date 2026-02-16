@@ -43,7 +43,10 @@ public final class Constants {
         public static double intakeOpenPosition;
         public static double openVoltage;
         public static Time openWaitSeconds;
+        public static double intakeClosedPosition;
         public static final int secondOpenerMotorID = 2;
+        public static final double ZERO_CONFIRM_TIME = 0;
+        public static final int ZERO_VELOCITY_EPS = 0;
     }
 
     public static class IndexConstants {

@@ -1,89 +1,64 @@
 package frc.robot.subsystems.flywheel;
 
-import java.util.TreeMap;
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Flywheel extends SubsystemBase {
 
     /* ---------------- State ---------------- */
 
-    public enum FlywheelState {
+    public enum SystemState {
         IDLE,
-        SHOOTING
+        PASSIVE,
+        TARGET_RPM
     }
 
-    private FlywheelState state = FlywheelState.IDLE;
-    private double targetDistanceMeters = 0.0;
+    private SystemState systemState = SystemState.IDLE;
 
-    /* ---------------- IO ---------------- */
+    private double targetRpm = 0.0;
 
     private final FlywheelIO io;
-    private final FlywheelIO.FlywheelIOInputs inputs = new FlywheelIO.FlywheelIOInputs();
+    private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
 
     public Flywheel(FlywheelIO io) {
         this.io = io;
     }
 
-    /* ---------------- State setters ---------------- */
-
-    public void setState(FlywheelState state) {
-        this.state = state;
+    public void requestState(SystemState wantedState) {
+        systemState = wantedState;
     }
 
-    public void setTargetDistanceMeters(double distanceMeters) {
-        this.targetDistanceMeters = distanceMeters;
+    public void setTargetRpm(double rpm) {
+        targetRpm = rpm;
+        systemState = SystemState.TARGET_RPM;
     }
 
-    /* ---------------- Distance → RPM mapping ---------------- */
-
-    private static final TreeMap<Double, Double> kDistanceToRpmMap = new TreeMap<>();
-
-    static {
-        kDistanceToRpmMap.put(1.5, 2800.0);
-        kDistanceToRpmMap.put(2.0, 3100.0);
-        kDistanceToRpmMap.put(2.5, 3500.0);
-        kDistanceToRpmMap.put(3.0, 3900.0);
-        kDistanceToRpmMap.put(3.5, 4300.0);
+    public void stop() {
+        systemState = SystemState.IDLE;
     }
-
-    public static double calculateRpmForDistance(double distanceMeters) {
-        var low = kDistanceToRpmMap.floorEntry(distanceMeters);
-        var high = kDistanceToRpmMap.ceilingEntry(distanceMeters);
-
-        if (low == null) {
-            return kDistanceToRpmMap.firstEntry().getValue();
-        }
-
-        if (high == null) {
-            return low.getValue();
-        }
-
-        if (low.getKey().equals(high.getKey())) {
-            return low.getValue();
-        }
-
-        double t = (distanceMeters - low.getKey())
-                / (high.getKey() - low.getKey());
-
-        return low.getValue() + t * (high.getValue() - low.getValue());
-    }
-
-    /* ---------------- Periodic ---------------- */
 
     @Override
     public void periodic() {
         io.updateInputs(inputs);
 
-        switch (state) {
-            case SHOOTING -> {
-                double targetRpm = calculateRpmForDistance(targetDistanceMeters);
-                io.setRpm(targetRpm);
-            }
+        switch (systemState) {
 
-            case IDLE -> {
-                // Idle RPM to prevent stalling
-                io.setRpm(500.0);
-            }
+            case TARGET_RPM:
+                io.setRpm(targetRpm);
+                break;
+
+            case PASSIVE:
+                io.setRpm(500.0); // standby spin
+                break;
+
+            case IDLE:
+            default:
+                io.setRpm(0.0);
+                break;
         }
+        inputs.isAtSetpoint = io.isAtSetpoint();
+        Logger.recordOutput("Flywheel/SystemState", systemState.toString());
+        Logger.processInputs("Flywheel", inputs);
     }
 }
