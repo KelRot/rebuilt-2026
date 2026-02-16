@@ -12,38 +12,38 @@ import com.revrobotics.spark.SparkMax;
 import frc.robot.Constants;
 
 public class KickerIOSpark implements KickerIO {
-    private static SparkMax rollerMotor = new SparkMax(Constants.KickerConstants.rollerMotorID, MotorType.kBrushless);
+    private static SparkMax kickerMotor = new SparkMax(Constants.KickerConstants.kickerMotorID, MotorType.kBrushless);
 
   public KickerIOSpark() {
 
   }
 
   @Override
-  public void setRollerVoltage(double volts) {
-    rollerMotor.setVoltage(volts);
+  public void setKickerVoltage(double volts) {
+    kickerMotor.setVoltage(volts);
   }
 
   public void stopAllMotors() {
-    rollerMotor.setVoltage(0.0);
+    kickerMotor.setVoltage(0.0);
   }
 
   public void config() {
-    SparkMaxConfig rollerConfig = new SparkMaxConfig();
+    SparkMaxConfig kickerConfig = new SparkMaxConfig();
 
-    rollerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(40);
+    kickerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(40);
 
     tryUntilOk(
-        rollerMotor,
+        kickerMotor,
         5,
-        () -> rollerMotor.configure(rollerConfig, ResetMode.kResetSafeParameters,
+        () -> kickerMotor.configure(kickerConfig, ResetMode.kResetSafeParameters,
             PersistMode.kPersistParameters));
   }
 
   public void updateInputs(KickerIOInputs inputs) {
-    inputs.rollerConnected = rollerMotor.getLastError() == REVLibError.kOk;
-    inputs.rollerMotorCurrentAmps = rollerMotor.getOutputCurrent();
-    inputs.rollerMotorVoltageVolts = rollerMotor.getBusVoltage();
-    inputs.rollerMotorSpeedRpm = rollerMotor.getEncoder().getVelocity();
+    inputs.kickerConnected = kickerMotor.getLastError() == REVLibError.kOk;
+    inputs.kickerMotorCurrentAmps = kickerMotor.getOutputCurrent();
+    inputs.kickerMotorVoltageVolts = kickerMotor.getBusVoltage();
+    inputs.kickerMotorSpeedRpm = kickerMotor.getEncoder().getVelocity();
   }
 
 }

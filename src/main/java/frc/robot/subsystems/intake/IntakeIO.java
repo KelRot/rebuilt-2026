@@ -12,10 +12,12 @@ public interface IntakeIO {
         public double rollerMotorCurrentAmps = 0.0;
         public double rollerMotorVoltageVolts = 0.0;
         public double rollerMotorSpeedRpm = 0.0;
+        public double openerMotorVelocityRPS = 0.0;
         public double openerMotorVoltageVolts = 0.0;
         public double openerMotorCurrentAmps = 0.0;
         public double IntakePosition = 0.0;
         public boolean isIntakeOpen = false;
+        public boolean isZeroed = false;
     }
 
     public default void updateInputs(IntakeIOInputs inputs) {

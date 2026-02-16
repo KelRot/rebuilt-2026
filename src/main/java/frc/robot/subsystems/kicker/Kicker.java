@@ -2,61 +2,61 @@ package frc.robot.subsystems.kicker;
 
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Kicker extends SubsystemBase {
 
-  public enum KickerMode {
-    KICKER_ENABLED,
-    KICKER_DISABLED,
+  public enum SystemState {
+    IDLE,
+    ENABLED,
+    MANUAL
   }
 
-  private KickerMode systemState = KickerMode.KICKER_DISABLED;
+  private SystemState systemState = SystemState.IDLE;
+  private double manualVoltage = 0.0;
 
   private final KickerIO io;
-  private final KickerIOInputsAutoLogged inputs = new KickerIOInputsAutoLogged();
+  private final KickerIOInputsAutoLogged inputs =
+      new KickerIOInputsAutoLogged();
 
   public Kicker(KickerIO io) {
     this.io = io;
   }
 
-  public void setRollerVoltage(double volts) {
-    io.setRollerVoltage(volts);
+  public void requestState(SystemState wantedState) {
+    systemState = wantedState;
   }
 
-  public void setState(KickerMode mode) {
-    this.systemState = mode;
+  public void setManualVoltage(double volts) {
+    manualVoltage = volts;
+    systemState = SystemState.MANUAL;
   }
 
-  public Command setRollerVoltageCommand(double volts) {
-    return this.runEnd(() -> setRollerVoltage(volts), () -> setRollerVoltage(0.0));
+  public void stop() {
+    systemState = SystemState.IDLE;
   }
-
-  public Command setStateCommand(KickerMode mode) {
-    return this.runOnce(() -> systemState = mode);
-  }
-
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
-    switch (systemState) {
 
-      case KICKER_DISABLED:
-        setRollerVoltage(0.0);
+    switch (systemState) {
+      case ENABLED:
+        io.setKickerVoltage(Constants.KickerConstants.defaultKickerVoltage);
         break;
 
-      case KICKER_ENABLED:
-        setRollerVoltage(Constants.KickerConstants.defaultRollerVoltage);
+      case MANUAL:
+        io.setKickerVoltage(manualVoltage);
+        break;
+
+      case IDLE:
+      default:
+        io.setKickerVoltage(0.0);
         break;
     }
+
     Logger.recordOutput("Kicker/SystemState", systemState.toString());
     Logger.processInputs("Kicker", inputs);
-  }
-
-  @Override
-  public void simulationPeriodic() {
   }
 }

@@ -18,6 +18,7 @@ public interface FlywheelIO {
     public double followerCurrentAmps;
     public double followerCurrentRpm;
     public double followerTargetRpm;
+    public boolean isAtSetpoint;
   }
 
   default void updateInputs(FlywheelIOInputs inputs) {}
@@ -31,4 +32,8 @@ public interface FlywheelIO {
   }
 
   default void setRpm(double targetRpm) {}
+
+  default boolean isAtSetpoint() {  
+    return false;
+  }
 }

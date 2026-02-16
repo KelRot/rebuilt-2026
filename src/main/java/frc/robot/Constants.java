@@ -14,8 +14,10 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
- * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running on a roboRIO. Change
- * the value of "simMode" to switch between "sim" (physics sim) and "replay" (log replay from a file).
+ * This class defines the runtime mode used by AdvantageKit. The mode is always
+ * "real" when running on a roboRIO. Change
+ * the value of "simMode" to switch between "sim" (physics sim) and "replay"
+ * (log replay from a file).
  */
 public final class Constants {
     public static final Mode simMode = Mode.SIM;
@@ -29,6 +31,7 @@ public final class Constants {
         public static final int kLedLength = 24;
         public static final Distance kLedSpacing = Meters.of(0.05);
     }
+
     public static class IntakeConstants {
         public static final int rollerMotorID = 0;
         public static final int openerMotorID = 1;
@@ -40,7 +43,10 @@ public final class Constants {
         public static double intakeOpenPosition;
         public static double openVoltage;
         public static Time openWaitSeconds;
+        public static double intakeClosedPosition;
         public static final int secondOpenerMotorID = 2;
+        public static final double ZERO_CONFIRM_TIME = 0;
+        public static final int ZERO_VELOCITY_EPS = 0;
     }
 
     public static class IndexConstants {
@@ -50,21 +56,18 @@ public final class Constants {
         public static final double INDEXING_VOLTAGE = 10.0;
     }
 
-     public static class KickerConstants {
-         public static final int rollerMotorID = 4;
-        public static final double zeroWaitSeconds = 2;
-        public static final double zeroVoltage = 0;
-        public static double openerGearRatio = 1.0;
-        public static final double rollerAmpsLimit = 15.0;
-        public static final double defaultRollerVoltage = 10.0;
+    public static class KickerConstants {
+
+        public static final int kickerMotorID = 4;
+        public static final double defaultKickerVoltage = 10.0;
     }
 
     public static class FlywheelConstants {
-        public static final int kMasterMotorId = 0;
-        public static final int kFollowerMotorId = 0;
-        public static final double kp =0;
-        public static final double ki =0;
-        public static final double kd =0;
+        public static final int kMasterMotorId = 5;
+        public static final int kFollowerMotorId = 6;
+        public static final double kp = 0;
+        public static final double ki = 0;
+        public static final double kd = 0;
     }
 
     public static enum Mode {
