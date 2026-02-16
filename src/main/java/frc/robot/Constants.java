@@ -57,12 +57,8 @@ public final class Constants {
     }
 
     public static class KickerConstants {
-        public static final int rollerMotorID = 4;
-        public static final double zeroWaitSeconds = 2;
-        public static final double zeroVoltage = 0;
-        public static double openerGearRatio = 1.0;
-        public static final double rollerAmpsLimit = 15.0;
-        public static final double defaultRollerVoltage = 10.0;
+        public static final int kickerMotorID = 4;
+        public static final double defaultKickerVoltage = 0;
     }
 
     public static class FlywheelConstants {
