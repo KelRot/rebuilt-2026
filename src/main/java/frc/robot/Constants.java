@@ -14,8 +14,10 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
- * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running on a roboRIO. Change
- * the value of "simMode" to switch between "sim" (physics sim) and "replay" (log replay from a file).
+ * This class defines the runtime mode used by AdvantageKit. The mode is always
+ * "real" when running on a roboRIO. Change
+ * the value of "simMode" to switch between "sim" (physics sim) and "replay"
+ * (log replay from a file).
  */
 public final class Constants {
     public static final Mode simMode = Mode.SIM;
@@ -29,6 +31,7 @@ public final class Constants {
         public static final int kLedLength = 24;
         public static final Distance kLedSpacing = Meters.of(0.05);
     }
+
     public static class IntakeConstants {
         public static final int rollerMotorID = 0;
         public static final int openerMotorID = 1;
@@ -50,8 +53,8 @@ public final class Constants {
         public static final double INDEXING_VOLTAGE = 10.0;
     }
 
-     public static class KickerConstants {
-         public static final int rollerMotorID = 4;
+    public static class KickerConstants {
+        public static final int rollerMotorID = 4;
         public static final double zeroWaitSeconds = 2;
         public static final double zeroVoltage = 0;
         public static double openerGearRatio = 1.0;
@@ -62,9 +65,27 @@ public final class Constants {
     public static class FlywheelConstants {
         public static final int kMasterMotorId = 0;
         public static final int kFollowerMotorId = 0;
-        public static final double kp =0;
-        public static final double ki =0;
-        public static final double kd =0;
+        public static final double kp = 0;
+        public static final double ki = 0;
+        public static final double kd = 0;
+    }
+
+    public static final class HoodConstants {
+
+        public static final int hoodID = 0;
+
+        public static final double kP = 0.0;
+        public static final double kD = 0.0;
+
+        public static final double positionConversionFactorDeg = 1.0;
+
+        public static final double cruiseVelocityDegPerSec = 0.0;
+
+        public static final double maxAccelerationDegPerSec2 = 0.0;
+
+        public static final double minAngleDeg = 0.0;
+        public static final double maxAngleDeg = 0.0;
+
     }
 
     public static enum Mode {

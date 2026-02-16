@@ -4,8 +4,6 @@ import static frc.robot.util.SparkUtil.ifOk;
 import static frc.robot.util.SparkUtil.sparkStickyFault;
 import static frc.robot.util.SparkUtil.tryUntilOk;
 
-import java.util.function.DoubleSupplier;
-
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
@@ -13,107 +11,77 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkBase.ControlType;
 
 import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import frc.robot.Constants;
 
 public class HoodIOSpark implements HoodIO {
-    //Hardware components
-    private final SparkMax hoodMotor;
-    private final RelativeEncoder hoodEncoder;
-    private final DutyCycleEncoder absEncoder1;
-    private final DutyCycleEncoder absEncoder2;
 
-    private IdleMode idleMode;
+  private final SparkMax motor;
+  private final RelativeEncoder encoder;
+  private final SparkClosedLoopController controller;
 
-    private final SparkClosedLoopController hoodController;
+  private final Debouncer connectedDebouncer = new Debouncer(0.5);
 
-    private final Debouncer hoodDebouncer = new Debouncer(0.5);
+  public HoodIOSpark() {
+    motor = new SparkMax(Constants.HoodConstants.hoodID, MotorType.kBrushless);
+    encoder = motor.getEncoder();
+    controller = motor.getClosedLoopController();
+    configure();
+  }
 
-    public HoodIOSpark(){
-        hoodMotor = new SparkMax(HoodConstants.hoodID, MotorType.kBrushless);
-        hoodEncoder = hoodMotor.getEncoder();
-        absEncoder1 = new DutyCycleEncoder(HoodConstants.absEncoder1ID);
-        absEncoder2 = new DutyCycleEncoder(HoodConstants.absEncoder2ID);
+  @Override
+  public void updateInputs(HoodIOInputs inputs) {
+    sparkStickyFault = false;
+    ifOk(motor, encoder::getPosition, value -> inputs.positionDeg = value);
+    inputs.connected = connectedDebouncer.calculate(!sparkStickyFault);
+  }
 
-        idleMode = IdleMode.kBrake;
+  @Override
+  public void setPosition(double positionDeg) {
+    controller.setSetpoint(positionDeg, ControlType.kMAXMotionPositionControl);
+  }
 
-        hoodController = hoodMotor.getClosedLoopController();
+  @Override
+  public void stop() {
+    motor.disable();
+  }
 
-        configure();
-    }
+  private void configure() {
+    ClosedLoopConfig closedLoop = new ClosedLoopConfig();
+    closedLoop.pid(Constants.HoodConstants.kP, 0.0, Constants.HoodConstants.kD);
 
-    @Override
-    public void updateInputs(HoodIOInputs inputs){
-        sparkStickyFault = false;
-        ifOk(hoodMotor, hoodEncoder::getPosition, (value)-> inputs.positionRads = value);
-        ifOk(hoodMotor, hoodEncoder::getVelocity, (value)-> inputs.velocityRadsPerSec = value);
-        ifOk(hoodMotor, new DoubleSupplier[] {hoodMotor::getAppliedOutput, hoodMotor::getBusVoltage}, 
-            (values)-> inputs.appliedVolts = values[0] * values[1]);
-        ifOk(hoodMotor, hoodMotor::getOutputCurrent, (value)-> inputs.supplyCurrentAmps = value);
-        inputs.motorConnected = hoodDebouncer.calculate(!sparkStickyFault);
-        inputs.absPositionTours1 = absEncoder1.get();
-        inputs.absPositionTours2 = absEncoder2.get();
-    }
+    SparkMaxConfig config = new SparkMaxConfig();
+    config
+        .voltageCompensation(12.0)
+        .smartCurrentLimit(20)
+        .apply(closedLoop);
 
-    @Override
-    public void setVoltage(double voltage){
-        hoodMotor.setVoltage(voltage);
-    }
+    config.encoder
+        .positionConversionFactor(Constants.HoodConstants.positionConversionFactorDeg);
 
-    @Override
-    public void setPosition(double setpoint){
-        hoodController.setSetpoint(setpoint, ControlType.kMAXMotionPositionControl);
-    }
+    config.closedLoop.maxMotion
+        .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal)
+        .cruiseVelocity(Constants.HoodConstants.cruiseVelocityDegPerSec)
+        .maxAcceleration(Constants.HoodConstants.maxAccelerationDegPerSec2)
+        .allowedProfileError(1.0);
 
-    @Override
-    public void setEncoder(double position){
-        hoodEncoder.setPosition(position);
-    }
+    config.softLimit
+        .forwardSoftLimit(Constants.HoodConstants.maxAngleDeg)
+        .forwardSoftLimitEnabled(true)
+        .reverseSoftLimit(Constants.HoodConstants.minAngleDeg)
+        .reverseSoftLimitEnabled(true);
 
-    @Override
-    public void stop(){
-        hoodMotor.setVoltage(0.0);
-    }
-
-    @Override
-    public void setIdleMode(IdleMode mode){
-        idleMode = mode;
-        configure();
-    }
-
-    private void configure(){
-        ClosedLoopConfig closedLoopConfig = new ClosedLoopConfig();
-        closedLoopConfig.pid(HoodConstants.kP, 0, HoodConstants.kD);
-
-        SparkMaxConfig hoodConfig = new SparkMaxConfig();
-        hoodConfig
-            .idleMode(idleMode)
-            .voltageCompensation(12)
-            .smartCurrentLimit(20)
-            .apply(closedLoopConfig);
-        hoodConfig
-            .encoder.positionConversionFactor(HoodConstants.positionConversionFactor)
-            .velocityConversionFactor(HoodConstants.velocityConversionFactor);
-        hoodConfig
-            .closedLoop.maxMotion
-            .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal)
-            .cruiseVelocity(HoodConstants.cruiseVelocity)
-            .maxAcceleration(HoodConstants.maxAcceleration)
-            .allowedProfileError(2);
-        hoodConfig
-            .softLimit
-            .forwardSoftLimit(HoodConstants.maxAngle)
-            .forwardSoftLimitEnabled(true)
-            .reverseSoftLimit(HoodConstants.minAngle)
-            .reverseSoftLimitEnabled(true);
-
-        tryUntilOk(hoodMotor, 5, ()->
-        hoodMotor.configure(hoodConfig,ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
-    }
-
+    tryUntilOk(
+        motor,
+        5,
+        () ->
+            motor.configure(
+                config,
+                ResetMode.kResetSafeParameters,
+                PersistMode.kPersistParameters));
+  }
 }
