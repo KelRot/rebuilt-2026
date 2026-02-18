@@ -46,6 +46,7 @@ public class Turret extends SubsystemBase {
 
     public void motorPositionSet() {
         io.setPosition(calculateTurretRealPose());
+        io.setEncoder(calculateTurretRealPose());
     }
 
     public void requestState(SystemState wantedState) {
@@ -72,6 +73,23 @@ public class Turret extends SubsystemBase {
     @Override
     public void periodic() {
         io.updateInputs(inputs);
+
+        switch (systemState) {
+            case IDLE:
+                io.setVoltage(0);
+                break;
+            case TRACKING:
+                setpoint = angleToTarget(); // target will be given later
+                io.setPosition(setpoint);
+                break;
+            case SHOOTING:
+                setpoint = angleToTarget(); // target will be given later
+                io.setPosition(setpoint);
+                break;
+            case POSITION:
+                io.setPosition(setpoint);
+                break;
+        }
     }
 
 }
