@@ -57,6 +57,8 @@ public final class Constants {
         public static final int turretGearboxTeeth = 0;
         public static final int absEncoder1Teeth = 0;
         public static final int absEncoder2Teeth = 0;
+        public static final double abs1Offset = 0.0;
+        public static final double abs2Offset = 0.0;
     }
 
     

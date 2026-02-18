@@ -21,7 +21,6 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
 
 import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 public class TurretIOSpark implements TurretIO {
@@ -38,9 +37,8 @@ public class TurretIOSpark implements TurretIO {
     public TurretIOSpark(){
         turretMotor = new SparkMax(TurretConstants.turretID, MotorType.kBrushless);
         turretEncoder = turretMotor.getEncoder();
-        absEncoder1 = new DutyCycleEncoder(TurretConstants.absEncoder1ID);
-        absEncoder2 = new DutyCycleEncoder(TurretConstants.absEncoder2ID);
-
+        absEncoder1 = new DutyCycleEncoder(TurretConstants.absEncoder1ID, 360.0, TurretConstants.abs1Offset);
+        absEncoder2 = new DutyCycleEncoder(TurretConstants.absEncoder2ID, 360.0, TurretConstants.abs2Offset);
         turretController = turretMotor.getClosedLoopController();
 
         configure();
