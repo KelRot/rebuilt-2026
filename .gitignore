@@ -190,3 +190,4 @@ src/main/java/frc/robot/BuildConstants.java
 # Eclipse generated file for annotation processors
 .factorypath
 
+src/main/java/frc/robot/BuildConstants.java
