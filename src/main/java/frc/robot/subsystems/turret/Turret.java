@@ -3,6 +3,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.RobotContainer;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public class Turret extends SubsystemBase {
@@ -67,21 +68,39 @@ public class Turret extends SubsystemBase {
 
     }
 
-    public double angleToTarget() {
-        Translation2d target = RobotContainer.getVision().getBestHubTarget();
-        double dx = target.getX() - RobotContainer.getDrive().getPose().getX(); // botpose will be given later
-        double dy = target.getY() - RobotContainer.getDrive().getPose().getY();
+    public double bestAngle() {
+        Pose2d robotPose = RobotContainer.getDrive().getPose();
+        Translation2d target = bestTarget(robotPose);
 
-        double angleToTarget = Math.atan2(dy, dx);
+        Translation2d turretFieldRelative = robotPose.getTranslation().plus(TurretConstants.turretOffset.rotateBy(robotPose.getRotation()));
 
-        double turretAngle = angleToTarget - RobotContainer.getDrive().getPose().getRotation().getRadians();
+        double dx = target.getX() - turretFieldRelative.getX();
+        double dy = target.getY() - turretFieldRelative.getY();
 
-        return MathUtil.angleModulus(turretAngle);
+        double targetRad = Math.atan2(dy, dx);
+
+        for(double angle = minAngle; angle <= maxAngle; angle += step){
+            double turretRad = Math.toRadians(angle);
+
+            double turretFieldRad = turretRad + robotPose.getRotation().getRadians();
+
+            double error = Math.abs(Math.atan2(Math.sin(targetRad - turretFieldRad), Math.cos(targetRad - turretFieldRad)));
+
+            if(error < minError){
+                minError = error;
+                bestAngle = angle;
+            }
+        }
+        return bestAngle;
+    }
+
+    public Translation2d bestTarget(Pose2d robotPose){
+        return new Translation2d(0.0,0.0);
     }
 
     @Override
     public void periodic() {
-        hub_setpoint = angleToTarget();
+        hub_setpoint = bestAngle();
 
         io.updateInputs(inputs);
 

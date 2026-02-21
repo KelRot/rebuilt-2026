@@ -44,22 +44,19 @@ public final class Constants {
         public static final DCMotor turretGearbox = DCMotor.getNEO(0);
         public static final double turretMotorReduction = 0;
 
-        public static final double absolutePositionOffsetRads1 = 0.0;
-        public static final double absolutePositionOffsetRads2 = 0.0;
-
         public static final double minAngle = -270;
         public static final double maxAngle = 270;
 
         public static final double cruiseVelocity = 0.0;
         public static final double maxAcceleration = 0.0;
 
-        public static final double zoneLine = 0.0;
-
         public static final int turretGearboxTeeth = 0;
         public static final int absEncoder1Teeth = 0;
         public static final int absEncoder2Teeth = 0;
         public static final double abs1Offset = 0.0;
         public static final double abs2Offset = 0.0;
+
+        public static final Translation2d turretOffset = new Translation2d(0.0, 0.0);
     }
 
     
