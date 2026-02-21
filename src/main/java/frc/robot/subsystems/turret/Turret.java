@@ -2,19 +2,17 @@ package frc.robot.subsystems.turret;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.RobotContainer;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.util.rebuilt.field.FieldHelpers;
 
 public class Turret extends SubsystemBase {
     private final TurretIO io;
     private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
 
     private double bestAngle = 0.0;
-    private double minError = Double.MAX_VALUE;
-    private final double minAngle = -180.0; //degree
-    private final double maxAngle = 180.0; //degree
-    private final double step = 0.5; //degree
+    private final double minAngle = -270.0; //degree
+    private final double maxAngle = 270.0; //degree
 
     public Turret(TurretIO io) {
         this.io = io;
@@ -68,9 +66,11 @@ public class Turret extends SubsystemBase {
 
     }
 
-    public double bestAngle() {
+    public double angleToTarget() {
+        double minError = Double.MAX_VALUE;
+
         Pose2d robotPose = RobotContainer.getDrive().getPose();
-        Translation2d target = bestTarget(robotPose);
+        Translation2d target = new Translation2d(0.0, 0.0);
 
         Translation2d turretFieldRelative = robotPose.getTranslation().plus(TurretConstants.turretOffset.rotateBy(robotPose.getRotation()));
 
@@ -79,28 +79,26 @@ public class Turret extends SubsystemBase {
 
         double targetRad = Math.atan2(dy, dx);
 
-        for(double angle = minAngle; angle <= maxAngle; angle += step){
-            double turretRad = Math.toRadians(angle);
+        double turretRad = targetRad - robotPose.getRotation().getRadians();
+        double[] candidates = {turretRad, turretRad + 2 * Math.PI, turretRad - 2 * Math.PI};
 
-            double turretFieldRad = turretRad + robotPose.getRotation().getRadians();
-
-            double error = Math.abs(Math.atan2(Math.sin(targetRad - turretFieldRad), Math.cos(targetRad - turretFieldRad)));
-
+        for(double candidate : candidates){
+            if(candidate < Math.toRadians(minAngle) || candidate > Math.toRadians(maxAngle)){
+                continue;
+            }
+            double error = Math.abs(FieldHelpers.normalizeAngle(candidate - inputs.positionRads));
             if(error < minError){
                 minError = error;
-                bestAngle = angle;
+                bestAngle = candidate;
             }
         }
-        return bestAngle;
-    }
 
-    public Translation2d bestTarget(Pose2d robotPose){
-        return new Translation2d(0.0,0.0);
+        return bestAngle;
     }
 
     @Override
     public void periodic() {
-        hub_setpoint = bestAngle();
+        hub_setpoint = angleToTarget();
 
         io.updateInputs(inputs);
 
