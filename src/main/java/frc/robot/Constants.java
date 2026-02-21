@@ -44,7 +44,8 @@ public final class Constants {
         public static final DCMotor turretGearbox = DCMotor.getNEO(0);
         public static final double turretMotorReduction = 0;
 
-        public static final double absolutePositionOffsetRads = 0.0;
+        public static final double absolutePositionOffsetRads1 = 0.0;
+        public static final double absolutePositionOffsetRads2 = 0.0;
 
         public static final double minAngle = -270;
         public static final double maxAngle = 270;

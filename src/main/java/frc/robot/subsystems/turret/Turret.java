@@ -9,8 +9,15 @@ public class Turret extends SubsystemBase {
     private final TurretIO io;
     private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
 
+    private double bestAngle = 0.0;
+    private double minError = Double.MAX_VALUE;
+    private final double minAngle = -180.0; //degree
+    private final double maxAngle = 180.0; //degree
+    private final double step = 0.5; //degree
+
     public Turret(TurretIO io) {
         this.io = io;
+        motorPositionSet();
     }
 
     public static enum SystemState {
@@ -19,7 +26,8 @@ public class Turret extends SubsystemBase {
 
     private SystemState systemState = SystemState.IDLE;
 
-    public double setpoint;
+    public double manual_setpoint;
+    public double hub_setpoint;
 
     public double calculateTurretRealPose() {
         double rot1 = inputs.absPositionTours1 / 360;
@@ -55,11 +63,12 @@ public class Turret extends SubsystemBase {
 
     public void setPosition(double position) {
         requestState(SystemState.POSITION);
-        setpoint = position;
+        manual_setpoint = position;
 
     }
 
-    public double angleToTarget(Translation2d target) {
+    public double angleToTarget() {
+        Translation2d target = RobotContainer.getVision().getBestHubTarget();
         double dx = target.getX() - RobotContainer.getDrive().getPose().getX(); // botpose will be given later
         double dy = target.getY() - RobotContainer.getDrive().getPose().getY();
 
@@ -72,6 +81,8 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
+        hub_setpoint = angleToTarget();
+
         io.updateInputs(inputs);
 
         switch (systemState) {
@@ -79,15 +90,13 @@ public class Turret extends SubsystemBase {
                 io.setVoltage(0);
                 break;
             case TRACKING:
-                setpoint = angleToTarget(); // target will be given later
-                io.setPosition(setpoint);
+                io.setPosition(hub_setpoint);
                 break;
             case SHOOTING:
-                setpoint = angleToTarget(); // target will be given later
-                io.setPosition(setpoint);
+                io.setPosition(hub_setpoint);
                 break;
             case POSITION:
-                io.setPosition(setpoint);
+                io.setPosition(manual_setpoint);
                 break;
         }
     }
