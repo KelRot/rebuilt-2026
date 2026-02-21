@@ -30,6 +30,8 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.util.BrakeController;
+
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
 
@@ -169,6 +171,8 @@ public class ModuleIOSpark implements ModuleIO {
                                 () -> turnEncoder.setPosition(
                                                 (turnAbsEncoder.getAverageVoltage() / RobotController.getVoltage5V())
                                                                 * 2 * Math.PI)); // If
+                BrakeController.register(driveSpark); // # need test
+                BrakeController.register(turnSpark); // # need test dont use before the test 
                 // inverted
                 // is
                 // true,
