@@ -18,7 +18,7 @@ public class TurretVisualizer {
 
   // CAD’den gelen offsetler
   private static final Translation3d turretPosition =
-      new Translation3d(0.135, 0.0, 0.262); // ✅ buraya CAD offsetleri ekledik
+      new Translation3d(0.135, 0.0, 0.262);
 
   private static final Rotation3d turretBaseRotation =
       new Rotation3d(
@@ -54,24 +54,22 @@ public class TurretVisualizer {
                 turretThickness / 2.0,
                 new Color8Bit(Color.kLightSkyBlue)));
   }
+  
 
   public void update(double angleRads, double setpointRads) {
 
-    /* ================= 2D ================= */
     turretLigament.setAngle(Rotation2d.fromRadians(angleRads));
     targetLigament.setAngle(Rotation2d.fromRadians(setpointRads));
 
     Logger.recordOutput("Turret/Mechanism2d/" + key, mechanism);
 
-    /* ================= 3D ================= */
     Pose3d basePose = new Pose3d(turretPosition, turretBaseRotation);
 
-    // Turret pozisyonu ve rotasyonu
     Pose3d turretPose =
         basePose.transformBy(
             new Transform3d(
-                new Translation3d(0, 0, 0),               // lokal offset yok
-                new Rotation3d(0.0, 0.0, angleRads)      // ✅ sadece lokal Z
+                new Translation3d(0, 0, 0),               
+                new Rotation3d(0.0, 0.0, angleRads)     
             ));
 
     Logger.recordOutput("Turret/Mechanism3d/" + key, turretPose);
@@ -80,7 +78,7 @@ public class TurretVisualizer {
     Pose3d setpointPose =
         basePose.transformBy(
             new Transform3d(
-                new Translation3d(0, 0, 0),               // lokal offset yok
+                new Translation3d(0, 0, 0),             
                 new Rotation3d(0.0, 0.0, setpointRads)
             ));
 

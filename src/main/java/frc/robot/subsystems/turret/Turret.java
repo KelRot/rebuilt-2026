@@ -2,10 +2,13 @@ package frc.robot.subsystems.turret;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
+import frc.robot.subsystems.drive.Drive.RobotZone;
 import frc.robot.RobotContainer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.util.Color;
+import frc.robot.util.rebuilt.field.Field;
 import frc.robot.util.rebuilt.field.FieldHelpers;
 import org.littletonrobotics.junction.Logger;
 
@@ -69,12 +72,32 @@ public class Turret extends SubsystemBase {
         manual_setpoint = position;
 
     }
+    public Translation2d getTarget() {
+        RobotZone robotPose = RobotContainer.getDrive().getRobotZone();
+    switch (robotPose) {
+        case UPPER_NEUTRAL_ZONE -> {
+            return new Translation2d(FieldHelpers.flipXifRed(2.510), 6); // Sıfır koordinat
+        }
+        case LOWER_NEUTRAL_ZONE -> {
+            return new Translation2d(FieldHelpers.flipXifRed(2.510), 2); // Sıfır koordinat
+        }
+        case BLUE_ALLIANCE_ZONE -> {
+            return Field.getBlueHubCenter().toTranslation2d(); // Blue hub pozisyonu
+        }
+        case RED_ALLIANCE_ZONE -> {
+            return Field.getRedHubCenter().toTranslation2d(); // Red hub pozisyonu
+        }
+        default -> {
+            return new Translation2d(0.0, 0.0); // Default target
+        }
+    }
+}
 
     public double angleToTarget() {
         double minError = Double.MAX_VALUE;
 
         Pose2d robotPose = RobotContainer.getDrive().getPose();
-        Translation2d target = new Translation2d(0.0, 0.0);
+        Translation2d target = getTarget();
 
         Translation2d turretFieldRelative = robotPose.getTranslation()
                 .plus(TurretConstants.turretOffset.rotateBy(robotPose.getRotation()));
@@ -125,6 +148,7 @@ public class Turret extends SubsystemBase {
         visualizer.update(inputs.positionRads, hub_setpoint);
         Logger.processInputs("Turret", inputs);
         Logger.recordOutput("Turret/SystemState", systemState.toString());
+        Logger.recordOutput("Turret/Target", getTarget());
     }
 
 }

@@ -10,7 +10,7 @@ public class Zones {
     private static final Drive drive = RobotContainer.getDrive();
 
     public static final Trigger blueFieldSide = new Trigger(() -> drive.getRobotZone() == RobotZone.BLUE_ALLIANCE_ZONE);
-    public static final Trigger opponentFieldSide = new Trigger(() -> blueFieldSide.getAsBoolean() != Field.isBlue() && drive.getRobotZone() != RobotZone.NEUTRAL_ZONE);
-    public static final Trigger neutralFieldSide = new Trigger(() -> drive.getRobotZone() == RobotZone.NEUTRAL_ZONE);
+    public static final Trigger opponentFieldSide = new Trigger(() -> blueFieldSide.getAsBoolean() != Field.isBlue() && (drive.getRobotZone() == RobotZone.LOWER_NEUTRAL_ZONE || drive.getRobotZone() == RobotZone.UPPER_NEUTRAL_ZONE));
+    public static final Trigger neutralFieldSide = new Trigger(() -> drive.getRobotZone() == RobotZone.LOWER_NEUTRAL_ZONE || drive.getRobotZone() == RobotZone.UPPER_NEUTRAL_ZONE);
 
 }

@@ -9,7 +9,10 @@ package frc.robot;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
+import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -159,10 +162,10 @@ public class RobotContainer {
                                 });
                                 break;
                 }
-
+                NamedCommands.registerCommand("intake", Commands.runOnce(() -> intake.requestState(SystemState.INTAKING), intake));
                 // Set up auto routines
                 autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-
+                autoChooser.addOption("pathplanner oto", new PathPlannerAuto("Example Auto"));
                 // Set up SysId routines
                 autoChooser.addOption("Drive Wheel Radius Characterization",
                                 DriveCommands.wheelRadiusCharacterization(drive));
@@ -178,7 +181,7 @@ public class RobotContainer {
                                 drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
                 autoChooser.addOption("Drive SysId (Dynamic Reverse)",
                                 drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-
+               
                 // Configure the button bindings
                 configureButtonBindings();
         }

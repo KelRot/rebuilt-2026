@@ -11,8 +11,6 @@ public class TurretIOSim implements TurretIO {
     private final DCMotorSim turretMotorSim;
 
     private PIDController turretController = new PIDController(TurretConstants.kP, 0, TurretConstants.kD);
-    private DutyCycleEncoderSim absEncoder1Sim = new DutyCycleEncoderSim(TurretConstants.absEncoder1ID);
-    private DutyCycleEncoderSim absEncoder2Sim = new DutyCycleEncoderSim(TurretConstants.absEncoder2ID);
     private boolean turretClosedLoop = false;
     private double turretAppliedVolts = 0.0;
 
@@ -34,8 +32,8 @@ public class TurretIOSim implements TurretIO {
 
         inputs.motorConnected = true;
         inputs.positionRads = turretMotorSim.getAngularPositionRad();
-        inputs.absPositionTours1 = absEncoder1Sim.get();
-        inputs.absPositionTours2 = absEncoder2Sim.get();
+        inputs.absPositionTours1 = 0;
+        inputs.absPositionTours2 = 0;
         inputs.velocityRadsPerSec = turretMotorSim.getAngularVelocityRadPerSec();
         inputs.appliedVolts = turretAppliedVolts;
         inputs.supplyCurrentAmps = Math.abs(turretMotorSim.getCurrentDrawAmps());

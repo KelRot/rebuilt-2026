@@ -123,7 +123,7 @@ public class Drive extends SubsystemBase {
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
             Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
         }
-            Logger.recordOutput("Drive/RobotZone", getRobotZone().toString());
+        Logger.recordOutput("Drive/RobotZone", getRobotZone().toString());
         // Update odometry
         double[] sampleTimestamps = modules[0].getOdometryTimestamps(); // All signals are sampled together
         int sampleCount = sampleTimestamps.length;
@@ -297,24 +297,38 @@ public class Drive extends SubsystemBase {
     public double getMaxAngularSpeedRadPerSec() {
         return maxSpeedMetersPerSec / driveBaseRadius;
     }
-
-       public static enum RobotZone {
+    public ChassisSpeeds getFieldSpeeds() {
+        return ChassisSpeeds.fromRobotRelativeSpeeds(getChassisSpeeds(), getRotation());
+    }
+    public static enum RobotZone {
         BLUE_ALLIANCE_ZONE,
         RED_ALLIANCE_ZONE,
-        NEUTRAL_ZONE
+        UPPER_NEUTRAL_ZONE,
+        LOWER_NEUTRAL_ZONE
     }
 
-    public RobotZone getRobotZone() {
-        double robotX = getPose().getX();
-        if (robotX < Field.getHalfLength() - Units.inchesToMeters(60)) {
-            // Blue Alliance Zone
-            return RobotZone.BLUE_ALLIANCE_ZONE;
-        } else if (robotX > Field.getHalfLength() + Units.inchesToMeters(60)) {
-            // Red Alliance Zone
-            return RobotZone.RED_ALLIANCE_ZONE;
+   public RobotZone getRobotZone() {
+    double robotX = getPose().getX();
+    double robotY = getPose().getY();
+
+    // Neutral Zone: sahayı ortalayan 283in (7.19 m) derinlik
+    double neutralStartX = Field.getHalfLength() - Units.inchesToMeters(283) / 2.0;
+    double neutralEndX   = Field.getHalfLength() + Units.inchesToMeters(283) / 2.0;
+
+    // Y koordinatının orta noktası
+    double halfY = Field.getHalfWidth();
+
+    if (robotX < neutralStartX) {
+        return RobotZone.BLUE_ALLIANCE_ZONE;
+    } else if (robotX > neutralEndX) {
+        return RobotZone.RED_ALLIANCE_ZONE;
+    } else {
+        // Neutral Zone içindeyiz, şimdi Upper ve Lower olarak ayırıyoruz
+        if (robotY > halfY) {
+            return RobotZone.UPPER_NEUTRAL_ZONE;
         } else {
-            // Neutral Zone
-            return RobotZone.NEUTRAL_ZONE;
+            return RobotZone.LOWER_NEUTRAL_ZONE;
         }
     }
+}
 }
