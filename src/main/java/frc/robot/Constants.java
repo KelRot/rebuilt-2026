@@ -39,10 +39,10 @@ public final class Constants {
         public static double openerGearRatio = 3.2;
         public static double INTAKING_VOLTAGE;
         public static double OUTTAKING_VOLTAGE;
-        public static double intakeOpenPosition = 135;
+        public static double intakeOpenPosition = -133;
         public static double openVoltage;
         public static Time openWaitSeconds;
-        public static double intakeClosedPosition;
+        public static double intakeClosedPosition = 0;
         public static final int secondOpenerMotorID = 2;
         public static final double ZERO_CONFIRM_TIME = 0;
         public static final int ZERO_VELOCITY_EPS = 0;

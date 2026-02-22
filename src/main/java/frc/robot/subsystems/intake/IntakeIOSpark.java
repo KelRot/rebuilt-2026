@@ -21,7 +21,7 @@ public class IntakeIOSpark implements IntakeIO {
 
   /** Creates a new ExampleSubsystem. */
   public IntakeIOSpark() {
-
+    openerMotor.getEncoder().setPosition(37);
   }
 
   @Override
@@ -39,7 +39,7 @@ public class IntakeIOSpark implements IntakeIO {
   }
 
   public void zeroEncoder() {
-     openerMotor.getEncoder().setPosition(0);
+     openerMotor.getEncoder().setPosition(37);
   }
 
   public void stopAllMotors() {

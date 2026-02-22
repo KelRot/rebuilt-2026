@@ -15,7 +15,7 @@ public interface IntakeIO {
         public double openerMotorVelocityRPS = 0.0;
         public double openerMotorVoltageVolts = 0.0;
         public double openerMotorCurrentAmps = 0.0;
-        public double IntakePosition = 0.0;
+        public double IntakePosition = 37.0;
         public boolean isIntakeOpen = false;
         public boolean isZeroed = false;
     }

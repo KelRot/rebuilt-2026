@@ -1,11 +1,16 @@
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
+
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 
 public class Intake extends SubsystemBase {
 
@@ -19,8 +24,6 @@ public class Intake extends SubsystemBase {
     ZEROING,
     MANUAL
   }
-
-  
 
   private SystemState systemState = SystemState.INTAKING;
 
@@ -64,14 +67,13 @@ public class Intake extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
 
-    visualizer.update(inputs.IntakePosition);
+    visualizer.update(Degrees.of(inputs.IntakePosition).in(Radians));
 
-    if (DriverStation.isDisabled()) {
+     if (DriverStation.isDisabled()) {
       systemState = SystemState.IDLE;
-    }
-
+    } 
     switch (systemState) {
-
+      
       case INTAKING:
         handleIntaking(Constants.IntakeConstants.INTAKING_VOLTAGE);
         break;

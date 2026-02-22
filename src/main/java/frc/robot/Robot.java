@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.util.BrakeController;
@@ -36,6 +37,7 @@ public class Robot extends LoggedRobot {
     public boolean isActive = false;
 
     public Robot() {
+
         // Record metadata
         Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
         Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
@@ -95,7 +97,10 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically during all modes. */
     @Override
     public void robotPeriodic() {
-
+        Logger.recordOutput("Robot/ZeroedComponentPoses", new Pose3d[] {
+                new Pose3d(), // intake
+                new Pose3d(), // turret
+        });
         isActive = ShiftGetter.isActive();
         // Optionally switch the thread to high priority to improve loop
         // timing (see the template project documentation for details)
@@ -115,7 +120,7 @@ public class Robot extends LoggedRobot {
     /** This function is called once when the robot is disabled. */
     @Override
     public void disabledInit() {
-    BrakeController.setAllBrake(false); 
+        BrakeController.setAllBrake(false);
     }
 
     /** This function is called periodically when disabled. */
@@ -130,7 +135,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit() {
         autonomousCommand = robotContainer.getAutonomousCommand();
-        BrakeController.setAllBrake(true); 
+        BrakeController.setAllBrake(true);
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
             autonomousCommand.schedule();
@@ -149,7 +154,7 @@ public class Robot extends LoggedRobot {
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
         // this line or comment it out.
-        BrakeController.setAllBrake(true); 
+        BrakeController.setAllBrake(true);
         if (autonomousCommand != null) {
             autonomousCommand.cancel();
         }

@@ -39,6 +39,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSpark;
+import frc.robot.subsystems.intake.Intake.SystemState;
 import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.kicker.KickerIO;
 import frc.robot.subsystems.kicker.KickerIOSpark;
@@ -206,6 +207,9 @@ public class RobotContainer {
                                                                 new Rotation2d())),
                                                 drive)
                                                 .ignoringDisable(true));
+                controller.x().onTrue(Commands.runOnce(() -> intake.requestState(SystemState.CLOSING), intake));
+                
+                controller.y().onTrue(Commands.runOnce(() -> intake.requestState(SystemState.INTAKING), intake));
         }
 
         /**
