@@ -15,7 +15,7 @@ public class IntakeIOSim implements IntakeIO {
     private static final double MAX_VOLTAGE = 12.0;
 
     private static final double MIN_ANGLE_RAD = Degrees.of(0).in(Radians);
-    private static final double MAX_ANGLE_RAD = Degrees.of(110).in(Radians);
+    private static final double MAX_ANGLE_RAD = Degrees.of(180).in(Radians);
 
     private static final double ARM_LENGTH_METERS = 0.48;
     private static final double GEAR_RATIO = 10.0;
@@ -40,10 +40,12 @@ public class IntakeIOSim implements IntakeIO {
             rollerMotor);
 
     private double zeroTimerSeconds = 0.0;
-    private boolean isZeroed = false;
+    private boolean isZeroed = true;
 
     @Override
     public void setOpenerSetPoint(double degrees) {
+        double radians = MathUtil.clamp(Radians.of(degrees).in(Radians), MIN_ANGLE_RAD, MAX_ANGLE_RAD);
+        openerSim.setState(radians, 0.0);
     }
 
     @Override
@@ -99,7 +101,7 @@ public class IntakeIOSim implements IntakeIO {
 
         inputs.IntakePosition = Radians.of(angle).in(Degrees);
 
-        inputs.isIntakeOpen = angle > Degrees.of(80).in(Radians);
+        inputs.isIntakeOpen = angle > Degrees.of(135).in(Radians);
 
         inputs.isZeroed = isZeroed;
 

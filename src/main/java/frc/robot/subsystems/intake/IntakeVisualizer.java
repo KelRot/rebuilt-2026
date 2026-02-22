@@ -1,70 +1,77 @@
+
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Radians;
-
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import org.littletonrobotics.junction.AutoLogOutput;
+
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
+
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
-
 public class IntakeVisualizer {
 
-    /* ---- Constants ---- */
-    private static final Distance INTAKE_LENGTH = Inches.of(19.1);
-    private static final double ROOT_X = 0.75;
-    private static final double ROOT_Y = 0.4;
+  /* ---------------- Constants ---------------- */
 
-    @AutoLogOutput
-    private final LoggedMechanism2d mechanism = new LoggedMechanism2d(1.5, 0.75);
+  // Intake kol uzunluğu (metre)
+  private static final double INTAKE_LENGTH = 0.60;
 
-    private final LoggedMechanismRoot2d root;
-    private final LoggedMechanismLigament2d intake;
+  /* ---------------- Mechanism2d ---------------- */
 
-    private double currentAngleDeg = 0.0;
+  private final LoggedMechanism2d mechanism;
+  private final LoggedMechanismLigament2d intake;
+  private final String key;
+  public static final Translation2d armOrigin = new Translation2d(0, 0.0);
 
-    public IntakeVisualizer(String name, Color color) {
-        root = mechanism.getRoot(name + " Root", ROOT_X, ROOT_Y);
+  public IntakeVisualizer(String key, Color color) {
+    this.key = key;
 
-        intake =
-                root.append(
-                        new LoggedMechanismLigament2d(
-                                "Intake",
-                                INTAKE_LENGTH,
-                                Degrees.of(currentAngleDeg),
-                                3,
-                                new Color8Bit(color)));
-    }
+    mechanism = new LoggedMechanism2d(3.0, 3.0, new Color8Bit(Color.kWhite));
+    LoggedMechanismRoot2d root = mechanism.getRoot("pivot", 1.0, 0.4);
 
-    /** Set intake angle in degrees */
-    public void setAngleDeg(double angleDeg) {
-        currentAngleDeg = angleDeg;
-        intake.setAngle(Degrees.of(angleDeg + 90.0));
-    }
+    intake = new LoggedMechanismLigament2d(
+        "intake",
+        INTAKE_LENGTH,
+        0.0,
+        6,
+        new Color8Bit(color));
 
-    /** Call EVERY cycle to log pose */
-    public void update() {
-        double angleRad = Degrees.of(currentAngleDeg).in(Radians);
-        double lengthMeters = INTAKE_LENGTH.in(Meters);
+    root.append(intake);
 
-        double y = lengthMeters * Math.cos(angleRad);
-        double z = lengthMeters * Math.sin(angleRad);
+  }
 
-        Logger.recordOutput(
-                "Intake/Pose",
-                new Pose3d(
-                        0.0,
-                        y,
-                        z,
-                        new Rotation3d(0.0, angleRad, 0.0)));
-    }
+  /**
+   * @param angleRads Intake açısı (RADYAN)
+   * @param robotPose Robotun field-relative Pose3d’si
+   */
+  public void update(double angleRad) {
+
+    /* -------- Mechanism2d -------- */
+    intake.setAngle(Rotation2d.fromDegrees(angleRad));
+    Logger.recordOutput("Intake/Mechanism2d/" + key, mechanism);
+    angleRad = Degrees.of(0).in(Radians);
+    /* -------- 3D Pose (robota sabit) -------- */
+
+    // Intake kendi pivotu etrafında X ekseni etrafında döner
+    Transform3d intakeRotation = new Transform3d(
+        0.0,
+        0.0,
+        0.0,
+        new Rotation3d(-angleRad, 0.0, 0.0));
+
+    Pose3d pivot = new Pose3d(armOrigin.getX(), 0.0, armOrigin.getY(), new Rotation3d(0.0, -angleRad, 0.0));
+
+    Logger.recordOutput("Intake/Mechanism3d/" + key, pivot);
+  }
 }

@@ -22,7 +22,7 @@ public class Intake extends SubsystemBase {
 
   
 
-  private SystemState systemState = SystemState.IDLE;
+  private SystemState systemState = SystemState.INTAKING;
 
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
@@ -64,8 +64,7 @@ public class Intake extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
 
-    visualizer.setAngleDeg(inputs.IntakePosition);
-    visualizer.update();
+    visualizer.update(inputs.IntakePosition);
 
     if (DriverStation.isDisabled()) {
       systemState = SystemState.IDLE;

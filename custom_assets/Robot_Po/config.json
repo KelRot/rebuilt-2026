@@ -1,0 +1,21 @@
+{
+  "name": "po",
+  "isFTC": false,
+  "rotations": [
+    {  "axis": "x", "degrees": 90
+    }, 
+    {  "axis": "z", "degrees": 270
+    }
+  ],
+  "cameras": [],
+  "components": [
+     {
+    "zeroedRotations": [ { "axis": "x", "degrees": 90 }, { "axis": "z", "degrees": 270 } ],
+    "zeroedPosition": [0, 0, 0] 
+  },
+  {
+    "zeroedRotations": [ { "axis": "x", "degrees": 90 }, { "axis": "z", "degrees": 270 } ],
+    "zeroedPosition": [0, 0, 0] 
+  }
+  ]
+}

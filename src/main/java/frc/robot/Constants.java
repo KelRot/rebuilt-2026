@@ -24,7 +24,6 @@ public final class Constants {
     public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
     public static final int PDH_ID = 1;
     public static final boolean tuningMode = true;
-    public static final String Intake = null;
 
     public static class LedConstants {
         public static final int kLedPort = 0;
@@ -40,7 +39,7 @@ public final class Constants {
         public static double openerGearRatio = 3.2;
         public static double INTAKING_VOLTAGE;
         public static double OUTTAKING_VOLTAGE;
-        public static double intakeOpenPosition;
+        public static double intakeOpenPosition = 135;
         public static double openVoltage;
         public static Time openWaitSeconds;
         public static double intakeClosedPosition;
@@ -62,8 +61,8 @@ public final class Constants {
     }
 
     public static class FlywheelConstants {
-        public static final int kMasterMotorId = 0;
-        public static final int kFollowerMotorId = 0;
+        public static final int kMasterMotorId = 7;
+        public static final int kFollowerMotorId = 8;
         public static final double kp = 0;
         public static final double ki = 0;
         public static final double kd = 0;
