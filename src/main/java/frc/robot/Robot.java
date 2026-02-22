@@ -32,6 +32,7 @@ import org.littletonrobotics.urcl.URCL;
  */
 public class Robot extends LoggedRobot {
     private Command autonomousCommand;
+    @Getter
     private RobotContainer robotContainer;
     @Getter
     public boolean isActive = false;
