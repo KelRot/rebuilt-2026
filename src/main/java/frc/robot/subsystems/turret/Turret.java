@@ -1,18 +1,22 @@
 package frc.robot.subsystems.turret;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.RobotContainer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.util.rebuilt.field.FieldHelpers;
+import org.littletonrobotics.junction.Logger;
 
 public class Turret extends SubsystemBase {
     private final TurretIO io;
     private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
+    private final TurretVisualizer visualizer = new TurretVisualizer("Measured", Color.kRed);
 
     private double bestAngle = 0.0;
-    private final double minAngle = -270.0; //degree
-    private final double maxAngle = 270.0; //degree
+    private final double minAngle = -270.0; // degree
+    private final double maxAngle = 270.0; // degree
 
     public Turret(TurretIO io) {
         this.io = io;
@@ -72,7 +76,8 @@ public class Turret extends SubsystemBase {
         Pose2d robotPose = RobotContainer.getDrive().getPose();
         Translation2d target = new Translation2d(0.0, 0.0);
 
-        Translation2d turretFieldRelative = robotPose.getTranslation().plus(TurretConstants.turretOffset.rotateBy(robotPose.getRotation()));
+        Translation2d turretFieldRelative = robotPose.getTranslation()
+                .plus(TurretConstants.turretOffset.rotateBy(robotPose.getRotation()));
 
         double dx = target.getX() - turretFieldRelative.getX();
         double dy = target.getY() - turretFieldRelative.getY();
@@ -80,14 +85,14 @@ public class Turret extends SubsystemBase {
         double targetRad = Math.atan2(dy, dx);
 
         double turretRad = targetRad - robotPose.getRotation().getRadians();
-        double[] candidates = {turretRad, turretRad + 2 * Math.PI, turretRad - 2 * Math.PI};
+        double[] candidates = { turretRad, turretRad + 2 * Math.PI, turretRad - 2 * Math.PI };
 
-        for(double candidate : candidates){
-            if(candidate < Math.toRadians(minAngle) || candidate > Math.toRadians(maxAngle)){
+        for (double candidate : candidates) {
+            if (candidate < Math.toRadians(minAngle) || candidate > Math.toRadians(maxAngle)) {
                 continue;
             }
             double error = Math.abs(FieldHelpers.normalizeAngle(candidate - inputs.positionRads));
-            if(error < minError){
+            if (error < minError) {
                 minError = error;
                 bestAngle = candidate;
             }
@@ -116,6 +121,10 @@ public class Turret extends SubsystemBase {
                 io.setPosition(manual_setpoint);
                 break;
         }
+
+        visualizer.update(inputs.positionRads, hub_setpoint);
+        Logger.processInputs("Turret", inputs);
+        Logger.recordOutput("Turret/SystemState", systemState.toString());
     }
 
 }

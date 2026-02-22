@@ -43,6 +43,10 @@ import frc.robot.subsystems.intake.Intake.SystemState;
 import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.kicker.KickerIO;
 import frc.robot.subsystems.kicker.KickerIOSpark;
+import frc.robot.subsystems.turret.Turret;
+import frc.robot.subsystems.turret.TurretIO;
+import frc.robot.subsystems.turret.TurretIOSim;
+import frc.robot.subsystems.turret.TurretIOSpark;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
@@ -76,6 +80,8 @@ public class RobotContainer {
         public static Index index;
         @Getter 
         public static Flywheel flywheel;
+        @Getter 
+        public static Turret turret;
         // Controller
         private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -100,6 +106,7 @@ public class RobotContainer {
                                                 new ModuleIOSpark(3));
 
                                 index = new Index(new IndexIOSpark());
+                                turret = new Turret(new TurretIOSpark());
 
                                 vision = new Vision(
                                                 drive::addVisionMeasurement,
@@ -127,6 +134,7 @@ public class RobotContainer {
                                 flywheel = new Flywheel(new FlywheelIOSparkFlex());
                                 intake = new Intake(new IntakeIOSim());
                                 index = new Index(new IndexIOSpark());
+                                turret = new Turret(new TurretIOSim());
                                 break;
 
                         default:
@@ -146,6 +154,8 @@ public class RobotContainer {
                                 index = new Index(new IndexIO() {
                                 });
                                 flywheel = new Flywheel(new FlywheelIO() {
+                                });
+                                turret = new Turret(new TurretIO() {
                                 });
                                 break;
                 }

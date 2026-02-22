@@ -38,13 +38,13 @@
         },
         {
           "axis": "z",
-          "degrees": 19
+          "degrees": 200
         }
       ],
       "zeroedPosition": [
-        0.18,
-        -0.13,
-        0.035
+        0,
+        0,
+        0
       ]
     }
   ]

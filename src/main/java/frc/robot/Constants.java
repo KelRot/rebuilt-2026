@@ -37,15 +37,15 @@ public final class Constants {
         public static final double kP = 0.0;
         public static final double kD = 0.0;
     
-        public static final int turretID = 0;
-        public static final int absEncoder1ID = 0;
-        public static final int absEncoder2ID = 0;
+        public static final int turretID = 1;
+        public static final int absEncoder1ID = 2;
+        public static final int absEncoder2ID = 3;
 
-        public static final double positionConversionFactor = 0; // Example conversion factor
-        public static final double velocityConversionFactor = 0; 
+        public static final double positionConversionFactor = 1; // Example conversion factor
+        public static final double velocityConversionFactor = 1; 
 
-        public static final DCMotor turretGearbox = DCMotor.getNEO(0);
-        public static final double turretMotorReduction = 0;
+        public static final DCMotor turretGearbox = DCMotor.getNEO(1);
+        public static final double turretMotorReduction = 25;
 
         public static final double minAngle = -270;
         public static final double maxAngle = 270;
@@ -53,9 +53,9 @@ public final class Constants {
         public static final double cruiseVelocity = 0.0;
         public static final double maxAcceleration = 0.0;
 
-        public static final int turretGearboxTeeth = 0;
-        public static final int absEncoder1Teeth = 0;
-        public static final int absEncoder2Teeth = 0;
+        public static final int turretGearboxTeeth = 220;
+        public static final int absEncoder1Teeth = 25;
+        public static final int absEncoder2Teeth = 24;
         public static final double abs1Offset = 0.0;
         public static final double abs2Offset = 0.0;
 
