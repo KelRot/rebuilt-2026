@@ -82,10 +82,24 @@ public class Turret extends SubsystemBase {
             return new Translation2d(FieldHelpers.flipXifRed(2.510), 2); // Sıfır koordinat
         }
         case BLUE_ALLIANCE_ZONE -> {
-            return Field.getBlueHubCenter().toTranslation2d(); // Blue hub pozisyonu
+            if(Field.isRed()) {
+                if(RobotContainer.getDrive().getPose().getY() < Field.getBlueHubCenter().getY()) {
+                    return new Translation2d(FieldHelpers.flipXifRed(2.510), 2); // Sıfır koordinat
+                } else {
+                    return new Translation2d(FieldHelpers.flipXifRed(2.510), 6); // Sıfır koordinat
+                }
+            }
+            return Field.getBlueHubCenter().toTranslation2d();// Blue hub pozisyonu
         }
         case RED_ALLIANCE_ZONE -> {
-            return Field.getRedHubCenter().toTranslation2d(); // Red hub pozisyonu
+            if(Field.isBlue()) {
+                if(RobotContainer.getDrive().getPose().getY() < Field.getRedHubCenter().getY()) {
+                    return new Translation2d(FieldHelpers.flipXifRed(2.510), 2); // Sıfır koordinat
+                } else {
+                    return new Translation2d(FieldHelpers.flipXifRed(2.510), 6); // Sıfır koordinat
+                }
+            }
+            return Field.getRedHubCenter().toTranslation2d();// Red hub pozisyonu
         }
         default -> {
             return new Translation2d(0.0, 0.0); // Default target
