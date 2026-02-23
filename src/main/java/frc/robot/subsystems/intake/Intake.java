@@ -138,4 +138,8 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Intake/SystemState", systemState.toString());
     Logger.processInputs("Intake", inputs);
   }
+
+  public boolean isOpened() {
+    return inputs.isIntakeOpen;
+  }
 }

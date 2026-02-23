@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.fasterxml.jackson.databind.util.Named;
@@ -55,6 +56,7 @@ import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import frc.robot.util.FuelSim;
 import frc.robot.util.led.Led;
 import lombok.Getter;
 
@@ -81,11 +83,13 @@ public class RobotContainer {
         public static Intake intake;
         @Getter
         public static Index index;
-        @Getter 
+        @Getter
         public static Flywheel flywheel;
-        @Getter 
+        @Getter
         public static Turret turret;
         // Controller
+        @Getter
+        public static FuelSim fuelSim = new FuelSim("FuelSim"); // creates a new fuelSim of FuelSim
         private final CommandXboxController controller = new CommandXboxController(0);
 
         // Dashboard inputs
@@ -137,7 +141,8 @@ public class RobotContainer {
                                 flywheel = new Flywheel(new FlywheelIOSparkFlex());
                                 intake = new Intake(new IntakeIOSim());
                                 index = new Index(new IndexIOSpark());
-                                turret = new Turret(new TurretIOSim());
+                                turret = new Turret(new TurretIOSim(fuelSim));
+                                configureFuelSim();
                                 break;
 
                         default:
@@ -152,8 +157,10 @@ public class RobotContainer {
                                 vision = new Vision(drive::addVisionMeasurement, new VisionIO() {
                                 });
 
-                                kicker = new Kicker(new KickerIO() {});
-                                intake = new Intake(new IntakeIO() {});
+                                kicker = new Kicker(new KickerIO() {
+                                });
+                                intake = new Intake(new IntakeIO() {
+                                });
                                 index = new Index(new IndexIO() {
                                 });
                                 flywheel = new Flywheel(new FlywheelIO() {
@@ -162,7 +169,8 @@ public class RobotContainer {
                                 });
                                 break;
                 }
-                NamedCommands.registerCommand("intake", Commands.runOnce(() -> intake.requestState(SystemState.INTAKING), intake));
+                NamedCommands.registerCommand("intake",
+                                Commands.runOnce(() -> intake.requestState(SystemState.INTAKING), intake));
                 // Set up auto routines
                 autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
                 autoChooser.addOption("pathplanner oto", new PathPlannerAuto("Example Auto"));
@@ -181,7 +189,7 @@ public class RobotContainer {
                                 drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
                 autoChooser.addOption("Drive SysId (Dynamic Reverse)",
                                 drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-               
+
                 // Configure the button bindings
                 configureButtonBindings();
         }
@@ -221,8 +229,9 @@ public class RobotContainer {
                                                 drive)
                                                 .ignoringDisable(true));
                 controller.x().onTrue(Commands.runOnce(() -> intake.requestState(SystemState.CLOSING), intake));
-                
+
                 controller.y().onTrue(Commands.runOnce(() -> intake.requestState(SystemState.INTAKING), intake));
+                controller.leftBumper().whileTrue(Commands.runOnce(() -> turret.launchFuel(), turret).repeatedly());
         }
 
         /**
@@ -232,6 +241,35 @@ public class RobotContainer {
          */
         public Command getAutonomousCommand() {
                 return autoChooser.get();
+        }
+
+        public void configureFuelSim() {
+
+                // Register a robot for collision with fuel
+                fuelSim.registerRobot(
+                                0.6218, // from left to right in meters
+                                0.7239, // from front to back in meters
+                                0.12, // from floor to top of bumpers in meters
+                                () -> getDrive().getPose(), // Supplier<Pose2d> of robot pose
+                                () -> getDrive().getFieldSpeeds()); // Supplier<ChassisSpeeds> of field-centric chassis
+                                                                    // speeds
+
+                // Register an intake to remove fuel from the field as a rectangular bounding
+                // box
+                fuelSim.registerIntake(
+                                -0.59, -0.45, -0.27, 0.273, // robot-centric coordinates for bounding box in meters
+                                () -> turret.canIntake() && intake.isOpened(), // (optional) BooleanSupplier for whether
+                                                                               // the intake should be
+                                // active at a given moment
+                                () -> turret.intakeFuel()); // (optional) Runnable called whenever a fuel is intaked
+
+                fuelSim.setSubticks(5); // sets the number of physics iterations to perform per 20ms loop. Default = 5
+                fuelSim.enableAirResistance(); // an additional drag force will be applied to fuel in physics update
+                                               // step
+
+                fuelSim.spawnStartingFuel(); // spawns fuel in the depots and neutral zone
+                fuelSim.start(); // enables the simulation to run (updateSim must still be called periodically)
+
         }
 
 }
