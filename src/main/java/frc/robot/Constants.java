@@ -9,14 +9,16 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Meters;
 
-import javax.xml.crypto.dsig.Transform;
-
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.subsystems.ShotCalculator.ShotData;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always
@@ -103,6 +105,9 @@ public final class Constants {
         public static final double ki = 0;
         public static final double kd = 0;
         public static final Distance flywheelRadius = Meters.of(0.05);
+
+        public static final InterpolatingTreeMap<Double, ShotData> SHOT_MAP = new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), ShotData::interpolate);
+        public static final InterpolatingDoubleTreeMap TOF_MAP = new InterpolatingDoubleTreeMap();
     }
 
     public static final class HoodConstants {

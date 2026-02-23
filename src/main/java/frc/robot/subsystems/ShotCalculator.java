@@ -2,9 +2,6 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
@@ -12,13 +9,11 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
-import frc.robot.Constants.FlywheelConstants;
 import frc.robot.util.rebuilt.field.Field;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
-import static frc.robot.Constants.TurretConstants.robotToTurret;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Inches;
@@ -26,6 +21,7 @@ import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.InchesPerSecondPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static frc.robot.Constants.TurretConstants;
+import static frc.robot.Constants.FlywheelConstants;
 
 
 
@@ -41,7 +37,7 @@ public class ShotCalculator {
         double vel = velocity.in(InchesPerSecond);
         double x_dist = getDistanceToTarget(robot, target).in(Inches);
         double y_dist = target.getMeasureZ()
-                .minus(robotToTurret.getMeasureZ())
+                .minus(TurretConstants.robotToTurret.getMeasureZ())
                 .in(Inches);
         double angle = Math.atan(
                 ((vel * vel) + Math.sqrt(Math.pow(vel, 4) - g * (g * x_dist * x_dist + 2 * y_dist * vel * vel)))
@@ -74,7 +70,7 @@ public class ShotCalculator {
 
     public static ShotData calculateShotFromFunnelClearance(Pose2d robot, Translation3d actualTarget, Translation3d predictedTarget) {
         double x_dist = getDistanceToTarget(robot, predictedTarget).in(Inches);
-        double y_dist = predictedTarget.getMeasureZ().minus(robotToTurret.getMeasureZ()).in(Inches);
+        double y_dist = predictedTarget.getMeasureZ().minus(TurretConstants.robotToTurret.getMeasureZ()).in(Inches);
         double g = 386;
         double r = Field.BlueHub.innerOpeningWidth/2* x_dist/getDistanceToTarget(robot, actualTarget).in(Inches);
         double h = Field.BlueHub.innerOpeningHeight+2;
@@ -124,18 +120,18 @@ public class ShotCalculator {
     public static ShotData iterativeMovingShotFromMap(
             Pose2d robot, ChassisSpeeds fieldSpeeds, Translation3d target, int iterations) {
         double distance = getDistanceToTarget(robot, target).in(Meters);
-        ShotData shot = SHOT_MAP.get(distance);
+        ShotData shot = FlywheelConstants.SHOT_MAP.get(distance);
         shot = new ShotData(shot.exitVelocity, shot.hoodAngle, target);
-        Time timeOfFlight = Seconds.of(TOF_MAP.get(distance));
+        Time timeOfFlight = Seconds.of(FlywheelConstants.TOF_MAP.get(distance));
         Translation3d predictedTarget = target;
 
         // Iterate the process, getting better time of flight estimations and updating the predicted target accordingly
         for (int i = 0; i < iterations; i++) {
             predictedTarget = predictTargetPos(target, fieldSpeeds, timeOfFlight);
             distance = getDistanceToTarget(robot, predictedTarget).in(Meters);
-            shot = SHOT_MAP.get(distance);
+            shot = FlywheelConstants.SHOT_MAP.get(distance);
             shot = new ShotData(shot.exitVelocity, shot.hoodAngle, predictedTarget);
-            timeOfFlight = Seconds.of(TOF_MAP.get(distance));
+            timeOfFlight = Seconds.of(FlywheelConstants.TOF_MAP.get(distance));
         }
 
         return shot;
@@ -148,7 +144,7 @@ public class ShotCalculator {
         }
 
         public LinearVelocity getExitVelocity() {
-            return angularToLinearVelocity(RadiansPerSecond.of(this.exitVelocity), FLYWHEEL_RADIUS);
+            return angularToLinearVelocity(RadiansPerSecond.of(this.exitVelocity), FlywheelConstants.flywheelRadius);
         }
 
         public Angle getHoodAngle() {
