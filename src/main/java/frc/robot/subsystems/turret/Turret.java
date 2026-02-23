@@ -3,13 +3,23 @@ package frc.robot.subsystems.turret;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.drive.Drive.RobotZone;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.util.rebuilt.field.Field;
 import frc.robot.util.rebuilt.field.FieldHelpers;
+
+import static edu.wpi.first.units.Units.Degree;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Turret extends SubsystemBase {
@@ -20,6 +30,8 @@ public class Turret extends SubsystemBase {
     private double bestAngle = 0.0;
     private final double minAngle = -270.0; // degree
     private final double maxAngle = 270.0; // degree
+    private final double CAPACITY = 10;
+    private double fuelStored = 0;
 
     public Turret(TurretIO io) {
         this.io = io;
@@ -58,6 +70,27 @@ public class Turret extends SubsystemBase {
         return bestmatch;
     }
 
+    public boolean canIntake() {
+        return fuelStored < CAPACITY;
+    }
+
+    public void intakeFuel() {
+        fuelStored++;
+    }
+
+    // called repeatedly
+    public void launchFuel() {
+        if (fuelStored == 0)
+            return;
+        fuelStored--;
+
+        TurretIOSim.getFuelSim().launchFuel(
+                LinearVelocity.ofBaseUnits(14, MetersPerSecond),
+                Degrees.of(60),
+                Degrees.of(angleToTarget()),
+                Distance.ofBaseUnits(0.262, Meters));
+    }
+// calculate this later 
     public void motorPositionSet() {
         io.setPosition(calculateTurretRealPose());
         io.setEncoder(calculateTurretRealPose());
@@ -72,7 +105,8 @@ public class Turret extends SubsystemBase {
         manual_setpoint = position;
 
     }
-    public Translation2d getTarget() {
+
+   public Translation2d getTarget() {
         RobotZone robotPose = RobotContainer.getDrive().getRobotZone();
     switch (robotPose) {
         case UPPER_NEUTRAL_ZONE -> {
@@ -107,36 +141,34 @@ public class Turret extends SubsystemBase {
     }
 }
 
-    public double angleToTarget() {
-        double minError = Double.MAX_VALUE;
+   public double angleToTarget() {
+    double minError = Double.MAX_VALUE;
 
-        Pose2d robotPose = RobotContainer.getDrive().getPose();
-        Translation2d target = getTarget();
+    Pose2d robotPose = RobotContainer.getDrive().getPose();
+    Translation2d target = getTarget();
 
-        Translation2d turretFieldRelative = robotPose.getTranslation()
-                .plus(TurretConstants.turretOffset.rotateBy(robotPose.getRotation()));
+    // Turret pozisyonunu robot merkezine göre göreli hale getir
+    Translation2d turretRelativeToRobot = TurretConstants.turretOffset; // zaten robot relative offset
+    // robotPose.getRotation() ile field'a çevirmeye gerek yok, robot ekseninde zaten relative
 
-        double dx = target.getX() - turretFieldRelative.getX();
-        double dy = target.getY() - turretFieldRelative.getY();
+    double dx = target.getX() - (robotPose.getX() + turretRelativeToRobot.getX());
+    double dy = target.getY() - (robotPose.getY() + turretRelativeToRobot.getY());
 
-        double targetRad = Math.atan2(dy, dx);
+    double targetRad = Math.atan2(dy, dx);
 
-        double turretRad = targetRad - robotPose.getRotation().getRadians();
-        double[] candidates = { turretRad, turretRad + 2 * Math.PI, turretRad - 2 * Math.PI };
+    // Turret relative açı: robot heading'inden çıkar
+    double turretRad = targetRad - robotPose.getRotation().getRadians();
 
-        for (double candidate : candidates) {
-            if (candidate < Math.toRadians(minAngle) || candidate > Math.toRadians(maxAngle)) {
-                continue;
-            }
-            double error = Math.abs(FieldHelpers.normalizeAngle(candidate - inputs.positionRads));
-            if (error < minError) {
-                minError = error;
-                bestAngle = candidate;
-            }
-        }
+    // wrap between -π..π
+    turretRad = FieldHelpers.normalizeAngle(turretRad);
 
-        return bestAngle;
-    }
+    // Sınırlar içinde kalacak şekilde
+    if (turretRad < Math.toRadians(minAngle)) turretRad += 2 * Math.PI;
+    if (turretRad > Math.toRadians(maxAngle)) turretRad -= 2 * Math.PI;
+
+    bestAngle = turretRad;
+    return bestAngle;
+}
 
     @Override
     public void periodic() {
@@ -163,6 +195,11 @@ public class Turret extends SubsystemBase {
         Logger.processInputs("Turret", inputs);
         Logger.recordOutput("Turret/SystemState", systemState.toString());
         Logger.recordOutput("Turret/Target", getTarget());
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        visualizer.updateFuel(LinearVelocity.ofBaseUnits(4.0, MetersPerSecond), Degrees.of(60));
     }
 
 }

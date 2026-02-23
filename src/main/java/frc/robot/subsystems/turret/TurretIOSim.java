@@ -6,6 +6,8 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import frc.robot.Constants.TurretConstants;
+import frc.robot.util.FuelSim;
+import lombok.Getter;
 
 public class TurretIOSim implements TurretIO {
     private final DCMotorSim turretMotorSim;
@@ -13,15 +15,18 @@ public class TurretIOSim implements TurretIO {
     private PIDController turretController = new PIDController(TurretConstants.kP, 0, TurretConstants.kD);
     private boolean turretClosedLoop = false;
     private double turretAppliedVolts = 0.0;
+    static @Getter private FuelSim fuelSim;
 
-    public TurretIOSim(){
-        turretMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(TurretConstants.turretGearbox, 0.04, TurretConstants.turretMotorReduction), TurretConstants.turretGearbox);
+    public TurretIOSim(FuelSim fuelSim) {
+        turretMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(TurretConstants.turretGearbox, 0.04,
+                TurretConstants.turretMotorReduction), TurretConstants.turretGearbox);
         turretController.enableContinuousInput(-Math.PI, Math.PI);
+        this.fuelSim = fuelSim;
     }
 
     @Override
-    public void updateInputs(TurretIOInputs inputs){
-        if(turretClosedLoop){
+    public void updateInputs(TurretIOInputs inputs) {
+        if (turretClosedLoop) {
             turretAppliedVolts = turretController.calculate(turretMotorSim.getAngularPositionRad());
         } else {
             turretController.reset();
@@ -41,13 +46,13 @@ public class TurretIOSim implements TurretIO {
     }
 
     @Override
-    public void setVoltage(double voltage){
+    public void setVoltage(double voltage) {
         turretClosedLoop = false;
         turretAppliedVolts = voltage;
     }
 
     @Override
-    public void setPosition(double setpoint){
+    public void setPosition(double setpoint) {
         turretClosedLoop = true;
         turretController.setSetpoint(setpoint);
     }
