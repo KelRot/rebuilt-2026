@@ -9,6 +9,9 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Meters;
 
+import javax.xml.crypto.dsig.Transform;
+
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Distance;
@@ -60,6 +63,7 @@ public final class Constants {
         public static final double abs2Offset = 0.0;
 
         public static final Translation2d turretOffset = new Translation2d(0.0, 0.0);
+        public static final Transform3d robotToTurret = new Transform3d();
     }
 
     
@@ -98,6 +102,7 @@ public final class Constants {
         public static final double kp = 0;
         public static final double ki = 0;
         public static final double kd = 0;
+        public static final Distance flywheelRadius = Meters.of(0.05);
     }
 
     public static final class HoodConstants {
