@@ -9,6 +9,8 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.Constants.FlywheelConstants;
+import frc.robot.Constants.TurretConstants;
 import frc.robot.util.rebuilt.field.Field;
 
 import static edu.wpi.first.units.Units.Meters;
@@ -39,10 +41,14 @@ public class ShotCalculator {
         double y_dist = target.getMeasureZ()
                 .minus(TurretConstants.robotToTurret.getMeasureZ())
                 .in(Inches);
+
+        double discriminant = Math.pow(vel, 4) - g * (g * x_dist * x_dist + 2 * y_dist * vel * vel);
+        if (discriminant <= 0 || x_dist == 0) {
+            return Radians.of(0);
+        }
         double angle = Math.atan(
-                ((vel * vel) + Math.sqrt(Math.pow(vel, 4) - g * (g * x_dist * x_dist + 2 * y_dist * vel * vel)))
-                        / (g * x_dist));
-        return Radians.of(angle);
+            ((vel * vel) + Math.sqrt(discriminant)) / (g * x_dist));
+            return Radians.of(angle);
     }
 
     // calculates how long it will take for a projectile to travel a set distance given its initial velocity and angle
@@ -50,7 +56,11 @@ public class ShotCalculator {
         double vel = exitVelocity.in(MetersPerSecond);
         double angle = Math.PI / 2 - hoodAngle.in(Radians);
         double dist = distance.in(Meters);
-        return Seconds.of(dist / (vel * Math.cos(angle)));
+        double cosAngle = Math.cos(angle);
+        if (vel == 0 || cosAngle == 0) {
+            return Seconds.of(0);
+        }
+        return Seconds.of(dist / (vel * cosAngle));
     }
 
     public static AngularVelocity linearToAngularVelocity(LinearVelocity vel, Distance radius) {
@@ -130,6 +140,9 @@ public class ShotCalculator {
             predictedTarget = predictTargetPos(target, fieldSpeeds, timeOfFlight);
             distance = getDistanceToTarget(robot, predictedTarget).in(Meters);
             shot = FlywheelConstants.SHOT_MAP.get(distance);
+            if (shot == null) {
+                return new ShotData(0, 0, target);
+            }
             shot = new ShotData(shot.exitVelocity, shot.hoodAngle, predictedTarget);
             timeOfFlight = Seconds.of(FlywheelConstants.TOF_MAP.get(distance));
         }
