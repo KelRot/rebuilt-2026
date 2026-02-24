@@ -9,6 +9,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Meters;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Distance;
@@ -116,6 +118,14 @@ public final class Constants {
         public static final double minAngleDeg = 0.0;
         public static final double maxAngleDeg = 0.0;
 
+    }
+
+    public static final class FieldConstants {
+
+        public static final AprilTagFields DEFAULT_APRILTAG_TYPE =
+        AprilTagFields.k2026RebuiltWelded;
+
+        public static final int aprilTagCount = 32;
     }
 
     public static enum Mode {
