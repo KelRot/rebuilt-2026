@@ -1,3 +1,8 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+//https://github.com/hammerheads5000/2026Rebuilt.git
+
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
@@ -82,8 +87,8 @@ public class ShotCalculator {
         double x_dist = getDistanceToTarget(robot, predictedTarget).in(Inches);
         double y_dist = predictedTarget.getMeasureZ().minus(TurretConstants.robotToTurret.getMeasureZ()).in(Inches);
         double g = 386;
-        double r = Field.BlueHub.innerOpeningWidth/2* x_dist/getDistanceToTarget(robot, actualTarget).in(Inches);
-        double h = Field.BlueHub.innerOpeningHeight+2;
+        double r = FlywheelConstants.funnelRadius.in(Inches) * x_dist / getDistanceToTarget(robot, actualTarget).in(Inches);
+        double h = FlywheelConstants.funnelHeight.in(Inches) + FlywheelConstants.distanceAboveFunnel.in(Inches) - predictedTarget.getMeasureZ().in(Inches);
         double A1 = x_dist * x_dist;
         double B1 = x_dist;
         double D1 = y_dist;

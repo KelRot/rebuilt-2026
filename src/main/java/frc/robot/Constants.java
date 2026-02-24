@@ -108,6 +108,10 @@ public final class Constants {
 
         public static final InterpolatingTreeMap<Double, ShotData> SHOT_MAP = new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), ShotData::interpolate);
         public static final InterpolatingDoubleTreeMap TOF_MAP = new InterpolatingDoubleTreeMap();
+
+        public static final Distance funnelRadius = Inches.of(24);
+        public static final Distance funnelHeight = Inches.of(72 - 56.4);
+        public static final Distance distanceAboveFunnel = Inches.of(20);
     }
 
     public static final class HoodConstants {
