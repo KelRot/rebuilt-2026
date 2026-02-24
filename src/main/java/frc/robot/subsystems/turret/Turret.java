@@ -201,5 +201,7 @@ public class Turret extends SubsystemBase {
     public void simulationPeriodic() {
         visualizer.updateFuel(LinearVelocity.ofBaseUnits(4.0, MetersPerSecond), Degrees.of(60));
     }
-
+    public boolean isAtSetpoint(){
+        return io.isAtSetpoint();
+    }
 }
