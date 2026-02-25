@@ -208,4 +208,7 @@ public class Turret extends SubsystemBase {
     public boolean isAtSetpoint(){
         return io.isAtSetpoint();
     }
+    public void stop() {
+        io.stop();
+    }
 }
