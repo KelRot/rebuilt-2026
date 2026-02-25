@@ -78,6 +78,7 @@ public final class Constants {
         public static final int secondOpenerMotorID = 2;
         public static final double ZERO_CONFIRM_TIME = 0;
         public static final int ZERO_VELOCITY_EPS = 0;
+        public static final double intakeLength = 0.0;
     }
 
     public static class IndexConstants {

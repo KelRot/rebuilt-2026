@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import java.text.DecimalFormat;
@@ -259,5 +260,16 @@ public class DriveCommands {
         double[] positions = new double[4];
         Rotation2d lastAngle = new Rotation2d();
         double gyroDelta = 0.0;
+    }
+
+    private static Pose2d getBotPoseWithIntake(Drive drive){
+        Pose2d currentPose = drive.getPose();
+        double newY = currentPose.getY() + Constants.IntakeConstants.intakeLength/2.0;
+        return new Pose2d(currentPose.getX(), newY, currentPose.getRotation());
+    }
+
+    private static boolean isInTrenchArea(Drive drive){
+        Pose2d botPose = getBotPoseWithIntake(drive);
+        return true;
     }
 }
