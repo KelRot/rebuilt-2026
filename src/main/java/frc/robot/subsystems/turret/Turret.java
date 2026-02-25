@@ -39,7 +39,7 @@ public class Turret extends SubsystemBase {
     }
 
     public static enum SystemState {
-        IDLE, TRACKING, SHOOTING, POSITION
+        IDLE, TRACKING, SHOOTING, POSITION, TESTING
     }
 
     private SystemState systemState = SystemState.IDLE;
@@ -189,8 +189,12 @@ public class Turret extends SubsystemBase {
             case POSITION:
                 io.setPosition(manual_setpoint);
                 break;
+            case TESTING:
+                io.setVoltage(1.0);
+                break;
         }
-
+        
+        inputs.isAtSetpoint = io.isAtSetpoint();
         visualizer.update(inputs.positionRads, hub_setpoint);
         Logger.processInputs("Turret", inputs);
         Logger.recordOutput("Turret/SystemState", systemState.toString());

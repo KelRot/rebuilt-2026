@@ -13,7 +13,8 @@ public class Index extends SubsystemBase {
     IDLE,
     INDEXING,
     PASSIVE,
-    OUTTAKING
+    OUTTAKING,
+    TESTING
   }
 
   private SystemState systemState = SystemState.IDLE;
@@ -56,6 +57,9 @@ public class Index extends SubsystemBase {
         case OUTTAKING:
           io.setSpinnerVoltage(Constants.IndexConstants.OUTTAKING_VOLTAGE);
           break;
+          case TESTING:
+            io.setSpinnerVoltage(1);
+            break;
     }
 
     Logger.recordOutput("Index/SystemState", systemState.toString());

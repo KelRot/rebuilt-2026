@@ -10,7 +10,8 @@ public class Kicker extends SubsystemBase {
   public enum SystemState {
     IDLE,
     ENABLED,
-    MANUAL
+    MANUAL,
+    TESTING
   }
 
   private SystemState systemState = SystemState.IDLE;
@@ -53,6 +54,9 @@ public class Kicker extends SubsystemBase {
       case IDLE:
       default:
         io.setKickerVoltage(0.0);
+        break;
+      case TESTING:
+        io.setKickerVoltage(1);
         break;
     }
 
