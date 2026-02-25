@@ -115,10 +115,14 @@ public class Superstructure extends SubsystemBase {
             hood.requestState(Hood.SystemState.POSITION);
             turret.requestState(Turret.SystemState.POSITION);
             flywheel.requestState(Flywheel.SystemState.TARGET_RPM);
+            if (hood.isAtSetpoint()
+            && turret.isAtSetpoint()
+            && flywheel.isAtSetpoint()) {
+            currentState = SuperstructureState.SHOOTING;  
+        }
+        break;
 
-            setWantedState(SuperstructureState.SHOOTING);
 
-            break;
 
 
                 // Flywheel, hood ve turret istenilen pozisyona gelmeye çalışacak diğer herhangi
