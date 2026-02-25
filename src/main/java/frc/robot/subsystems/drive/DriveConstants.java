@@ -9,6 +9,8 @@ package frc.robot.subsystems.drive;
 
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
+
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -108,6 +110,11 @@ public class DriveConstants {
                     driveMotorCurrentLimit,
                     1),
             moduleTranslations);
+
+    public static final PIDController yController = new PIDController(DriveConstants.driveKp, 0.0, DriveConstants.driveKd);
+    static {
+        yController.setTolerance(0.5);
+    }
 }
 
 

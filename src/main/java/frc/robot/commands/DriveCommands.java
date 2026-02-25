@@ -23,8 +23,11 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
+import frc.robot.PointInPolygon;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.util.rebuilt.field.Field;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -74,8 +77,20 @@ public class DriveCommands {
                     // Square rotation value for more precise control
                     omega = Math.copySign(omega * omega, omega);
 
-                    // Convert to field relative speeds & send command
-                    ChassisSpeeds speeds = new ChassisSpeeds(
+                    if(isInTrenchArea(drive)){
+                        double ySpeed = MathUtil.clamp(DriveConstants.yController.calculate(drive.getPose().getY(), getTrenchAreaY(drive)), -drive.getMaxLinearSpeedMetersPerSec(), drive.getMaxLinearSpeedMetersPerSec());
+                        ChassisSpeeds speeds = new ChassisSpeeds(
+                            linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                            ySpeed,
+                            omega * drive.getMaxAngularSpeedRadPerSec());
+                    boolean isFlipped = DriverStation.getAlliance().isPresent()
+                            && DriverStation.getAlliance().get() == Alliance.Red;
+                    drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                            speeds,
+                            isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+                    }
+                    else{
+                        ChassisSpeeds speeds = new ChassisSpeeds(
                             linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                             linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                             omega * drive.getMaxAngularSpeedRadPerSec());
@@ -84,6 +99,7 @@ public class DriveCommands {
                     drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
                             speeds,
                             isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+                    }
                 },
                 drive);
     }
@@ -270,6 +286,21 @@ public class DriveCommands {
 
     private static boolean isInTrenchArea(Drive drive){
         Pose2d botPose = getBotPoseWithIntake(drive);
-        return true;
+        if(PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueUpperTrench) || PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueLowerTrench) ||
+           PointInPolygon.pointInPolygon(botPose, PointInPolygon.redUpperTrench) || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redLowerTrench)){
+            return true;
+        }
+        return false;
+    }
+
+    private static double getTrenchAreaY(Drive drive){
+        Pose2d botPose = getBotPoseWithIntake(drive);
+        if(PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueUpperTrench) || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redUpperTrench)){
+            return (Field.LeftBlueTrench.openingTopLeft.getY() + Field.LeftBlueTrench.openingTopRight.getY())/2.0;
+        }
+        else if(PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueLowerTrench) || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redLowerTrench)){
+            return (Field.RightBlueTrench.openingTopLeft.getY() + Field.RightBlueTrench.openingTopRight.getY())/2.0;
+        }
+        return botPose.getY();
     }
 }
