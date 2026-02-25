@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.LedSubsystem;
+import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -36,6 +37,7 @@ import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.flywheel.FlywheelIO;
 import frc.robot.subsystems.flywheel.FlywheelIOSparkFlex;
+import frc.robot.subsystems.hood.Hood;
 import frc.robot.subsystems.index.Index;
 import frc.robot.subsystems.index.IndexIO;
 import frc.robot.subsystems.index.IndexIOSpark;
@@ -86,6 +88,10 @@ public class RobotContainer {
         @Getter
         public static Flywheel flywheel;
         @Getter
+        public static Superstructure superstructure;
+        @Getter
+        public static Hood hood;
+        @Getter
         public static Turret turret;
         // Controller
         @Getter
@@ -100,7 +106,7 @@ public class RobotContainer {
          */
         public RobotContainer() {
                 led = new Led();
-                LedSubsystem ledsub = new LedSubsystem(led);
+                LedSubsystem ledsub = new LedSubsystem(led, superstructure);
                 DriverStation.silenceJoystickConnectionWarning(true);
                 switch (Constants.currentMode) {
                         case REAL:
@@ -123,6 +129,7 @@ public class RobotContainer {
 
                                 kicker = new Kicker(new KickerIOSpark());
                                 intake = new Intake(new IntakeIOSpark());
+                                superstructure = new Superstructure(intake, flywheel, kicker, hood,  turret,  drive, index);
                                 break;
 
                         case SIM:
