@@ -5,6 +5,7 @@ import static frc.robot.util.SparkUtil.ifOk;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.flywheel.Flywheel;
+import frc.robot.subsystems.flywheel.Flywheel.SystemState;
 import frc.robot.subsystems.hood.Hood;
 import frc.robot.subsystems.index.Index;
 import frc.robot.subsystems.turret.Turret;
@@ -114,6 +115,12 @@ public class Superstructure extends SubsystemBase {
             hood.requestState(Hood.SystemState.POSITION);
             turret.requestState(Turret.SystemState.POSITION);
             flywheel.requestState(Flywheel.SystemState.TARGET_RPM);
+
+            setWantedState(SuperstructureState.SHOOTING);
+
+            break;
+
+
                 // Flywheel, hood ve turret istenilen pozisyona gelmeye çalışacak diğer herhangi
                 // bir subsysteme dokunmayacak
                 // Flywheel, hood ve turret istenilen pozisyona geldiğinde shooting stateine
@@ -121,24 +128,62 @@ public class Superstructure extends SubsystemBase {
             case SHOOTING:
 
             if(
-                turret.isAtSetpoint()
-            )
+                turret.isAtSetpoint() && hood.isAtSetpoint() && flywheel.isAtSetpoint()
+            ) {
+                kicker.requestState(Kicker.SystemState.ENABLED);
+
+            }
                 // Kicker ekstra olarak aktif olacak diğer herhangi bir subsysteme dokunmayacak
                 // ( Flywheel, hood ve turret istenilen pozisyonda kalmaya çalışacak )
                 break;
             case DEFAULT:
+            default:
+            if(intake.isOpened()){
+                intake.requestState(Intake.SystemState.CLOSING);
+
+            }  
+                index.requestState(Index.SystemState.IDLE);
+                kicker.requestState(Kicker.SystemState.IDLE);   
+                turret.requestState(Turret.SystemState.TRACKING);
+                
+
+                
                 // Taret takip modunda olacak kicker dönmeyecek index dönmeyecek rollerlar
                 // dönmeyecek intake kapalı olacak
                 break;
             case TESTING:
-                // her motor 1 voltla dönücek ( her motorun voltajı kendi constantsında
+            hood.requestState(Hood.SystemState.TESTING);
+            turret.requestState(Turret.SystemState.TESTING);
+            flywheel.requestState(Flywheel.SystemState.TESTING);
+            index.requestState(Index.SystemState.TESTING);
+            kicker.requestState(Kicker.SystemState.TESTING);
+
+            // her motor 1 voltla dönücek ( her motorun voltajı kendi constantsında
                 // tekrardan tanımlanacak )
                 break;
             case STOP:
+            if(intake.isOpened()){
+                intake.requestState(Intake.SystemState.CLOSING);
+            }  
+            index.stop();
+            kicker.stop();
+            hood.stop();
+            turret.stop();
+            flywheel.stop();
+            drive.stop();
+            
+
+
                 // Bütün motorlar durdurulacak herhangi bir subsysteme dokunulmayacak. ( Intake
                 // acıksa kapanıcak )
                 break;
             case IDLE:
+            intake.requestState(Intake.SystemState.IDLE);
+            hood.requestState(Hood.SystemState.IDLE);
+            turret.requestState(Turret.SystemState.IDLE);
+            index.requestState(Index.SystemState.IDLE);
+            kicker.requestState(Kicker.SystemState.IDLE);   
+            flywheel.requestState(Flywheel.SystemState.IDLE);
                 // hiç bir şey yapmayacak
                 break;
 
