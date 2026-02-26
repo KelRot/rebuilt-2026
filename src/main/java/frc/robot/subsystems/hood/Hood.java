@@ -7,7 +7,8 @@ public class Hood extends SubsystemBase {
 
     public enum SystemState {
         IDLE,
-        POSITION
+        POSITION,
+        TESTING
     }
 
     private SystemState systemState = SystemState.IDLE;
@@ -48,10 +49,16 @@ public class Hood extends SubsystemBase {
             default:
                 io.stop();
                 break;
+            case TESTING:
+                io.setAppliedVoltage(1.0);
+                break;
         }
 
         Logger.recordOutput("Hood/SystemState", systemState.toString());
         Logger.recordOutput("Hood/TargetDeg", targetPositionDeg);
         Logger.processInputs("Hood", inputs);
     }
-}
+      public boolean isAtSetpoint() {
+        return io.isAtSetpoint();
+      }
+    }

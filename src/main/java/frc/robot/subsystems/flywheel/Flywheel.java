@@ -11,7 +11,9 @@ public class Flywheel extends SubsystemBase {
     public enum SystemState {
         IDLE,
         PASSIVE,
-        TARGET_RPM
+        TARGET_RPM,
+        TESTING
+
     }
 
     private SystemState systemState = SystemState.IDLE;
@@ -56,9 +58,15 @@ public class Flywheel extends SubsystemBase {
             default:
                 io.setRpm(0.0);
                 break;
+            case TESTING:
+                io.setAppliedVoltage(1.0);
+                break;
         }
         inputs.isAtSetpoint = io.isAtSetpoint();
         Logger.recordOutput("Flywheel/SystemState", systemState.toString());
         Logger.processInputs("Flywheel", inputs);
     }
+      public boolean isAtSetpoint() {
+        return io.isAtSetpoint();
+      }
 }
