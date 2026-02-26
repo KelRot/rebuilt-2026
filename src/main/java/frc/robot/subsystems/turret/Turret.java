@@ -194,7 +194,6 @@ public class Turret extends SubsystemBase {
                 break;
         }
         
-        inputs.isAtSetpoint = io.isAtSetpoint();
         visualizer.update(inputs.positionRads, hub_setpoint);
         Logger.processInputs("Turret", inputs);
         Logger.recordOutput("Turret/SystemState", systemState.toString());
