@@ -61,12 +61,17 @@ public class Superstructure extends SubsystemBase {
 
     @Override
     public void periodic() {
-        currentState = wantedState; // ikisinin farklı olma sebebi bazı durumlarda wanted statein current statee
+        currentState = wantedState;
+                                     // ikisinin farklı olma sebebi bazı durumlarda wanted statein current statee
                                     // geçmeden önce bazı işlemler yapması gerekebilir (örneğin prep shooting
                                     // durumunda flywheel, hood ve turret istenilen pozisyona gelmeye çalışacak eğer
                                     // istenilen pozisyona gelirse shooting durumuna geçecek gibi) bu yüzden ikisi
                                     // farklı tutuluyor. Eğer böyle bir durum yoksa direkt olarak wanted statei
                                     // current state yapabiliriz.
+    
+        if (currentState == SuperstructureState.PREP_SHOOTING && (turret.isAtSetpoint() && hood.isAtSetpoint() && flywheel.isAtSetpoint())) {
+            currentState = SuperstructureState.SHOOTING;
+        }
         switch (currentState) {
             case OPENING_INTAKE:
                 intake.requestState(Intake.SystemState.OPENING);
@@ -115,12 +120,9 @@ public class Superstructure extends SubsystemBase {
             hood.requestState(Hood.SystemState.POSITION);
             turret.requestState(Turret.SystemState.POSITION);
             flywheel.requestState(Flywheel.SystemState.TARGET_RPM);
-            if (hood.isAtSetpoint()
-            && turret.isAtSetpoint()
-            && flywheel.isAtSetpoint()) {
-            currentState = SuperstructureState.SHOOTING;  
-        }
-        break;
+            break;
+            
+        
 
 
 
@@ -182,12 +184,6 @@ public class Superstructure extends SubsystemBase {
                 // acıksa kapanıcak )
                 break;
             case IDLE:
-            intake.requestState(Intake.SystemState.IDLE);
-            hood.requestState(Hood.SystemState.IDLE);
-            turret.requestState(Turret.SystemState.IDLE);
-            index.requestState(Index.SystemState.IDLE);
-            kicker.requestState(Kicker.SystemState.IDLE);   
-            flywheel.requestState(Flywheel.SystemState.IDLE);
                 // hiç bir şey yapmayacak
                 break;
 
