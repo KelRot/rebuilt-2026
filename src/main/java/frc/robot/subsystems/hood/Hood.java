@@ -54,7 +54,6 @@ public class Hood extends SubsystemBase {
                 break;
         }
 
-        inputs.isAtSetpoint = io.isAtSetpoint();
         Logger.recordOutput("Hood/SystemState", systemState.toString());
         Logger.recordOutput("Hood/TargetDeg", targetPositionDeg);
         Logger.processInputs("Hood", inputs);
