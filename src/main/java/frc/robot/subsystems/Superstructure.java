@@ -37,6 +37,7 @@ public class Superstructure extends SubsystemBase {
         SHOOTING,
         DEFAULT,
         TESTING,
+        STOP_SHOOTING,
         STOP,
         IDLE
     }
@@ -166,6 +167,13 @@ public class Superstructure extends SubsystemBase {
 
             // her motor 1 voltla dönücek ( her motorun voltajı kendi constantsında
                 // tekrardan tanımlanacak )
+                break;
+            case STOP_SHOOTING:
+            kicker.requestState(Kicker.SystemState.IDLE);
+            flywheel.requestState(Flywheel.SystemState.IDLE);
+
+            setWantedState(SuperstructureState.IDLE);
+                // Sadece flywheel ve kicker duracak diğer herhangi bir subsysteme dokunmayacak
                 break;
             case STOP:
             if(intake.isOpened()){
