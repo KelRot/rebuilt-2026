@@ -1,18 +1,3 @@
-package frc.robot.subsystems;
-
-import static frc.robot.util.SparkUtil.ifOk;
-
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.flywheel.Flywheel;
-import frc.robot.subsystems.flywheel.Flywheel.SystemState;
-import frc.robot.subsystems.hood.Hood;
-import frc.robot.subsystems.index.Index;
-import frc.robot.subsystems.turret.Turret;
-import frc.robot.subsystems.kicker.Kicker;
-import frc.robot.subsystems.intake.Intake;
-
-
 public class Superstructure extends SubsystemBase {
 
     private final Index index;
@@ -23,12 +8,10 @@ public class Superstructure extends SubsystemBase {
     private final Turret turret;
     private final Drive drive;
 
+    private SuperstructureState currentState = SuperstructureState.IDLE;
+    private SuperstructureState wantedState = SuperstructureState.IDLE;
 
-    private SuperstructureState currentState = null;
-    private SuperstructureState wantedState = null;
-
-    public static enum SuperstructureState {
-        STOP_INTAKING,
+    public enum SuperstructureState {
         OPENING_INTAKE,
         INTAKING,
         CLOSING_INTAKE,
@@ -36,14 +19,23 @@ public class Superstructure extends SubsystemBase {
         OUTTAKE,
         PREP_SHOOTING,
         SHOOTING,
+        STOP_SHOOTING,
+        STOP_INTAKING,
         DEFAULT,
         TESTING,
-        STOP_SHOOTING,
         STOP,
         IDLE
     }
 
-    public Superstructure(Intake intake, Flywheel flywheel, Kicker kicker, Hood hood, Turret turret, Drive drive, Index index) {
+    public Superstructure(
+        Intake intake,
+        Flywheel flywheel,
+        Kicker kicker,
+        Hood hood,
+        Turret turret,
+        Drive drive,
+        Index index
+    ) {
         this.intake = intake;
         this.flywheel = flywheel;
         this.kicker = kicker;
@@ -63,141 +55,132 @@ public class Superstructure extends SubsystemBase {
 
     @Override
     public void periodic() {
+
+        handleTransitions();
+        runState(currentState);
+    }
+
+    /* ================= TRANSITIONS ================= */
+
+    private void handleTransitions() {
+
         currentState = wantedState;
-                                     // ikisinin farklı olma sebebi bazı durumlarda wanted statein current statee
-                                    // geçmeden önce bazı işlemler yapması gerekebilir (örneğin prep shooting
-                                    // durumunda flywheel, hood ve turret istenilen pozisyona gelmeye çalışacak eğer
-                                    // istenilen pozisyona gelirse shooting durumuna geçecek gibi) bu yüzden ikisi
-                                    // farklı tutuluyor. Eğer böyle bir durum yoksa direkt olarak wanted statei
-                                    // current state yapabiliriz.
-    
-        if (currentState == SuperstructureState.PREP_SHOOTING && (turret.isAtSetpoint() && hood.isAtSetpoint() && flywheel.isAtSetpoint())) {
+
+        if (currentState == SuperstructureState.PREP_SHOOTING
+                && turret.isAtSetpoint()
+                && hood.isAtSetpoint()
+                && flywheel.isAtSetpoint()) {
+
             currentState = SuperstructureState.SHOOTING;
         }
-        switch (currentState) {
-            case STOP_INTAKING:
-                intake.requestState(Intake.SystemState.IDLE);
-                setWantedState(SuperstructureState.IDLE);
-                break;
+    }
+
+    /* ================= STATE ACTIONS ================= */
+
+    private void runState(SuperstructureState state) {
+
+        switch (state) {
 
             case OPENING_INTAKE:
                 intake.requestState(Intake.SystemState.OPENING);
                 break;
 
             case INTAKING:
-
-            if(intake.isOpened()){
-                intake.requestState(Intake.SystemState.INTAKING);
-                index.requestState(Index.SystemState.INDEXING);
-                 }
-
-            else{
+                if (intake.isOpened()) {
+                    intake.requestState(Intake.SystemState.INTAKING);
+                    index.requestState(Index.SystemState.INDEXING);
+                }
                 break;
-            }
-                // Intake rollerları ve index dönücek diğer herhangi bir subsysteme dokunmayacak
-                break;
+
             case CLOSING_INTAKE:
-            if (!intake.isOpened()){
                 intake.requestState(Intake.SystemState.CLOSING);
-        }
-
-                // Rollerlar durdurulucak intake kapanacak index durdurulacak diğer herhangi bir
-                // subsysteme dokunmayacak
                 break;
+
             case REJECTING_INTAKE:
-            if (intake.isOpened()){
-                intake.requestState(Intake.SystemState.OUTTAKING);
-                // Rollerlar ters dönecek diğer herhangi bir subsysteme dokunmayacak ( Intake
-                // kapalıysa çalışmayacak)
-            }
+                if (intake.isOpened()) {
+                    intake.requestState(Intake.SystemState.OUTTAKING);
+                }
                 break;
+
             case OUTTAKE:
-            if (!intake.isOpened()){
-                intake.requestState(Intake.SystemState.OPENING);}
-            
-            index.requestState(Index.SystemState.OUTTAKING);
-                // Intake kapalıysa açılacak rollerlar ters dönecek index de ters dönecek o
-                // kadar diğer herhangi bir subsysteme dokunmayacak ( Intake zaten açıksa
-                // rollerlar ters dönecek index de ters dönecek o kadar diğer herhangi bir
-                // subsysteme dokunmayacak )
-                // dokunmayacak
+                if (!intake.isOpened()) {
+                    intake.requestState(Intake.SystemState.OPENING);
+                }
+                index.requestState(Index.SystemState.OUTTAKING);
                 break;
+
             case PREP_SHOOTING:
+                hood.requestState(Hood.SystemState.POSITION);
+                turret.requestState(Turret.SystemState.POSITION);
+                flywheel.requestState(Flywheel.SystemState.TARGET_RPM);
+                break;
 
-            hood.requestState(Hood.SystemState.POSITION);
-            turret.requestState(Turret.SystemState.POSITION);
-            flywheel.requestState(Flywheel.SystemState.TARGET_RPM);
-            break;
-            
-        
-
-
-
-
-                // Flywheel, hood ve turret istenilen pozisyona gelmeye çalışacak diğer herhangi
-                // bir subsysteme dokunmayacak
-                // Flywheel, hood ve turret istenilen pozisyona geldiğinde shooting stateine
-                // geçilecek
             case SHOOTING:
                 kicker.requestState(Kicker.SystemState.ENABLED);
-
-            
-                // Kicker ekstra olarak aktif olacak diğer herhangi bir subsysteme dokunmayacak
-                // ( Flywheel, hood ve turret istenilen pozisyonda kalmaya çalışacak )
                 break;
-            case DEFAULT:
-            default:
-            if(intake.isOpened()){
-                intake.requestState(Intake.SystemState.CLOSING);
 
-            }  
-                index.requestState(Index.SystemState.IDLE);
-                kicker.requestState(Kicker.SystemState.IDLE);   
-                turret.requestState(Turret.SystemState.TRACKING);
-                
-
-                
-                // Taret takip modunda olacak kicker dönmeyecek index dönmeyecek rollerlar
-                // dönmeyecek intake kapalı olacak
-                break;
-            case TESTING:
-            hood.requestState(Hood.SystemState.TESTING);
-            turret.requestState(Turret.SystemState.TESTING);
-            flywheel.requestState(Flywheel.SystemState.TESTING);
-            index.requestState(Index.SystemState.TESTING);
-            kicker.requestState(Kicker.SystemState.TESTING);
-
-            // her motor 1 voltla dönücek ( her motorun voltajı kendi constantsında
-                // tekrardan tanımlanacak )
-                break;
             case STOP_SHOOTING:
-            kicker.requestState(Kicker.SystemState.IDLE);
-            flywheel.requestState(Flywheel.SystemState.IDLE);
-
-            setWantedState(SuperstructureState.IDLE);
-                // Sadece flywheel ve kicker duracak diğer herhangi bir subsysteme dokunmayacak
+                kicker.requestState(Kicker.SystemState.IDLE);
+                flywheel.requestState(Flywheel.SystemState.IDLE);
+                wantedState = SuperstructureState.IDLE;
                 break;
+
+            case STOP_INTAKING:
+                intake.requestState(Intake.SystemState.IDLE);
+                wantedState = SuperstructureState.IDLE;
+                break;
+
+            case DEFAULT:
+                defaultBehavior();
+                break;
+
+            case TESTING:
+                testingBehavior();
+                break;
+
             case STOP:
-            if(intake.isOpened()){
-                intake.requestState(Intake.SystemState.CLOSING);
-            }  
-            index.stop();
-            kicker.stop();
-            hood.stop();
-            turret.stop();
-            flywheel.stop();
-            drive.stop();
-            
-
-
-                // Bütün motorlar durdurulacak herhangi bir subsysteme dokunulmayacak. ( Intake
-                // acıksa kapanıcak )
+                stopAll();
                 break;
+
             case IDLE:
-                // hiç bir şey yapmayacak
+            default:
                 break;
-
         }
     }
 
+    /* ================= BEHAVIORS ================= */
+
+    private void defaultBehavior() {
+
+        if (intake.isOpened()) {
+            intake.requestState(Intake.SystemState.CLOSING);
+        }
+
+        index.requestState(Index.SystemState.IDLE);
+        kicker.requestState(Kicker.SystemState.IDLE);
+        turret.requestState(Turret.SystemState.TRACKING);
+    }
+
+    private void testingBehavior() {
+
+        hood.requestState(Hood.SystemState.TESTING);
+        turret.requestState(Turret.SystemState.TESTING);
+        flywheel.requestState(Flywheel.SystemState.TESTING);
+        index.requestState(Index.SystemState.TESTING);
+        kicker.requestState(Kicker.SystemState.TESTING);
+    }
+
+    private void stopAll() {
+
+        if (intake.isOpened()) {
+            intake.requestState(Intake.SystemState.CLOSING);
+        }
+
+        index.stop();
+        kicker.stop();
+        hood.stop();
+        turret.stop();
+        flywheel.stop();
+        drive.stop();
+    }
 }
