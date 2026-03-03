@@ -34,7 +34,7 @@ public class LedSubsystem extends SubsystemBase {
                         case INTAKING:
                                 led.setAnimation(new LedPattern.Breathe(Color.kLime, 1.2));
                                 break;
-                        case CLOSING_INTAKE:
+                        case CLOSING_AND_STOPPING_INTAKE:
                                 led.setAnimation(new LedPattern.SingleFade(Color.kForestGreen, 2));
                                 break;
                         case REJECTING_INTAKE:
@@ -52,11 +52,16 @@ public class LedSubsystem extends SubsystemBase {
                         case TESTING:
                                 led.setAnimation(new LedPattern.Strobe(Color.kWhite, 0.25));
                                 break;
-                        case STOP:
-                                led.setAnimation(new LedPattern.Rainbow(1.5));
-                                break;
                         case IDLE:
                                 led.setAnimation(new LedPattern.Rainbow(1.5));
+                                break;
+                        case PREP_SHOOTING_AND_INTAKING:
+                                break;
+                        case SHOOTING_AND_INTAKING:
+                                break;
+                        case STUCKED_RECOVERY:
+                                break;
+                        default:
                                 break;
                 }
         }

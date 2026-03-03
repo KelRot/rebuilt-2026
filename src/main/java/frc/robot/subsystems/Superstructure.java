@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -78,6 +80,10 @@ public class Superstructure extends SubsystemBase {
             applyState(wantedState);
             currentState = wantedState;
         }
+        if (hood.isAtSetpoint()&turret.isAtSetpoint()&flywheel.isAtSetpoint()){
+            wantedState = SuperstructureState.SHOOTING;
+        }
+        Logger.recordOutput("SuperStructure/State", currentState.toString());
     }
 
     /* ================= STATE APPLY ================= */
@@ -92,7 +98,7 @@ public class Superstructure extends SubsystemBase {
 
             case INTAKING:
                 intake.requestState(Intake.SystemState.INTAKING);
-                index.requestState(Index.SystemState.INDEXING);
+                index.requestState(Index.SystemState.PASSIVE);
                 break;
 
             case CLOSING_AND_STOPPING_INTAKE:
@@ -118,6 +124,7 @@ public class Superstructure extends SubsystemBase {
 
             case SHOOTING:
                 kicker.requestState(Kicker.SystemState.ENABLED);
+                index.requestState(Index.SystemState.INDEXING);
                 break;
 
             case SHOOTING_AND_INTAKING:
@@ -150,12 +157,12 @@ public class Superstructure extends SubsystemBase {
     }
 
     private void stopAll() {
-        intake.requestState(SystemState.IDLE);
-        index.requestState();
-        kicker.stop();
-        hood.stop();
-        turret.stop();
-        flywheel.stop();
+        intake.requestState(Intake.SystemState.IDLE);
+        index.requestState(Index.SystemState.IDLE);
+        kicker.requestState(Kicker.SystemState.IDLE);
+        hood.requestState(Hood.SystemState.IDLE);
+        turret.requestState(Turret.SystemState.IDLE);
+        flywheel.requestState(Flywheel.SystemState.IDLE);
         drive.stop();
     }
 
@@ -229,5 +236,8 @@ public class Superstructure extends SubsystemBase {
         return new InstantCommand(() -> {
             wantedState = SuperstructureState.TESTING;
         }, this);
+    }
+    public SuperstructureState getCurrentState(){
+        return currentState;
     }
 }
