@@ -133,13 +133,9 @@ public class Superstructure extends SubsystemBase {
                 // Flywheel, hood ve turret istenilen pozisyona geldiğinde shooting stateine
                 // geçilecek
             case SHOOTING:
-
-            if(
-                turret.isAtSetpoint() && hood.isAtSetpoint() && flywheel.isAtSetpoint()
-            ) {
                 kicker.requestState(Kicker.SystemState.ENABLED);
 
-            }
+            
                 // Kicker ekstra olarak aktif olacak diğer herhangi bir subsysteme dokunmayacak
                 // ( Flywheel, hood ve turret istenilen pozisyonda kalmaya çalışacak )
                 break;
