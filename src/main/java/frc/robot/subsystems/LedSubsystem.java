@@ -40,9 +40,6 @@ public class LedSubsystem extends SubsystemBase {
                         case REJECTING_INTAKE:
                                 led.setAnimation(new LedPattern.TwinkleOff(Color.kGold, 1.2, 8));
                                 break;
-                        case OUTTAKE:
-                                led.setAnimation(new LedPattern.Strobe(Color.kDodgerBlue, 0.25));
-                                break;
                         case PREP_SHOOTING:
                                 led.setAnimation(new LedPattern.Larson(Color.kMediumAquamarine, 1, 4.0));
                                 break;
