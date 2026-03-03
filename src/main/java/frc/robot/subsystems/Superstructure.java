@@ -28,6 +28,7 @@ public class Superstructure extends SubsystemBase {
     private SuperstructureState wantedState = null;
 
     public static enum SuperstructureState {
+        STOP_INTAKING,
         OPENING_INTAKE,
         INTAKING,
         CLOSING_INTAKE,
@@ -74,6 +75,11 @@ public class Superstructure extends SubsystemBase {
             currentState = SuperstructureState.SHOOTING;
         }
         switch (currentState) {
+            case STOP_INTAKING:
+                intake.requestState(Intake.SystemState.IDLE);
+                setWantedState(SuperstructureState.IDLE);
+                break;
+
             case OPENING_INTAKE:
                 intake.requestState(Intake.SystemState.OPENING);
                 break;
