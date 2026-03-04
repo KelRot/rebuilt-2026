@@ -7,21 +7,56 @@
 
 package frc.robot.subsystems;
 
-import com.google.flatbuffers.Constants;
-
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.flywheel.Flywheel;
+import frc.robot.subsystems.hood.Hood;
+import frc.robot.subsystems.index.Index;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.kicker.Kicker;
+import frc.robot.subsystems.turret.Turret;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.LedSubsystem;
+import frc.robot.subsystems.drive.GyroIOPigeon2;
+import frc.robot.subsystems.drive.ModuleIOSpark;
+import frc.robot.subsystems.flywheel.FlywheelIO;
+import frc.robot.subsystems.hood.HoodIOSpark;
+import frc.robot.subsystems.index.IndexIO;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.kicker.KickerIO;
+import frc.robot.subsystems.turret.TurretIO;
 import frc.robot.util.led.Led;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.led.patterns.LedPattern;
 import frc.robot.Constants.LedConstants;
 
 public class LedSubsystem extends SubsystemBase {
         private final Led led;
-        private final Superstructure superstructure;
-        public LedSubsystem(Led led, Superstructure superstructure) {
-                System.out.println("[LedSubsystem] Constructing LedSubsystem...");
-                this.led = led;
-                this.superstructure = superstructure;
+        private Superstructure superstructure = new Superstructure(
+                        new Intake(new IntakeIO() {
+                        }),
+                        new Flywheel(new FlywheelIO() {
+                        }),
+                        new Kicker(new KickerIO() {
+                        }),
+                        new Hood(new HoodIOSpark() {
+                        }),
+                        new Turret(new TurretIO() {
+                        }),
+                        new Drive(
+                                                        new GyroIOPigeon2(),
+                                                        new ModuleIOSpark(0),
+                                                        new ModuleIOSpark(1),
+                                                        new ModuleIOSpark(2),
+                                                        new ModuleIOSpark(3){
+        
+                                                        }),
+        
+                        new Index(new IndexIO() {
+                        }));
+                public LedSubsystem(Led led, Superstructure superstructure) {
+                        System.out.println("[LedSubsystem] Constructing LedSubsystem...");
+                        this.led = led;
+                        this.superstructure = superstructure;
                 led.setStaticColor(Color.kAliceBlue);
         }
 
