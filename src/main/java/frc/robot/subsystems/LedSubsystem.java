@@ -31,28 +31,7 @@ import frc.robot.Constants.LedConstants;
 
 public class LedSubsystem extends SubsystemBase {
         private final Led led;
-        private Superstructure superstructure = new Superstructure(
-                        new Intake(new IntakeIO() {
-                        }),
-                        new Flywheel(new FlywheelIO() {
-                        }),
-                        new Kicker(new KickerIO() {
-                        }),
-                        new Hood(new HoodIOSpark() {
-                        }),
-                        new Turret(new TurretIO() {
-                        }),
-                        new Drive(
-                                                        new GyroIOPigeon2(),
-                                                        new ModuleIOSpark(0),
-                                                        new ModuleIOSpark(1),
-                                                        new ModuleIOSpark(2),
-                                                        new ModuleIOSpark(3){
-        
-                                                        }),
-        
-                        new Index(new IndexIO() {
-                        }));
+        private Superstructure superstructure;
                 public LedSubsystem(Led led, Superstructure superstructure) {
                         System.out.println("[LedSubsystem] Constructing LedSubsystem...");
                         this.led = led;

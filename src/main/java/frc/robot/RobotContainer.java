@@ -105,9 +105,10 @@ public class RobotContainer {
         /**
          * The container for the robot. Contains subsystems, OI devices, and commands.
          */
+        
         public RobotContainer() {
+                
                 led = new Led();
-                LedSubsystem ledsub = new LedSubsystem(led, superstructure);
                 DriverStation.silenceJoystickConnectionWarning(true);
                 switch (Constants.currentMode) {
                         case REAL:
@@ -130,8 +131,9 @@ public class RobotContainer {
 
                                 kicker = new Kicker(new KickerIOSpark());
                                 intake = new Intake(new IntakeIOSpark());
+                                hood = new Hood(new HoodIOSpark());
                                 superstructure = new Superstructure(intake, flywheel, kicker, hood,  turret,  drive, index);
-                                break;
+                                LedSubsystem ledsub = new LedSubsystem(led, superstructure);                                break;
 
                         case SIM:
                                 // Sim robot, instantiate physics sim IO implementations
@@ -150,8 +152,10 @@ public class RobotContainer {
                                 intake = new Intake(new IntakeIOSim());
                                 index = new Index(new IndexIOSpark());
                                 turret = new Turret(new TurretIOSim(fuelSim));
+                                hood = new Hood(new HoodIOSpark());
                                 
                                 superstructure = new Superstructure(intake, flywheel, kicker, hood,  turret,  drive, index);
+                                ledsub = new LedSubsystem(led, superstructure);
                                 configureFuelSim();
                                 break;
 
@@ -179,6 +183,7 @@ public class RobotContainer {
                                 });
                                 hood = new Hood(new HoodIOSpark(){
                                 });
+                                ledsub = new LedSubsystem(led, superstructure);
                                 break;
                 }
                 NamedCommands.registerCommand("intake",
