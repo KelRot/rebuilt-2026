@@ -110,11 +110,6 @@ public class DriveConstants {
                     driveMotorCurrentLimit,
                     1),
             moduleTranslations);
-
-    public static final PIDController yController = new PIDController(DriveConstants.driveKp, 0.0, DriveConstants.driveKd);
-    static {
-        yController.setTolerance(0.5);
-    }
 }
 
 

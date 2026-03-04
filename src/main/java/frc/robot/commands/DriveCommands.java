@@ -8,6 +8,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -45,6 +46,8 @@ public class DriveCommands {
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
+    private static final PIDController yController = new PIDController(5.0, 0.0, 0.0);
+    static {yController.setTolerance(0.5);}
 
     private DriveCommands() {}
 
@@ -78,10 +81,10 @@ public class DriveCommands {
                     omega = Math.copySign(omega * omega, omega);
 
                     if(isInTrenchArea(drive)){
-                        double ySpeed = MathUtil.clamp(DriveConstants.yController.calculate(drive.getPose().getY(), getTrenchAreaY(drive)), -drive.getMaxLinearSpeedMetersPerSec(), drive.getMaxLinearSpeedMetersPerSec());
+                        double ySpeed = MathUtil.clamp(yController.calculate(drive.getPose().getY(), getTrenchAreaY(drive)), -drive.getMaxLinearSpeedMetersPerSec(), drive.getMaxLinearSpeedMetersPerSec());
                         ChassisSpeeds speeds = new ChassisSpeeds(
                             linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                            ySpeed,
+                            -ySpeed,
                             omega * drive.getMaxAngularSpeedRadPerSec());
                     boolean isFlipped = DriverStation.getAlliance().isPresent()
                             && DriverStation.getAlliance().get() == Alliance.Red;
