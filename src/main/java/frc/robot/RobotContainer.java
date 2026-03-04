@@ -38,6 +38,7 @@ import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.flywheel.FlywheelIO;
 import frc.robot.subsystems.flywheel.FlywheelIOSparkFlex;
 import frc.robot.subsystems.hood.Hood;
+import frc.robot.subsystems.hood.HoodIOSpark;
 import frc.robot.subsystems.index.Index;
 import frc.robot.subsystems.index.IndexIO;
 import frc.robot.subsystems.index.IndexIOSpark;
@@ -149,6 +150,8 @@ public class RobotContainer {
                                 intake = new Intake(new IntakeIOSim());
                                 index = new Index(new IndexIOSpark());
                                 turret = new Turret(new TurretIOSim(fuelSim));
+                                
+                                superstructure = new Superstructure(intake, flywheel, kicker, hood,  turret,  drive, index);
                                 configureFuelSim();
                                 break;
 
@@ -173,6 +176,8 @@ public class RobotContainer {
                                 flywheel = new Flywheel(new FlywheelIO() {
                                 });
                                 turret = new Turret(new TurretIO() {
+                                });
+                                hood = new Hood(new HoodIOSpark(){
                                 });
                                 break;
                 }
@@ -235,9 +240,9 @@ public class RobotContainer {
                                                                 new Rotation2d())),
                                                 drive)
                                                 .ignoringDisable(true));
-                controller.x().onTrue(Commands.runOnce(() -> intake.requestState(SystemState.CLOSING), intake));
+                controller.button(1).onTrue(superstructure.intakeCommand());
 
-                controller.y().onTrue(Commands.runOnce(() -> intake.requestState(SystemState.INTAKING), intake));
+                controller.button(2).onTrue(superstructure.shootCommand());
                 controller.leftBumper().whileTrue(Commands.runOnce(() -> turret.launchFuel(), turret).repeatedly());
         }
 
