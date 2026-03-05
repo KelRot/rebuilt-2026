@@ -1,6 +1,12 @@
 package frc.robot.subsystems.intake;
 
 import static frc.robot.util.SparkUtil.*;
+
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfigurator;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
 import com.revrobotics.ResetMode;
@@ -17,16 +23,11 @@ public class IntakeIOSpark implements IntakeIO {
 
   private static SparkMax openerMotor = new SparkMax(Constants.IntakeConstants.openerMotorID, MotorType.kBrushless);
   private static SparkMax secondOpenerMotor = new SparkMax(Constants.IntakeConstants.secondOpenerMotorID, MotorType.kBrushless);
-  private static SparkMax rollerMotor = new SparkMax(Constants.IntakeConstants.rollerMotorID, MotorType.kBrushless);
 
   /** Creates a new ExampleSubsystem. */
   public IntakeIOSpark() {
+    config();
     openerMotor.getEncoder().setPosition(37);
-  }
-
-  @Override
-  public void setRollerVoltage(double volts) {
-    rollerMotor.setVoltage(volts);
   }
 
   @Override
@@ -53,10 +54,8 @@ public class IntakeIOSpark implements IntakeIO {
   }
 
   public void config() {
-    SparkMaxConfig rollerConfig = new SparkMaxConfig();
     SparkMaxConfig openerConfig = new SparkMaxConfig();
 
-    rollerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(20);
     openerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(20);
     openerConfig.closedLoop.maxMotion.positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal)
         .cruiseVelocity(500).maxAcceleration(1500).allowedProfileError(2);
@@ -64,11 +63,6 @@ public class IntakeIOSpark implements IntakeIO {
         .reverseSoftLimitEnabled(true);
     openerConfig.encoder.positionConversionFactor(1.0 / Constants.IntakeConstants.openerGearRatio * 360.0);
 
-    tryUntilOk(
-        rollerMotor,
-        5,
-        () -> rollerMotor.configure(rollerConfig, ResetMode.kResetSafeParameters,
-            PersistMode.kPersistParameters));
     tryUntilOk(
         openerMotor,
         5,
