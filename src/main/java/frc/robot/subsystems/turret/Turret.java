@@ -27,19 +27,15 @@ package frc.robot.subsystems.turret;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.drive.Drive.RobotZone;
-import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.util.rebuilt.field.Field;
 import frc.robot.util.rebuilt.field.FieldHelpers;
 
-import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -56,6 +52,7 @@ public class Turret extends SubsystemBase {
     private final double maxAngle = 270.0; // degree
     private final double CAPACITY = 10;
     private double fuelStored = 0;
+    private double lastTurretAngle;
 
     public Turret(TurretIO io) {
         this.io = io;
@@ -78,18 +75,29 @@ public class Turret extends SubsystemBase {
 
         double difference = e1Value - e2Value;
 
-        if(difference > 250) difference -= 360;
-        if(difference < -250) difference += 360;
+        if(difference > 120) difference -= 360;
+        if(difference < -120) difference += 360;
 
         double turretAngle = difference * slope;
         turretAngle = turretAngle % 360.0;
     
         if(turretAngle < 0){
-        turretAngle += 360.0;
-    }
+            turretAngle += 360.0;
+        }
 
-    return turretAngle;
-  }
+        if(turretAngle > 180){
+            turretAngle -= 360;
+        }
+        else if(lastTurretAngle < -150 && turretAngle < 180){
+            turretAngle = -180 - (180-turretAngle);
+        }
+        if(lastTurretAngle > 150 && turretAngle < 0){
+            turretAngle = 180 + (180 + turretAngle);
+        }
+
+        lastTurretAngle = turretAngle;
+        return turretAngle;
+    }
 
     public boolean canIntake() {
         return fuelStored < CAPACITY;
