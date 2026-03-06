@@ -66,8 +66,7 @@ public final class Constants {
 
     
     public static class IntakeConstants {
-        public static final int rollerMotorID = 0;
-        public static final int openerMotorID = 1;
+        public static final int rollerMotorID = 5;
         public static final double zeroWaitSeconds = 2;
         public static final double zeroVoltage = 0;
         public static double openerGearRatio = 3.2;
@@ -77,13 +76,12 @@ public final class Constants {
         public static double openVoltage;
         public static Time openWaitSeconds;
         public static double intakeClosedPosition = 0;
-        public static final int secondOpenerMotorID = 2;
         public static final double ZERO_CONFIRM_TIME = 0;
         public static final int ZERO_VELOCITY_EPS = 0;
     }
 
     public static class IndexConstants {
-        public static final int spinnerMotorID = 3;
+        public static final int spinnerMotorID = 23;
 
         public static final double PASSIVE_MODE_VOLTAGE = 3.0;
         public static final double INDEXING_VOLTAGE = 10.0;
@@ -91,13 +89,13 @@ public final class Constants {
     }
 
     public static class KickerConstants {
-        public static final int kickerMotorID = 4;
+        public static final int kickerMotorID = 3;
         public static final double defaultKickerVoltage = 0;
     }
 
     public static class FlywheelConstants {
-        public static final int kMasterMotorId = 7;
-        public static final int kFollowerMotorId = 8;
+        public static final int kMasterMotorId = 1;
+        public static final int kFollowerMotorId = 2;
         public static final double kp = 0;
         public static final double ki = 0;
         public static final double kd = 0;

@@ -7,14 +7,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.flywheel.Flywheel;
-import frc.robot.subsystems.hood.Hood;
 import frc.robot.subsystems.index.Index;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.SystemState;
 import frc.robot.subsystems.kicker.Kicker;
-import frc.robot.subsystems.turret.Turret;
 
 public class Superstructure extends SubsystemBase {
 
@@ -23,9 +20,6 @@ public class Superstructure extends SubsystemBase {
     private final Intake intake;
     private final Flywheel flywheel;
     private final Kicker kicker;
-    private final Hood hood;
-    private final Turret turret;
-    private final Drive drive;
     private final Index index;
 
     /* ================= STATE ================= */
@@ -59,17 +53,11 @@ public class Superstructure extends SubsystemBase {
             Intake intake,
             Flywheel flywheel,
             Kicker kicker,
-            Hood hood,
-            Turret turret,
-            Drive drive,
             Index index) {
 
         this.intake = intake;
         this.flywheel = flywheel;
         this.kicker = kicker;
-        this.hood = hood;
-        this.turret = turret;
-        this.drive = drive;
         this.index = index;
     }
 
@@ -81,7 +69,7 @@ public class Superstructure extends SubsystemBase {
             applyState(wantedState);
             currentState = wantedState;
         }
-        if (hood.isAtSetpoint()&turret.isAtSetpoint()&flywheel.isAtSetpoint()){
+        if (flywheel.isAtSetpoint()){
             wantedState = SuperstructureState.SHOOTING;
         }
         Logger.recordOutput("SuperStructure/State", currentState.toString());
@@ -113,8 +101,6 @@ public class Superstructure extends SubsystemBase {
                 break;
 
             case PREP_SHOOTING:
-                hood.requestState(Hood.SystemState.POSITION);
-                turret.requestState(Turret.SystemState.POSITION);
                 flywheel.requestState(Flywheel.SystemState.TARGET_RPM);
                 break;
 
@@ -139,15 +125,12 @@ public class Superstructure extends SubsystemBase {
                 break;
 
             case TESTING:
-                hood.requestState(Hood.SystemState.TESTING);
-                turret.requestState(Turret.SystemState.TESTING);
                 flywheel.requestState(Flywheel.SystemState.TESTING);
                 index.requestState(Index.SystemState.TESTING);
                 kicker.requestState(Kicker.SystemState.TESTING);
                 break;
 
             case DEFAULT:
-                turret.requestState(Turret.SystemState.TRACKING);
                 break;
             
             case IDLE:
@@ -161,10 +144,7 @@ public class Superstructure extends SubsystemBase {
         intake.requestState(Intake.SystemState.IDLE);
         index.requestState(Index.SystemState.IDLE);
         kicker.requestState(Kicker.SystemState.IDLE);
-        hood.requestState(Hood.SystemState.IDLE);
-        turret.requestState(Turret.SystemState.IDLE);
         flywheel.requestState(Flywheel.SystemState.IDLE);
-        drive.stop();
     }
 
     /* ================= HELPERS ================= */
