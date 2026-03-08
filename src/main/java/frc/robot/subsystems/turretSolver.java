@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.util.DualAbsoluteEncoderResolver;
@@ -27,6 +28,7 @@ public class turretSolver extends SubsystemBase {
     double abs2 = absEncoder2.get();
     double turretRotations = resolver.solve(abs1, abs2);
     System.out.println("Turret rotations: " + turretRotations);
+    SmartDashboard.putNumber("Turret rotations:", turretRotations);
   }
 
   @Override
