@@ -22,7 +22,8 @@ public class Intake extends SubsystemBase {
     CLOSING,
     POSITION_CONTROL,
     ZEROING,
-    MANUAL
+    MANUAL,
+    TESTING
   }
 
   private SystemState systemState = SystemState.INTAKING;
@@ -133,10 +134,18 @@ public class Intake extends SubsystemBase {
         io.setRollerVoltage(0.0);
         io.setOpenerVoltage(0.0);
         break;
+      case TESTING:
+        if(!isOpened()) {
+        io.setOpenerVoltage(1.0);}
+        else if (isOpened()) {
+        io.setRollerVoltage(1.0);
+        io.setOpenerVoltage(0.0);
+        break;
     }
+    
 
     Logger.recordOutput("Intake/SystemState", systemState.toString());
-    Logger.processInputs("Intake", inputs);
+    Logger.processInputs("Intake", inputs);}
   }
 
   public boolean isOpened() {

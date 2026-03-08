@@ -20,6 +20,8 @@ import frc.robot.Constants;
 
 public class HoodIOSpark implements HoodIO {
 
+  private double targetPositionDeg;
+
   private final SparkMax motor;
   private final RelativeEncoder encoder;
   private final SparkClosedLoopController controller;
@@ -42,6 +44,7 @@ public class HoodIOSpark implements HoodIO {
 
   @Override
   public void setPosition(double positionDeg) {
+    targetPositionDeg = positionDeg;
     controller.setSetpoint(positionDeg, ControlType.kMAXMotionPositionControl);
   }
 
@@ -83,5 +86,11 @@ public class HoodIOSpark implements HoodIO {
                 config,
                 ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters));
+                  
   }
+  @Override
+  public boolean isAtSetpoint() {
+    return Math.abs(targetPositionDeg - encoder.getPosition()*360) < 1.0;
+  }
+  
 }

@@ -21,4 +21,9 @@ public interface HoodIO {
 
     default void stop() {
     }
+    default void setAppliedVoltage(double volts) {
+        }
+    public default boolean isAtSetpoint() {
+        return false;
+    }
 }

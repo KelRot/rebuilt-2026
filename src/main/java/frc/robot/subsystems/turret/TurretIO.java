@@ -34,6 +34,10 @@ public interface TurretIO {
     /* Stop the turret motor */
     public default void stop(){}
 
+    public default boolean isAtSetpoint(){
+        return false;
+    }
+
 
 
 }

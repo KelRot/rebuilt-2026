@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.LedSubsystem;
+import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -36,6 +37,8 @@ import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.flywheel.FlywheelIO;
 import frc.robot.subsystems.flywheel.FlywheelIOSparkFlex;
+import frc.robot.subsystems.hood.Hood;
+import frc.robot.subsystems.hood.HoodIOSpark;
 import frc.robot.subsystems.index.Index;
 import frc.robot.subsystems.index.IndexIO;
 import frc.robot.subsystems.index.IndexIOSpark;
@@ -86,6 +89,10 @@ public class RobotContainer {
         @Getter
         public static Flywheel flywheel;
         @Getter
+        public static Superstructure superstructure;
+        @Getter
+        public static Hood hood;
+        @Getter
         public static Turret turret;
         // Controller
         @Getter
@@ -98,9 +105,10 @@ public class RobotContainer {
         /**
          * The container for the robot. Contains subsystems, OI devices, and commands.
          */
+        
         public RobotContainer() {
+                
                 led = new Led();
-                LedSubsystem ledsub = new LedSubsystem(led);
                 DriverStation.silenceJoystickConnectionWarning(true);
                 switch (Constants.currentMode) {
                         case REAL:
@@ -123,7 +131,9 @@ public class RobotContainer {
 
                                 kicker = new Kicker(new KickerIOSpark());
                                 intake = new Intake(new IntakeIOSpark());
-                                break;
+                                hood = new Hood(new HoodIOSpark());
+                                superstructure = new Superstructure(intake, flywheel, kicker, hood,  turret,  drive, index);
+                                LedSubsystem ledsub = new LedSubsystem(led, superstructure);                                break;
 
                         case SIM:
                                 // Sim robot, instantiate physics sim IO implementations
@@ -142,6 +152,10 @@ public class RobotContainer {
                                 intake = new Intake(new IntakeIOSim());
                                 index = new Index(new IndexIOSpark());
                                 turret = new Turret(new TurretIOSim(fuelSim));
+                                hood = new Hood(new HoodIOSpark());
+                                
+                                superstructure = new Superstructure(intake, flywheel, kicker, hood,  turret,  drive, index);
+                                ledsub = new LedSubsystem(led, superstructure);
                                 configureFuelSim();
                                 break;
 
@@ -167,6 +181,9 @@ public class RobotContainer {
                                 });
                                 turret = new Turret(new TurretIO() {
                                 });
+                                hood = new Hood(new HoodIOSpark(){
+                                });
+                                ledsub = new LedSubsystem(led, superstructure);
                                 break;
                 }
                 NamedCommands.registerCommand("intake",
@@ -228,9 +245,9 @@ public class RobotContainer {
                                                                 new Rotation2d())),
                                                 drive)
                                                 .ignoringDisable(true));
-                controller.x().onTrue(Commands.runOnce(() -> intake.requestState(SystemState.CLOSING), intake));
+                controller.button(1).onTrue(superstructure.intakeCommand());
 
-                controller.y().onTrue(Commands.runOnce(() -> intake.requestState(SystemState.INTAKING), intake));
+                controller.button(2).onTrue(superstructure.shootCommand());
                 controller.leftBumper().whileTrue(Commands.runOnce(() -> turret.launchFuel(), turret).repeatedly());
         }
 

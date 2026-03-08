@@ -22,6 +22,7 @@ import com.revrobotics.spark.SparkBase.ControlType;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.Encoder;
 
 public class TurretIOSpark implements TurretIO {
     //Hardware components
@@ -29,6 +30,8 @@ public class TurretIOSpark implements TurretIO {
     private final RelativeEncoder turretEncoder;
     private final DutyCycleEncoder absEncoder1;
     private final DutyCycleEncoder absEncoder2;
+
+    private double targetPositionDeg;
 
     private final SparkClosedLoopController turretController;
 
@@ -69,6 +72,7 @@ public class TurretIOSpark implements TurretIO {
 
     @Override
     public void setPosition(double setpoint){
+        targetPositionDeg = setpoint*360;//CHECK LATER
         turretController.setSetpoint(setpoint, ControlType.kMAXMotionPositionControl);
     }
 
@@ -111,5 +115,9 @@ public class TurretIOSpark implements TurretIO {
         tryUntilOk(turretMotor, 5, ()->
         turretMotor.configure(turretConfig,ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
     }
-
+    @Override
+        public boolean isAtSetpoint() {
+            double angle = turretEncoder.getPosition()*360;
+            return Math.abs(angle - targetPositionDeg) < 5;
+}
 }
