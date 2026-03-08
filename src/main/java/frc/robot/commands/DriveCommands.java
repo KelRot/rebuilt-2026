@@ -8,6 +8,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -22,8 +23,12 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants;
+import frc.robot.PointInPolygon;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.util.rebuilt.field.Field;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -41,6 +46,8 @@ public class DriveCommands {
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
+    private static final PIDController yController = new PIDController(5.0, 0.0, 0.0);
+    static {yController.setTolerance(0.5);}
 
     private DriveCommands() {}
 
@@ -73,8 +80,20 @@ public class DriveCommands {
                     // Square rotation value for more precise control
                     omega = Math.copySign(omega * omega, omega);
 
-                    // Convert to field relative speeds & send command
-                    ChassisSpeeds speeds = new ChassisSpeeds(
+                    if(isInTrenchArea(drive)){
+                        double ySpeed = MathUtil.clamp(yController.calculate(drive.getPose().getY(), getTrenchAreaY(drive)), -drive.getMaxLinearSpeedMetersPerSec(), drive.getMaxLinearSpeedMetersPerSec());
+                        ChassisSpeeds speeds = new ChassisSpeeds(
+                            linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                            -ySpeed,
+                            omega * drive.getMaxAngularSpeedRadPerSec());
+                    boolean isFlipped = DriverStation.getAlliance().isPresent()
+                            && DriverStation.getAlliance().get() == Alliance.Red;
+                    drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                            speeds,
+                            isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+                    }
+                    else{
+                        ChassisSpeeds speeds = new ChassisSpeeds(
                             linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                             linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                             omega * drive.getMaxAngularSpeedRadPerSec());
@@ -83,6 +102,7 @@ public class DriveCommands {
                     drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
                             speeds,
                             isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+                    }
                 },
                 drive);
     }
@@ -259,5 +279,31 @@ public class DriveCommands {
         double[] positions = new double[4];
         Rotation2d lastAngle = new Rotation2d();
         double gyroDelta = 0.0;
+    }
+
+    private static Pose2d getBotPoseWithIntake(Drive drive){
+        Pose2d currentPose = drive.getPose();
+        double newY = currentPose.getY() + Constants.IntakeConstants.intakeLength/2.0;
+        return new Pose2d(currentPose.getX(), newY, currentPose.getRotation());
+    }
+
+    private static boolean isInTrenchArea(Drive drive){
+        Pose2d botPose = getBotPoseWithIntake(drive);
+        if(PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueUpperTrench) || PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueLowerTrench) ||
+           PointInPolygon.pointInPolygon(botPose, PointInPolygon.redUpperTrench) || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redLowerTrench)){
+            return true;
+        }
+        return false;
+    }
+
+    private static double getTrenchAreaY(Drive drive){
+        Pose2d botPose = getBotPoseWithIntake(drive);
+        if(PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueUpperTrench) || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redUpperTrench)){
+            return (Field.LeftBlueTrench.openingTopLeft.getY() + Field.LeftBlueTrench.openingTopRight.getY())/2.0;
+        }
+        else if(PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueLowerTrench) || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redLowerTrench)){
+            return (Field.RightBlueTrench.openingTopLeft.getY() + Field.RightBlueTrench.openingTopRight.getY())/2.0;
+        }
+        return botPose.getY();
     }
 }
