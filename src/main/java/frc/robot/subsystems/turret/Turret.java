@@ -32,6 +32,7 @@ public class Turret extends SubsystemBase {
     private final double maxAngle = 270.0; // degree
     private final double CAPACITY = 10;
     private double fuelStored = 0;
+    private double lastTurretAngle;
 
     public Turret(TurretIO io) {
         this.io = io;
@@ -47,29 +48,36 @@ public class Turret extends SubsystemBase {
     public double manual_setpoint;
     public double hub_setpoint;
 
-    public double calculateTurretRealPose() {
-        double rot1 = inputs.absPositionTours1 / 360;
-        double rot2 = inputs.absPositionTours2 / 360;
+    public double calculateTurretRealPose(){
+    double slope = (24.0*25.0) / ((25.0-24.0) * 108.0);
+    double e1Value = inputs.absPositionTours1;
+    double e2Value = inputs.absPositionTours2;
 
-        double bestmatch = 0.0;
-        double tolerance = 1e-4;
+    double difference = e1Value - e2Value;
 
-        for (int n1 = 0; n1 < TurretConstants.absEncoder2Teeth; n1++) {
-            double candidate = (n1 + rot1) * TurretConstants.absEncoder1Teeth / TurretConstants.turretGearboxTeeth;
+    if(difference > 120) difference -= 360;
+    if(difference < -120) difference += 360;
 
-            for (int n2 = 0; n2 < TurretConstants.absEncoder1Teeth; n2++) {
-                double candidate2 = (n2 + rot2) * TurretConstants.absEncoder2Teeth / TurretConstants.turretGearboxTeeth;
-
-                if (Math.abs(candidate - candidate2) < tolerance) {
-                    bestmatch = (candidate + candidate2) / 2;
-                    return bestmatch;
-                }
-            }
-        }
-
-        return bestmatch;
+    double turretAngle = difference * slope;
+    turretAngle = turretAngle % 360.0;
+    
+    if(turretAngle < 0){
+      turretAngle += 360.0;
     }
 
+    if(turretAngle > 180){
+      turretAngle -= 360;
+    }
+    else if(lastTurretAngle < -150 && turretAngle < 180){
+      turretAngle = -180 - (180-turretAngle);
+    }
+    if(lastTurretAngle > 150 && turretAngle < 0){
+      turretAngle = 180 + (180 + turretAngle);
+    }
+
+    lastTurretAngle = turretAngle;
+    return turretAngle;
+  }
     public boolean canIntake() {
         return fuelStored < CAPACITY;
     }
