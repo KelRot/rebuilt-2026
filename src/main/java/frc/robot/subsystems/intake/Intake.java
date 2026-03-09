@@ -11,6 +11,9 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.SparkTunablePID;
+import frc.robot.util.SparkTunablePID.DriveType;
 
 public class Intake extends SubsystemBase {
 
@@ -31,6 +34,9 @@ public class Intake extends SubsystemBase {
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
   private final IntakeVisualizer visualizer = new IntakeVisualizer("Measured", Color.kGreen);
+  private final LoggedTunableNumber setpoint = new LoggedTunableNumber("intakerollersetpoint", 0);
+  private final LoggedTunableNumber voltsetpoint = new LoggedTunableNumber("intakerollervoltsetpoint", 0);
+
 
   private double zeroStillTime = 0.0;
 
@@ -63,6 +69,10 @@ public class Intake extends SubsystemBase {
       io.setRollerVoltage(rollerVoltage);
     }
   }
+
+  public void setVoltage(){
+        io.setRollerVoltage(voltsetpoint.get());
+    }
 
   @Override
   public void periodic() {

@@ -2,6 +2,8 @@ package frc.robot.subsystems.intake;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+
 public interface IntakeIO {
 
     @AutoLog
@@ -40,5 +42,9 @@ public interface IntakeIO {
 
     public default boolean isOpenerAtSetpoint() {
         return false;
+    }
+
+    public default TalonFX getRollerMotor(){
+        return null;
     }
 }

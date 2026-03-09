@@ -1,6 +1,11 @@
 package frc.robot.subsystems.intake;
 
 import static frc.robot.util.SparkUtil.*;
+
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
 import com.revrobotics.ResetMode;
@@ -12,16 +17,20 @@ import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.SparkMax;
 
 import frc.robot.Constants;
+import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.SparkTunablePID;
+import frc.robot.util.SparkTunablePID.DriveType;
 
 public class IntakeIOSpark implements IntakeIO {
 
   private static SparkMax openerMotor = new SparkMax(Constants.IntakeConstants.openerMotorID, MotorType.kBrushless);
   private static SparkMax secondOpenerMotor = new SparkMax(Constants.IntakeConstants.secondOpenerMotorID, MotorType.kBrushless);
-  private static SparkMax rollerMotor = new SparkMax(Constants.IntakeConstants.rollerMotorID, MotorType.kBrushless);
+  private static TalonFX rollerMotor = new TalonFX(Constants.IntakeConstants.rollerMotorID);
 
   /** Creates a new ExampleSubsystem. */
   public IntakeIOSpark() {
     openerMotor.getEncoder().setPosition(37);
+    config();
   }
 
   @Override
@@ -52,11 +61,19 @@ public class IntakeIOSpark implements IntakeIO {
     return isAtSetpoint && Math.abs(openerMotor.getEncoder().getPosition() - openerMotor.getClosedLoopController().getSetpoint()) < 2.0;
   }
 
-  public void config() {
-    SparkMaxConfig rollerConfig = new SparkMaxConfig();
-    SparkMaxConfig openerConfig = new SparkMaxConfig();
+  public TalonFX getRollerMotor(){
+    return rollerMotor;
+  }
 
-    rollerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(20);
+  public void config() {
+    SparkMaxConfig openerConfig = new SparkMaxConfig();
+    rollerMotor.getConfigurator().apply(new TalonFXConfiguration());
+    TalonFXConfiguration rollerConfig = new TalonFXConfiguration();
+
+    rollerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    rollerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    rollerConfig.CurrentLimits.SupplyCurrentLimit = 20;
+    rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     openerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(20);
     openerConfig.closedLoop.maxMotion.positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal)
         .cruiseVelocity(500).maxAcceleration(1500).allowedProfileError(2);
@@ -64,11 +81,6 @@ public class IntakeIOSpark implements IntakeIO {
         .reverseSoftLimitEnabled(true);
     openerConfig.encoder.positionConversionFactor(1.0 / Constants.IntakeConstants.openerGearRatio * 360.0);
 
-    tryUntilOk(
-        rollerMotor,
-        5,
-        () -> rollerMotor.configure(rollerConfig, ResetMode.kResetSafeParameters,
-            PersistMode.kPersistParameters));
     tryUntilOk(
         openerMotor,
         5,
@@ -80,15 +92,16 @@ public class IntakeIOSpark implements IntakeIO {
         5,
         () -> secondOpenerMotor.configure(openerConfig, ResetMode.kResetSafeParameters,
             PersistMode.kPersistParameters));
+    rollerMotor.getConfigurator().apply(rollerConfig);
   }
 
   public void updateInputs(IntakeIOInputs inputs) {
-    inputs.rollerConnected = rollerMotor.getLastError() == REVLibError.kOk;
+    inputs.rollerConnected = rollerMotor.isConnected();
     inputs.secondOpenerConnected = secondOpenerMotor.getLastError() == REVLibError.kOk;
     inputs.openerConnected = openerMotor.getLastError() == REVLibError.kOk;
-    inputs.rollerMotorCurrentAmps = rollerMotor.getOutputCurrent();
-    inputs.rollerMotorVoltageVolts = rollerMotor.getBusVoltage();
-    inputs.rollerMotorSpeedRpm = rollerMotor.getEncoder().getVelocity();
+    inputs.rollerMotorCurrentAmps = rollerMotor.getMotorStallCurrent().getValueAsDouble();
+    inputs.rollerMotorVoltageVolts = rollerMotor.getMotorVoltage().getValueAsDouble();
+    inputs.rollerMotorSpeedRpm = rollerMotor.getVelocity().getValueAsDouble() * 60;
     inputs.openerMotorVelocityRPS = openerMotor.getEncoder().getVelocity() / 60;
     inputs.openerMotorCurrentAmps = openerMotor.getOutputCurrent();
     inputs.openerMotorVoltageVolts = openerMotor.getBusVoltage();
