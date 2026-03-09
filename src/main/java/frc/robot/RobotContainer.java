@@ -7,16 +7,10 @@
 
 package frc.robot;
 
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
-import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -24,9 +18,6 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.subsystems.LedSubsystem;
-import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.flywheel.FlywheelIO;
 import frc.robot.subsystems.flywheel.FlywheelIOSparkFlex;
@@ -66,22 +57,18 @@ public class RobotContainer {
         public static Index index;
         @Getter
         public static Flywheel flywheel;
-        @Getter
-        public static Superstructure superstructure;
         // Controller
         @Getter
         public static FuelSim fuelSim = new FuelSim("FuelSim"); // creates a new fuelSim of FuelSim
         private final CommandXboxController controller = new CommandXboxController(0);
-
-        // Dashboard inputs
         private final LoggedDashboardChooser<Command> autoChooser;
 
         /**
          * The container for the robot. Contains subsystems, OI devices, and commands.
          */
-        
+
         public RobotContainer() {
-                
+
                 led = new Led();
                 DriverStation.silenceJoystickConnectionWarning(true);
                 switch (Constants.currentMode) {
@@ -91,17 +78,14 @@ public class RobotContainer {
 
                                 kicker = new Kicker(new KickerIOSpark());
                                 intake = new Intake(new IntakeIOSpark());
-                                superstructure = new Superstructure(intake, flywheel, kicker, index);
-                                LedSubsystem ledsub = new LedSubsystem(led, superstructure);                                break;
+                                break;
 
                         case SIM:
                                 kicker = new Kicker(new KickerIOSpark());
                                 flywheel = new Flywheel(new FlywheelIOSparkFlex());
                                 intake = new Intake(new IntakeIOSim());
                                 index = new Index(new IndexIOSpark());
-                                
-                                superstructure = new Superstructure(intake, flywheel, kicker, index);
-                                ledsub = new LedSubsystem(led, superstructure);
+
                                 configureFuelSim();
                                 break;
 
@@ -114,17 +98,17 @@ public class RobotContainer {
                                 });
                                 flywheel = new Flywheel(new FlywheelIO() {
                                 });
-                                ledsub = new LedSubsystem(led, superstructure);
                                 break;
                 }
-                NamedCommands.registerCommand("intake",
-                                Commands.runOnce(() -> intake.requestState(SystemState.INTAKING), intake));
+                // NamedCommands.registerCommand("intake",
+                // Commands.runOnce(() -> intake.requestState(SystemState.INTAKING), intake));
                 // Set up auto routines
-                autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-                autoChooser.addOption("pathplanner oto", new PathPlannerAuto("Example Auto"));
 
                 // Configure the button bindings
                 configureButtonBindings();
+                autoChooser = new LoggedDashboardChooser<>("Auto Choices");
+                autoChooser.addDefaultOption("None", Commands.none());
+
         }
 
         /**
@@ -132,25 +116,32 @@ public class RobotContainer {
          * created by instantiating a
          * {@link GenericHID} or one of its subclasses
          * ({@link edu.wpi.first.wpilibj.Joystick} or {@link XboxController}),
-         * and then passing it to a
+         * and then passing it toww a
          * {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
          */
         private void configureButtonBindings() {
 
                 led.setStaticColor(Color.kBlue);
 
-                controller.button(1).onTrue(superstructure.intakeCommand());
-
-                controller.button(2).onTrue(superstructure.shootCommand());
-        }
-
-        /**
-         * Use this to pass the autonomous command to the main {@link Robot} class.
-         *
-         * @return the command to run in autonomous
-         */
-        public Command getAutonomousCommand() {
-                return autoChooser.get();
+                controller.button(1)
+                                .onTrue(Commands.runOnce(() -> index.requestState(Index.SystemState.INDEXING), index));
+                controller.button(2)
+                                .onTrue(Commands.runOnce(() -> index.requestState(Index.SystemState.IDLE), index));
+                controller.button(1).onTrue(
+                                Commands.runOnce(() -> kicker.requestState(Kicker.SystemState.ENABLED), kicker));
+                controller.button(2)
+                                .onTrue(Commands.runOnce(() -> kicker.requestState(Kicker.SystemState.IDLE), kicker));
+                controller.button(3).onTrue(
+                                Commands.runOnce(() -> flywheel.requestState(Flywheel.SystemState.TARGET_RPM),
+                                                flywheel));
+                controller.button(4)
+                                .onTrue(Commands.runOnce(() -> flywheel.requestState(Flywheel.SystemState.IDLE),
+                                                flywheel));
+                controller.button(5)
+                                .onTrue(Commands.runOnce(() -> flywheel.requestState(Flywheel.SystemState.VOLTAGE),
+                                                flywheel));
+                controller.button(6).onTrue(Commands.runOnce(() -> intake.requestState(Intake.SystemState.MANUAL),
+                                                intake));
         }
 
         public void configureFuelSim() {
@@ -164,4 +155,12 @@ public class RobotContainer {
 
         }
 
+        /**
+         * Use this to pass the autonomous command to the main {@link Robot} class.
+         *
+         * @return the command to run in autonomous
+         */
+        public Command getAutonomousCommand() {
+                return autoChooser.get();
+        }
 }

@@ -2,6 +2,8 @@ package frc.robot.subsystems.flywheel;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.revrobotics.spark.SparkBase;
+
 public interface FlywheelIO {
 
   @AutoLog
@@ -35,5 +37,8 @@ public interface FlywheelIO {
 
   default boolean isAtSetpoint() {  
     return false;
+  }
+  default SparkBase getMotor() {
+    return null;
   }
 }

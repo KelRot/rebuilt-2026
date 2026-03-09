@@ -5,6 +5,8 @@ import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -73,7 +75,7 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
         leadConfig
                 .voltageCompensation(12.0)
                 .smartCurrentLimit(60)
-                .idleMode(IdleMode.kCoast).closedLoop.pid(Constants.FlywheelConstants.kp, Constants.FlywheelConstants.kd, Constants.FlywheelConstants.ki);
+                .idleMode(IdleMode.kCoast).closedLoop.allowedClosedLoopError(5, ClosedLoopSlot.kSlot0).iZone(0.5);
 
         followerConfig
                 .follow(leadMotor, true)
@@ -98,7 +100,10 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
     public void stop() {
         leadMotor.stopMotor();
     }
-
+    @Override
+    public SparkBase getMotor(){
+        return leadMotor;
+    }
     @Override
     public void setAppliedVoltage(double volts) {
         leadMotor.setVoltage(volts);
@@ -107,7 +112,7 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
     @Override
     public void setRpm(double targetRpm) {
         this.targetRpm = targetRpm;
-        leadMotor.getClosedLoopController().setSetpoint(targetRpm, ControlType.kVelocity);
+        leadMotor.getClosedLoopController().setSetpoint(targetRpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0, (targetRpm - 58) / Constants.FlywheelConstants.RotPerVolt);
     }
 
     public boolean isAtSetpoint() {

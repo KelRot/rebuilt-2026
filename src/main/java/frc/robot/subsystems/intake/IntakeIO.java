@@ -2,6 +2,8 @@ package frc.robot.subsystems.intake;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.revrobotics.spark.SparkBase;
+
 public interface IntakeIO {
 
     @AutoLog
@@ -40,5 +42,11 @@ public interface IntakeIO {
 
     public default boolean isOpenerAtSetpoint() {
         return false;
+    }
+    public default void setRollerRPM(double rpm) {
+
+    }
+    public default SparkBase getRollerMotor(){
+        return null;
     }
 }

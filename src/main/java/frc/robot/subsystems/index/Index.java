@@ -2,6 +2,8 @@ package frc.robot.subsystems.index;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -17,7 +19,7 @@ public class Index extends SubsystemBase {
     TESTING
   }
 
-  private SystemState systemState = SystemState.IDLE;
+  public SystemState systemState = SystemState.IDLE;
 
   private final IndexIO io;
   private final IndexIOInputsAutoLogged inputs = new IndexIOInputsAutoLogged();
@@ -28,7 +30,8 @@ public class Index extends SubsystemBase {
 
 
   public void requestState(SystemState wantedState) {
-    systemState = wantedState;
+    Commands.print("dasdsa");
+    this.systemState = wantedState;
   }
 
   public void stop() {
@@ -39,30 +42,32 @@ public class Index extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
 
-    switch (systemState) {
+    switch (this.systemState) {
 
       case INDEXING:
-        io.setSpinnerVoltage(Constants.IndexConstants.INDEXING_VOLTAGE);
+        io.setVoltage(Constants.IndexConstants.INDEXING_VOLTAGE, Constants.IndexConstants.INDEXING_TOPROLLER_VOLTAGE);
         break;
 
       case PASSIVE:
-        io.setSpinnerVoltage(Constants.IndexConstants.PASSIVE_MODE_VOLTAGE);
+        io.setVoltage(Constants.IndexConstants.PASSIVE_MODE_VOLTAGE, Constants.IndexConstants.PASSIVE_MODE_TOPROLLER_VOLTAGE);
         break;
 
       case IDLE:
-      default:
-        io.setSpinnerVoltage(0.0);
+        io.setVoltage(0.0, 0);
+        io.stopAllMotors();
         break;
 
-        case OUTTAKING:
-          io.setSpinnerVoltage(Constants.IndexConstants.OUTTAKING_VOLTAGE);
+      case OUTTAKING:
+          io.setVoltage(Constants.IndexConstants.OUTTAKING_VOLTAGE, Constants.IndexConstants.OUTTAKING_TOPROLLER_VOLTAGE);
           break;
-          case TESTING:
-            io.setSpinnerVoltage(1);
-            break;
+
+      case TESTING:
+          io.setVoltage(1, 1);
+          break;
     }
 
     Logger.recordOutput("Index/SystemState", systemState.toString());
     Logger.processInputs("Index", inputs);
+    SmartDashboard.putNumber("Intake voltage", inputs.intakeVoltage);
   }
 }

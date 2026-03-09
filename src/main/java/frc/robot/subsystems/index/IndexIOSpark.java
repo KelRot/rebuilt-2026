@@ -13,31 +13,41 @@ import frc.robot.Constants;
 
 public class IndexIOSpark implements IndexIO {
 
-  private static SparkMax spinnerMotor;
+  private static SparkMax spinnerMotor, topRollerMotor;
 
   /** Creates a new ExampleSubsystem. */
   public IndexIOSpark() {
+
     spinnerMotor = new SparkMax(Constants.IndexConstants.spinnerMotorID, MotorType.kBrushless);
+    topRollerMotor = new SparkMax(Constants.IndexConstants.topRollerMotorID, MotorType.kBrushless);
+    config();
   }
 
   @Override
-  public void setSpinnerVoltage(double volts) {
-    spinnerMotor.setVoltage(volts);
+  public void setVoltage(double spinVolts, double topVolts) {
+    spinnerMotor.setVoltage(spinVolts);
+    topRollerMotor.setVoltage(topVolts);
   }
 
   public void stopAllMotors() {
     spinnerMotor.setVoltage(0.0);
+    topRollerMotor.setVoltage(0);
   }
 
   public void config() {
     SparkMaxConfig spinnerConfig = new SparkMaxConfig();
 
-    spinnerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(30);
+    spinnerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(40);
 
     tryUntilOk(
         spinnerMotor,
-        5,
+        2,
         () -> spinnerMotor.configure(spinnerConfig, ResetMode.kResetSafeParameters,
+            PersistMode.kPersistParameters));
+    tryUntilOk(
+        topRollerMotor,
+        2,
+        () -> topRollerMotor.configure(spinnerConfig, ResetMode.kResetSafeParameters,
             PersistMode.kPersistParameters));
   }
 

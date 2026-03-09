@@ -4,6 +4,8 @@ import static frc.robot.util.SparkUtil.*;
 import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -19,6 +21,7 @@ public class IntakeIOSpark implements IntakeIO {
 
   /** Creates a new ExampleSubsystem. */
   public IntakeIOSpark() {
+    config();
   }
 
   @Override
@@ -26,10 +29,19 @@ public class IntakeIOSpark implements IntakeIO {
     rollerMotor.setVoltage(volts);
   }
 
+  public void setRollerRPM(double rpm) {
+    rollerMotor.getClosedLoopController().setSetpoint(rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0, rpm / Constants.IntakeConstants.RotPerVolt);
+ 
+  }
+
+  @Override
+  public SparkBase getRollerMotor() {
+      return rollerMotor;
+  }
   public void config() {
     SparkMaxConfig rollerConfig = new SparkMaxConfig();
 
-    rollerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(20);
+    rollerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(40);
 
     tryUntilOk(
         rollerMotor,

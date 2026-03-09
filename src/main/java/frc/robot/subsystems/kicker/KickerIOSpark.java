@@ -12,10 +12,10 @@ import com.revrobotics.spark.SparkMax;
 import frc.robot.Constants;
 
 public class KickerIOSpark implements KickerIO {
-    private static SparkMax kickerMotor = new SparkMax(Constants.KickerConstants.kickerMotorID, MotorType.kBrushless);
+  private static SparkMax kickerMotor = new SparkMax(Constants.KickerConstants.kickerMotorID, MotorType.kBrushless);
 
   public KickerIOSpark() {
-
+    config();
   }
 
   @Override

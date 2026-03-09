@@ -11,6 +11,9 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.SparkTunablePID;
+import frc.robot.util.SparkTunablePID.DriveType;
 
 public class Intake extends SubsystemBase {
 
@@ -31,11 +34,16 @@ public class Intake extends SubsystemBase {
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
   private final IntakeVisualizer visualizer = new IntakeVisualizer("Measured", Color.kGreen);
+  private final LoggedTunableNumber intakerollersetpoint = new LoggedTunableNumber("intakerollersetpoint", 0);
 
+  private SparkTunablePID sparkTunablePID;
   private double zeroStillTime = 0.0;
 
   public Intake(IntakeIO io) {
     this.io = io;
+    sparkTunablePID = new SparkTunablePID(io.getRollerMotor(), "Intake", DriveType.MAX, 0.00027, 0,
+      0.008);
+
   }
 
   public void requestState(SystemState wantedState) {
@@ -67,14 +75,14 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
     io.updateInputs(inputs);
-
+    sparkTunablePID.periodic();
     visualizer.update(Degrees.of(inputs.IntakePosition).in(Radians));
 
-     if (DriverStation.isDisabled()) {
+    if (DriverStation.isDisabled()) {
       systemState = SystemState.IDLE;
-    } 
+    }
     switch (systemState) {
-      
+
       case INTAKING:
         handleIntaking(Constants.IntakeConstants.INTAKING_VOLTAGE);
         break;
@@ -126,7 +134,7 @@ public class Intake extends SubsystemBase {
         break;
 
       case MANUAL:
-        io.setRollerVoltage(0.0);
+        io.setRollerRPM(intakerollersetpoint.get());
         break;
 
       case IDLE:
@@ -135,17 +143,19 @@ public class Intake extends SubsystemBase {
         io.setOpenerVoltage(0.0);
         break;
       case TESTING:
-        if(!isOpened()) {
-        io.setOpenerVoltage(1.0);}
-        else if (isOpened()) {
-        io.setRollerVoltage(1.0);
-        io.setOpenerVoltage(0.0);
-        break;
-    }
-    
+        if (!isOpened()) {
+          io.setOpenerVoltage(1.0);
+        } else if (isOpened()) {
+          io.setRollerVoltage(1.0);
+          io.setOpenerVoltage(0.0);
+          break;
+      
+        }
 
-    Logger.recordOutput("Intake/SystemState", systemState.toString());
-    Logger.processInputs("Intake", inputs);}
+        Logger.recordOutput("Intake/SystemState", systemState.toString());
+        Logger.processInputs("Intake", inputs);
+    }
+
   }
 
   public boolean isOpened() {

@@ -10,12 +10,13 @@ public interface IndexIO {
         public double spinnerMotorCurrentAmps = 0.0;
         public double spinnerMotorVoltageVolts = 0.0;
         public double spinnerMotorSpeedRpm = 0.0;
+        public double intakeVoltage = 0.0;
     }
 
     public default void updateInputs(IndexIOInputs inputs) {
     }
 
-    public default void setSpinnerVoltage(double volts) {
+    public default void setVoltage(double spinVolts, double topVolts) {
     }
 
     public default void stopAllMotors() {
