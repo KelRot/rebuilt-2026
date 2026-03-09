@@ -39,7 +39,7 @@ public final class Constants {
         public static final double kP = 0.0;
         public static final double kD = 0.0;
     
-        public static final int turretID = 1;
+        public static final int turretID = 28;
         public static final int absEncoder1ID = 2;
         public static final int absEncoder2ID = 3;
 
@@ -66,42 +66,49 @@ public final class Constants {
 
     
     public static class IntakeConstants {
-        public static final int rollerMotorID = 0;
-        public static final int openerMotorID = 1;
+        public static final int rollerMotorID = 7;
         public static final double zeroWaitSeconds = 2;
         public static final double zeroVoltage = 0;
         public static double openerGearRatio = 3.2;
-        public static double INTAKING_VOLTAGE;
+        public static double INTAKING_VOLTAGE = 3.0;
         public static double OUTTAKING_VOLTAGE;
         public static double intakeOpenPosition = -133;
         public static double openVoltage;
         public static Time openWaitSeconds;
         public static double intakeClosedPosition = 0;
-        public static final int secondOpenerMotorID = 2;
         public static final double ZERO_CONFIRM_TIME = 0;
         public static final int ZERO_VELOCITY_EPS = 0;
-        public static final double intakeLength = 0.0;
+        public static final double RotPerVolt = 5906/12;
     }
 
     public static class IndexConstants {
         public static final int spinnerMotorID = 3;
 
-        public static final double PASSIVE_MODE_VOLTAGE = 3.0;
-        public static final double INDEXING_VOLTAGE = 10.0;
-        public static final double OUTTAKING_VOLTAGE = -10.0;
+        public static final double PASSIVE_MODE_VOLTAGE = -1.0;
+        public static final double INDEXING_VOLTAGE = -12 * 0.45;
+        public static final double OUTTAKING_VOLTAGE = 12 * 0.3;
+
+        public static final int topRollerMotorID = 22;
+
+        public static final double PASSIVE_MODE_TOPROLLER_VOLTAGE = -12 * 0.05;
+
+        public static final double OUTTAKING_TOPROLLER_VOLTAGE = 12 * 0.3;
+
+        public static final double INDEXING_TOPROLLER_VOLTAGE = 12 * 0.0;
     }
 
     public static class KickerConstants {
         public static final int kickerMotorID = 4;
-        public static final double defaultKickerVoltage = 0;
+        public static final double defaultKickerVoltage = -6.5;
     }
 
     public static class FlywheelConstants {
-        public static final int kMasterMotorId = 7;
-        public static final int kFollowerMotorId = 8;
+        public static final int kMasterMotorId = 1;
+        public static final int kFollowerMotorId = 2;
         public static final double kp = 0;
         public static final double ki = 0;
         public static final double kd = 0;
+        public static final double RotPerVolt = 580;
     }
 
     public static final class HoodConstants {
