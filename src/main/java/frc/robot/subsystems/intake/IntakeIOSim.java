@@ -3,6 +3,8 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
+import com.revrobotics.spark.SparkBase.ControlType;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -62,7 +64,7 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
-  public void setOpenerSetPoint(double encoderDegrees) {
+  public void setOpenerSetPoint(double encoderDegrees, ControlType controlType) {
 
     targetMechRad =
         Degrees.of(encoderDegrees).in(Radians)

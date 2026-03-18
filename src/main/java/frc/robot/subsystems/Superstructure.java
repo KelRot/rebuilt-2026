@@ -12,7 +12,6 @@ import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.hood.Hood;
 import frc.robot.subsystems.index.Index;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.Intake.SystemState;
 import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.turret.Turret;
 
@@ -31,7 +30,7 @@ public class Superstructure extends SubsystemBase {
     /* ================= STATE ================= */
 
     private SuperstructureState currentState = SuperstructureState.IDLE;
-    private SuperstructureState wantedState  = SuperstructureState.IDLE;
+    private SuperstructureState wantedState = SuperstructureState.IDLE;
 
     /* ================= ENUM ================= */
 
@@ -81,8 +80,13 @@ public class Superstructure extends SubsystemBase {
             applyState(wantedState);
             currentState = wantedState;
         }
-        if (hood.isAtSetpoint()&turret.isAtSetpoint()&flywheel.isAtSetpoint()){
+        if (hood.isAtSetpoint() & turret.isAtSetpoint() & flywheel.isAtSetpoint()
+                & currentState == SuperstructureState.PREP_SHOOTING) {
             wantedState = SuperstructureState.SHOOTING;
+        }
+        if (hood.isAtSetpoint() & turret.isAtSetpoint() & flywheel.isAtSetpoint()
+                & currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING) {
+            wantedState = SuperstructureState.SHOOTING_AND_INTAKING;
         }
         Logger.recordOutput("SuperStructure/State", currentState.toString());
     }
@@ -136,6 +140,7 @@ public class Superstructure extends SubsystemBase {
             case STUCKED_RECOVERY:
                 intake.requestState(Intake.SystemState.OUTTAKING);
                 index.requestState(Index.SystemState.OUTTAKING);
+                kicker.requestState(Kicker.SystemState.OUTTAKE);
                 break;
 
             case TESTING:
@@ -149,7 +154,7 @@ public class Superstructure extends SubsystemBase {
             case DEFAULT:
                 turret.requestState(Turret.SystemState.TRACKING);
                 break;
-            
+
             case IDLE:
             default:
                 stopAll();
@@ -169,11 +174,11 @@ public class Superstructure extends SubsystemBase {
 
     /* ================= HELPERS ================= */
 
-    private boolean isAnyShootingState(SuperstructureState state) {
+    public boolean isAnyShootingState(SuperstructureState state) {
         return state == SuperstructureState.PREP_SHOOTING
-            || state == SuperstructureState.PREP_SHOOTING_AND_INTAKING
-            || state == SuperstructureState.SHOOTING
-            || state == SuperstructureState.SHOOTING_AND_INTAKING;
+                || state == SuperstructureState.PREP_SHOOTING_AND_INTAKING
+                || state == SuperstructureState.SHOOTING
+                || state == SuperstructureState.SHOOTING_AND_INTAKING;
     }
 
     /* ================= COMMAND API ================= */
@@ -182,14 +187,16 @@ public class Superstructure extends SubsystemBase {
     public Command intakeCommand() {
         return new InstantCommand(() -> {
 
-            if (currentState == SuperstructureState.INTAKING) {
+            if (currentState == SuperstructureState.INTAKING || currentState == SuperstructureState.OPENING_INTAKE) {
                 wantedState = SuperstructureState.CLOSING_AND_STOPPING_INTAKE;
             } else if (currentState == SuperstructureState.SHOOTING_AND_INTAKING) {
                 wantedState = SuperstructureState.SHOOTING;
+                applyState(SuperstructureState.CLOSING_AND_STOPPING_INTAKE);
             } else if (currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING) {
                 wantedState = SuperstructureState.PREP_SHOOTING;
+                applyState(SuperstructureState.CLOSING_AND_STOPPING_INTAKE);
             } else {
-                wantedState = SuperstructureState.OPENING_INTAKE;
+                wantedState = SuperstructureState.INTAKING;
             }
 
         }, this);
@@ -202,9 +209,8 @@ public class Superstructure extends SubsystemBase {
             // Eğer zaten shoot modundaysak → iptal
             if (isAnyShootingState(currentState)) {
 
-                boolean intakeWasActive =
-                        currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING
-                     || currentState == SuperstructureState.SHOOTING_AND_INTAKING;
+                boolean intakeWasActive = currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING
+                        || currentState == SuperstructureState.SHOOTING_AND_INTAKING;
 
                 wantedState = intakeWasActive
                         ? SuperstructureState.INTAKING
@@ -214,9 +220,8 @@ public class Superstructure extends SubsystemBase {
             }
 
             // Shoot başlat
-            boolean intakeActive =
-                    currentState == SuperstructureState.INTAKING
-                 || currentState == SuperstructureState.OPENING_INTAKE;
+            boolean intakeActive = currentState == SuperstructureState.INTAKING
+                    || currentState == SuperstructureState.OPENING_INTAKE;
 
             wantedState = intakeActive
                     ? SuperstructureState.PREP_SHOOTING_AND_INTAKING
@@ -238,8 +243,9 @@ public class Superstructure extends SubsystemBase {
             wantedState = SuperstructureState.TESTING;
         }, this);
     }
+
     @Logged
-    public SuperstructureState getCurrentState(){
+    public SuperstructureState getCurrentState() {
         return currentState;
     }
 }

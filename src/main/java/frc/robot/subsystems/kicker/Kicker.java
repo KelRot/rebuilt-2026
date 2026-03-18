@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.KickerConstants;
 
 public class Kicker extends SubsystemBase {
 
@@ -11,15 +12,15 @@ public class Kicker extends SubsystemBase {
     IDLE,
     ENABLED,
     MANUAL,
-    TESTING
+    TESTING,
+    OUTTAKE
   }
 
   private SystemState systemState = SystemState.IDLE;
   private double manualVoltage = 0.0;
 
   private final KickerIO io;
-  private final KickerIOInputsAutoLogged inputs =
-      new KickerIOInputsAutoLogged();
+  private final KickerIOInputsAutoLogged inputs = new KickerIOInputsAutoLogged();
 
   public Kicker(KickerIO io) {
     this.io = io;
@@ -46,7 +47,8 @@ public class Kicker extends SubsystemBase {
       case ENABLED:
         io.setKickerVoltage(Constants.KickerConstants.defaultKickerVoltage);
         break;
-
+      case OUTTAKE:
+        io.setKickerVoltage(-KickerConstants.defaultKickerVoltage);
       case MANUAL:
         io.setKickerVoltage(manualVoltage);
         break;

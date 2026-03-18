@@ -10,7 +10,6 @@ package frc.robot.subsystems.drive;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -39,14 +38,14 @@ public class DriveConstants {
     public static final int pigeonCanId = 31;
 
     public static final int frontLeftDriveCanId = 11;
-    public static final int backLeftDriveCanId = 13;
-    public static final int frontRightDriveCanId = 14;
-    public static final int backRightDriveCanId = 59;
+    public static final int backLeftDriveCanId = 15;
+    public static final int frontRightDriveCanId = 13;
+    public static final int backRightDriveCanId = 17;
 
-    public static final int frontLeftTurnCanId = 23;
-    public static final int backLeftTurnCanId = 3;
-    public static final int frontRightTurnCanId = 22;
-    public static final int backRightTurnCanId = 24;
+    public static final int frontLeftTurnCanId = 12;
+    public static final int backLeftTurnCanId = 14;
+    public static final int frontRightTurnCanId = 16;
+    public static final int backRightTurnCanId = 18;
 
     public static final int frontLeftTurnAbsId = 3;
     public static final int backLeftTurnAbsId = 1;
@@ -111,8 +110,3 @@ public class DriveConstants {
                     1),
             moduleTranslations);
 }
-
-
-// ks = 0.07903
-// kv = 0.10014
-//

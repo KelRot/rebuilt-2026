@@ -45,7 +45,7 @@ import frc.robot.subsystems.index.IndexIOSpark;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
-import frc.robot.subsystems.intake.IntakeIOSpark;
+import frc.robot.subsystems.intake.IntakeIOHardware;
 import frc.robot.subsystems.intake.Intake.SystemState;
 import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.kicker.KickerIO;
@@ -105,9 +105,9 @@ public class RobotContainer {
         /**
          * The container for the robot. Contains subsystems, OI devices, and commands.
          */
-        
+
         public RobotContainer() {
-                
+
                 led = new Led();
                 DriverStation.silenceJoystickConnectionWarning(true);
                 switch (Constants.currentMode) {
@@ -130,10 +130,12 @@ public class RobotContainer {
                                 flywheel = new Flywheel(new FlywheelIOSparkFlex());
 
                                 kicker = new Kicker(new KickerIOSpark());
-                                intake = new Intake(new IntakeIOSpark());
+                                intake = new Intake(new IntakeIOHardware());
                                 hood = new Hood(new HoodIOSpark());
-                                superstructure = new Superstructure(intake, flywheel, kicker, hood,  turret,  drive, index);
-                                LedSubsystem ledsub = new LedSubsystem(led, superstructure);                                break;
+                                superstructure = new Superstructure(intake, flywheel, kicker, hood, turret, drive,
+                                                index);
+                                LedSubsystem ledsub = new LedSubsystem(led, superstructure);
+                                break;
 
                         case SIM:
                                 // Sim robot, instantiate physics sim IO implementations
@@ -153,8 +155,9 @@ public class RobotContainer {
                                 index = new Index(new IndexIOSpark());
                                 turret = new Turret(new TurretIOSim(fuelSim));
                                 hood = new Hood(new HoodIOSpark());
-                                
-                                superstructure = new Superstructure(intake, flywheel, kicker, hood,  turret,  drive, index);
+
+                                superstructure = new Superstructure(intake, flywheel, kicker, hood, turret, drive,
+                                                index);
                                 ledsub = new LedSubsystem(led, superstructure);
                                 configureFuelSim();
                                 break;
@@ -181,7 +184,7 @@ public class RobotContainer {
                                 });
                                 turret = new Turret(new TurretIO() {
                                 });
-                                hood = new Hood(new HoodIOSpark(){
+                                hood = new Hood(new HoodIOSpark() {
                                 });
                                 ledsub = new LedSubsystem(led, superstructure);
                                 break;
@@ -245,9 +248,9 @@ public class RobotContainer {
                                                                 new Rotation2d())),
                                                 drive)
                                                 .ignoringDisable(true));
-                controller.button(1).onTrue(superstructure.intakeCommand());
+                controller.button(6).onTrue(superstructure.intakeCommand());
 
-                controller.button(2).onTrue(superstructure.shootCommand());
+                controller.button(7).onTrue(superstructure.shootCommand());
                 controller.leftBumper().whileTrue(Commands.runOnce(() -> turret.launchFuel(), turret).repeatedly());
         }
 
