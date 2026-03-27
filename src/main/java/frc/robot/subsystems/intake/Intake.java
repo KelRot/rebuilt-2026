@@ -1,16 +1,17 @@
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.*;
 
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.RobotContainer;
+import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.SparkTunablePID;
+import frc.robot.util.TalonTunablePID;
+import frc.robot.util.SparkTunablePID.DriverType;
 
 public class Intake extends SubsystemBase {
 
@@ -26,16 +27,24 @@ public class Intake extends SubsystemBase {
     TESTING
   }
 
-  private SystemState systemState = SystemState.INTAKING;
+  private SystemState systemState = SystemState.IDLE;
 
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
   private final IntakeVisualizer visualizer = new IntakeVisualizer("Measured", Color.kGreen);
+  private final LoggedTunableNumber setpoint = new LoggedTunableNumber("rollersetpoint", 0);
+  private SparkTunablePID sparkTunablePID;
+  private TalonTunablePID talonTunablePID;
 
   private double zeroStillTime = 0.0;
 
   public Intake(IntakeIO io) {
     this.io = io;
+    sparkTunablePID = new SparkTunablePID(this.io.getLeadOpenerMotor(), "IntakeOpener", DriverType.MAX, 0.011, 0, 0.65);
+    talonTunablePID = new TalonTunablePID(this.io.getRollerMotor(), "IntakeRoller", 0.8, 0, 0.001, 1 / 509.3 * 60, 0);
+    io.updateInputs(inputs);
+    Logger.processInputs("Intake", inputs);
+
   }
 
   public void requestState(SystemState wantedState) {
@@ -60,33 +69,39 @@ public class Intake extends SubsystemBase {
       io.setRollerVoltage(0.0);
       io.setOpenerSetPoint(Constants.IntakeConstants.intakeOpenPosition);
     } else {
-      io.setRollerVoltage(rollerVoltage);
+      io.setOpenerVoltage(0);
+      io.setRollerRPM(rollerVoltage);
     }
   }
 
   @Override
   public void periodic() {
+    if(isOpened()) {
+      io.setBrake(false);
+    } else {
+      io.setBrake(true);
+    }
     io.updateInputs(inputs);
-
     visualizer.update(Degrees.of(inputs.IntakePosition).in(Radians));
 
-     if (DriverStation.isDisabled()) {
+    if (DriverStation.isDisabled()) {
       systemState = SystemState.IDLE;
-    } 
+    }
     switch (systemState) {
-      
+
       case INTAKING:
-        handleIntaking(Constants.IntakeConstants.INTAKING_VOLTAGE);
+        handleIntaking(Constants.IntakeConstants.INTAKING_RPM);
         break;
 
       case OUTTAKING:
-        handleIntaking(Constants.IntakeConstants.OUTTAKING_VOLTAGE);
+        handleIntaking(Constants.IntakeConstants.OUTTAKING_RPM);
         break;
 
       case OPENING:
         io.setRollerVoltage(0.0);
         io.setOpenerSetPoint(Constants.IntakeConstants.intakeOpenPosition);
         if (io.isOpenerAtSetpoint()) {
+          io.setOpenerVoltage(0);
           systemState = SystemState.IDLE;
         }
         break;
@@ -100,11 +115,6 @@ public class Intake extends SubsystemBase {
         break;
 
       case POSITION_CONTROL:
-        io.setRollerVoltage(0.0);
-        if (io.isOpenerAtSetpoint()) {
-          io.setOpenerVoltage(0.0);
-          systemState = SystemState.IDLE;
-        }
         break;
 
       case ZEROING:
@@ -118,7 +128,7 @@ public class Intake extends SubsystemBase {
         }
 
         if (zeroStillTime >= Constants.IntakeConstants.ZERO_CONFIRM_TIME) {
-          io.setOpenerVoltage(0.0);
+          io.setOpenerVoltage(0);
           io.zeroEncoder();
           zeroStillTime = 0.0;
           systemState = SystemState.IDLE;
@@ -126,7 +136,8 @@ public class Intake extends SubsystemBase {
         break;
 
       case MANUAL:
-        io.setRollerVoltage(0.0);
+        // io.setRollerRPM(setpoint.get());
+        io.setOpenerSetPoint(setpoint.get());
         break;
 
       case IDLE:
@@ -135,17 +146,21 @@ public class Intake extends SubsystemBase {
         io.setOpenerVoltage(0.0);
         break;
       case TESTING:
-        if(!isOpened()) {
-        io.setOpenerVoltage(1.0);}
-        else if (isOpened()) {
-        io.setRollerVoltage(1.0);
-        io.setOpenerVoltage(0.0);
-        break;
+        if (!isOpened()) {
+          io.setOpenerVoltage(1.0);
+        } else if (isOpened()) {
+          io.setRollerVoltage(1.0);
+          io.setOpenerVoltage(0.0);
+          break;
+        }
     }
+
+    sparkTunablePID.periodic();
+    talonTunablePID.periodic();
     
 
     Logger.recordOutput("Intake/SystemState", systemState.toString());
-    Logger.processInputs("Intake", inputs);}
+    Logger.processInputs("Intake", inputs);
   }
 
   public boolean isOpened() {

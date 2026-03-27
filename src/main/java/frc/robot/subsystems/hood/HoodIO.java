@@ -2,6 +2,8 @@ package frc.robot.subsystems.hood;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.revrobotics.spark.SparkBase;
+
 public interface HoodIO {
 
     @AutoLog
@@ -18,8 +20,14 @@ public interface HoodIO {
 
     default void setPosition(double positionDeg) {
     }
+    default void setEncoder(double deg) {
+        
+    }
 
     default void stop() {
+    }
+    default SparkBase getMotor() {
+        return null;
     }
     default void setAppliedVoltage(double volts) {
         }

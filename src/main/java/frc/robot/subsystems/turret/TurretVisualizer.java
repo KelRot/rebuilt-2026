@@ -69,7 +69,7 @@ public class TurretVisualizer {
                 poseSupplier.get().getX(), // x
                 poseSupplier.get().getY(), // y
                 0.0, // z = 0
-                new Rotation3d(0.0, 0.0, poseSupplier.get().getRotation().getRadians()) // roll=0, pitch=0, yaw = 2D
+                new Rotation3d(0.0, 0.0, poseSupplier.get().getRotation().getRadians() + RobotContainer.getTurret().angleToTarget()) // roll=0, pitch=0, yaw = 2D
                                                                                         // rotation
         );
         ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
@@ -116,7 +116,6 @@ public class TurretVisualizer {
 
         Logger.recordOutput("Turret/Mechanism3d/" + key, turretPose);
 
-        // Setpoint pozisyonu
         Pose3d setpointPose = basePose.transformBy(
                 new Transform3d(
                         new Translation3d(0, 0, 0),

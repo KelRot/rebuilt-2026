@@ -3,6 +3,9 @@ package frc.robot.subsystems.flywheel;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.SparkTunablePID;
+import frc.robot.util.SparkTunablePID.DriverType;
 
 public class Flywheel extends SubsystemBase {
 
@@ -12,6 +15,7 @@ public class Flywheel extends SubsystemBase {
         IDLE,
         PASSIVE,
         TARGET_RPM,
+        VOLTAGE,
         TESTING
 
     }
@@ -22,9 +26,12 @@ public class Flywheel extends SubsystemBase {
 
     private final FlywheelIO io;
     private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
-
+    private final SparkTunablePID sparkTunablePID;
+    private final LoggedTunableNumber setpoint = new LoggedTunableNumber("flywheelsetpoint", 0);
+    private final LoggedTunableNumber voltsetpoint = new LoggedTunableNumber("flywheelvoltsetpoint", 0);
     public Flywheel(FlywheelIO io) {
         this.io = io;
+        sparkTunablePID = new SparkTunablePID(io.getMotor(), "Flywheel", DriverType.VORTEX, 0.00019, 0, 0.008);
     }
 
     public void requestState(SystemState wantedState) {
@@ -40,10 +47,15 @@ public class Flywheel extends SubsystemBase {
         systemState = SystemState.IDLE;
     }
 
+    public void setVoltage(){
+        io.setAppliedVoltage(voltsetpoint.get());
+    }
+
     @Override
     public void periodic() {
         io.updateInputs(inputs);
-
+        sparkTunablePID.periodic();
+        
         switch (systemState) {
 
             case TARGET_RPM:
@@ -53,10 +65,12 @@ public class Flywheel extends SubsystemBase {
             case PASSIVE:
                 io.setRpm(500.0); // standby spin
                 break;
-
+            case VOLTAGE: 
+                setVoltage();
+                break;
             case IDLE:
             default:
-                io.setRpm(0.0);
+                io.setAppliedVoltage(0.0);
                 break;
             case TESTING:
                 io.setAppliedVoltage(1.0);

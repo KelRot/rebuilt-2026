@@ -32,18 +32,19 @@ import frc.robot.Constants.LedConstants;
 public class LedSubsystem extends SubsystemBase {
         private final Led led;
         private Superstructure superstructure;
-                public LedSubsystem(Led led, Superstructure superstructure) {
-                        System.out.println("[LedSubsystem] Constructing LedSubsystem...");
-                        this.led = led;
-                        this.superstructure = superstructure;
-                led.setStaticColor(Color.kAliceBlue);
-        }
+
+        public LedSubsystem(Led led, Superstructure superstructure) {
+    this.led = led;
+    this.superstructure = superstructure;
+    this.led.setStaticColor(Color.kAliceBlue);
+}
+
 
         @Override
-        public void periodic() {        
-                switch(superstructure.getCurrentState()) {
+        public void periodic() {
+                /* switch (superstructure.getCurrentState()) {
                         case OPENING_INTAKE:
-                                led.setAnimation(new LedPattern.Fire(1.0,55,120,LedConstants.kLedLength));
+                                led.setAnimation(new LedPattern.Fire(1.0, 55, 120, LedConstants.kLedLength));
                                 break;
                         case INTAKING:
                                 led.setAnimation(new LedPattern.Breathe(Color.kLime, 1.2));
@@ -76,7 +77,12 @@ public class LedSubsystem extends SubsystemBase {
                         case STUCKED_RECOVERY:
                                 break;
                         default:
+                                led.setAnimation(new LedPattern.Rainbow(1.5));
+
                                 break;
-                }
+                } */
+               led.setAnimation(new LedPattern.Rainbow(1.5));
+        
+                                
         }
 }

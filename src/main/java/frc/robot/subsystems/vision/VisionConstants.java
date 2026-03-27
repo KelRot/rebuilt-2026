@@ -7,6 +7,9 @@
 
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
+
 import java.nio.file.Path;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -18,7 +21,7 @@ public class VisionConstants {
     // AprilTag layout
     public static Path path = Filesystem.getDeployDirectory()
             .toPath()
-            .resolve("apriltags/2026-rebuilt-andymark.json"); // Turkey uses andymark version of layouts
+            .resolve("apriltags/field_map_mar_27_15_25_15.json"); // Turkey uses andymark version of layouts
     public static AprilTagFieldLayout aprilTagLayout;
     static {
         try {
@@ -29,13 +32,13 @@ public class VisionConstants {
     }
 
     // Camera names, must match names configured on coprocessor
-    public static String camera0Name = "camera_0";
-    public static String camera1Name = "camera_1";
+    public static String camera0Name = "taret_sol_sol";
+    public static String camera1Name = "taret_sol_on";
 
     // Robot to camera transforms
     // (Not used by Limelight, configure in web UI instead)
-    public static Transform3d robotToCamera0 = new Transform3d(0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, 0.0));
-    public static Transform3d robotToCamera1 = new Transform3d(-0.295, -0.01, 0.14, new Rotation3d(0.0, 0.0, Math.PI));
+    public static Transform3d robotToCamera0 = new Transform3d(0.278375, 0.290462, 0.251741, new Rotation3d(0.0, Radians.convertFrom(-35, Degrees), Math.PI/2));
+    public static Transform3d robotToCamera1 = new Transform3d(0.341263, 0.227575, 0.251741, new Rotation3d(0.0, Radians.convertFrom(-35, Degrees), 0));
 
     // Basic filtering thresholds
     public static double maxAmbiguity = 0.3; // -29,5

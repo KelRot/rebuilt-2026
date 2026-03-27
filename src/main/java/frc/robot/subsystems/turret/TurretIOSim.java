@@ -12,7 +12,7 @@ import lombok.Getter;
 public class TurretIOSim implements TurretIO {
     private final DCMotorSim turretMotorSim;
 
-    private PIDController turretController = new PIDController(TurretConstants.kP, 0, TurretConstants.kD);
+    private PIDController turretController = new PIDController(5, 0, TurretConstants.kD);
     private boolean turretClosedLoop = false;
     private double turretAppliedVolts = 0.0;
     static @Getter private FuelSim fuelSim;

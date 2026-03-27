@@ -1,6 +1,12 @@
 package frc.robot.subsystems.intake;
 
+import java.security.GeneralSecurityException;
+
 import org.littletonrobotics.junction.AutoLog;
+
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkBase.ControlType;
 
 public interface IntakeIO {
 
@@ -29,6 +35,17 @@ public interface IntakeIO {
     public default void setOpenerSetPoint(double setPoint) {
     }
 
+    public default void setRollerRPM(double rpm) {
+    }
+
+    public default SparkBase getLeadOpenerMotor() {
+        return null;
+    }
+
+    public default TalonFX getRollerMotor() {
+        return null;
+    }
+
     public default void setOpenerVoltage(double volts) {
     }
 
@@ -40,5 +57,8 @@ public interface IntakeIO {
 
     public default boolean isOpenerAtSetpoint() {
         return false;
+    }
+    public default void setBrake(boolean brake) {
+        
     }
 }

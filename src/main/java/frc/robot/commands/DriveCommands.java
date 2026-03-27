@@ -1,10 +1,3 @@
-// Copyright (c) 2025-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
-
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
@@ -40,145 +33,110 @@ public class DriveCommands {
     private static final double DEADBAND = 0.1;
     private static final double ANGLE_KP = 5.0;
     private static final double ANGLE_KD = 0.4;
-    private static final double ANGLE_MAX_VELOCITY = 8.0;
-    private static final double ANGLE_MAX_ACCELERATION = 20.0;
-    private static final double FF_START_DELAY = 2.0; // Secs
-    private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
-    private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
-    private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
+    private static final double ANGLE_MAX_VELOCITY = 5.0;
+    private static final double ANGLE_MAX_ACCELERATION = 15.0;
+    private static final double FF_START_DELAY = 2.0;
+    private static final double FF_RAMP_RATE = 0.1;
+    private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25;
+    private static final double WHEEL_RADIUS_RAMP_RATE = 0.05;
     private static final PIDController yController = new PIDController(5.0, 0.0, 0.0);
-    static {yController.setTolerance(0.5);}
+
+    static {
+        yController.setTolerance(0.5);
+    }
 
     private DriveCommands() {}
 
     private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
-        // Apply deadband
         double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
-
-        // Square magnitude for more precise control
         linearMagnitude = linearMagnitude * linearMagnitude;
-
-        // Return new linear velocity
         return new Pose2d(new Translation2d(), linearDirection)
                 .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
                 .getTranslation();
     }
 
-    /** Field relative drive command using two joysticks (controlling linear and angular velocities). */
     public static Command joystickDrive(
             Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
         return Commands.run(
                 () -> {
-                    // Get linear velocity
                     Translation2d linearVelocity =
                             getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-
-                    // Apply rotation deadband
                     double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
-
-                    // Square rotation value for more precise control
                     omega = Math.copySign(omega * omega, omega);
 
-                    if(isInTrenchArea(drive)){
-                        double ySpeed = MathUtil.clamp(yController.calculate(drive.getPose().getY(), getTrenchAreaY(drive)), -drive.getMaxLinearSpeedMetersPerSec(), drive.getMaxLinearSpeedMetersPerSec());
-                        ChassisSpeeds speeds = new ChassisSpeeds(
-                            linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                            -ySpeed,
-                            omega * drive.getMaxAngularSpeedRadPerSec());
                     boolean isFlipped = DriverStation.getAlliance().isPresent()
                             && DriverStation.getAlliance().get() == Alliance.Red;
-                    drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                            speeds,
-                            isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
-                    }
-                    else{
-                        ChassisSpeeds speeds = new ChassisSpeeds(
-                            linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                            linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                            omega * drive.getMaxAngularSpeedRadPerSec());
-                    boolean isFlipped = DriverStation.getAlliance().isPresent()
-                            && DriverStation.getAlliance().get() == Alliance.Red;
-                    drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                            speeds,
-                            isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+                    Rotation2d fieldRelativeRotation = isFlipped
+                            ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                            : drive.getRotation();
+
+                    if (isInTrenchArea(drive)) {
+                        double ySpeed = MathUtil.clamp(
+                                yController.calculate(drive.getPose().getY(), getTrenchAreaY(drive)),
+                                -drive.getMaxLinearSpeedMetersPerSec(),
+                                drive.getMaxLinearSpeedMetersPerSec());
+                        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                                new ChassisSpeeds(
+                                        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                                        -ySpeed,
+                                        omega * drive.getMaxAngularSpeedRadPerSec()),
+                                fieldRelativeRotation));
+                    } else {
+                        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                                new ChassisSpeeds(
+                                        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                                        linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                                        omega * drive.getMaxAngularSpeedRadPerSec()),
+                                fieldRelativeRotation));
                     }
                 },
                 drive);
     }
 
-    /**
-     * Field relative drive command using joystick for linear control and PID for angular control. Possible use cases
-     * include snapping to an angle, aiming at a vision target, or controlling absolute rotation with a joystick.
-     */
     public static Command joystickDriveAtAngle(
             Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<Rotation2d> rotationSupplier) {
-
-        // Create PID controller
         ProfiledPIDController angleController = new ProfiledPIDController(
-                ANGLE_KP, 0.0, ANGLE_KD, new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+                ANGLE_KP, 0.0, ANGLE_KD,
+                new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
         angleController.enableContinuousInput(-Math.PI, Math.PI);
 
-        // Construct command
         return Commands.run(
                         () -> {
-                            // Get linear velocity
                             Translation2d linearVelocity =
                                     getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-
-                            // Calculate angular speed
                             double omega = angleController.calculate(
                                     drive.getRotation().getRadians(),
                                     rotationSupplier.get().getRadians());
 
-                            // Convert to field relative speeds & send command
-                            ChassisSpeeds speeds = new ChassisSpeeds(
-                                    linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                                    linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                                    omega);
                             boolean isFlipped = DriverStation.getAlliance().isPresent()
                                     && DriverStation.getAlliance().get() == Alliance.Red;
                             drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                                    speeds,
+                                    new ChassisSpeeds(
+                                            linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                                            linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                                            omega),
                                     isFlipped
                                             ? drive.getRotation().plus(new Rotation2d(Math.PI))
                                             : drive.getRotation()));
                         },
                         drive)
-
-                // Reset PID controller when command starts
                 .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
     }
 
-    /**
-     * Measures the velocity feedforward constants for the drive motors.
-     *
-     * <p>This command should only be used in voltage control mode.
-     */
     public static Command feedforwardCharacterization(Drive drive) {
         List<Double> velocitySamples = new LinkedList<>();
         List<Double> voltageSamples = new LinkedList<>();
         Timer timer = new Timer();
 
         return Commands.sequence(
-                // Reset data
                 Commands.runOnce(() -> {
                     velocitySamples.clear();
                     voltageSamples.clear();
                 }),
-
-                // Allow modules to orient
-                Commands.run(
-                                () -> {
-                                    drive.runCharacterization(0.0);
-                                },
-                                drive)
+                Commands.run(() -> drive.runCharacterization(0.0), drive)
                         .withTimeout(FF_START_DELAY),
-
-                // Start timer
                 Commands.runOnce(timer::restart),
-
-                // Accelerate and gather data
                 Commands.run(
                                 () -> {
                                     double voltage = timer.get() * FF_RAMP_RATE;
@@ -187,22 +145,17 @@ public class DriveCommands {
                                     voltageSamples.add(voltage);
                                 },
                                 drive)
-
-                        // When cancelled, calculate and print results
                         .finallyDo(() -> {
                             int n = velocitySamples.size();
-                            double sumX = 0.0;
-                            double sumY = 0.0;
-                            double sumXY = 0.0;
-                            double sumX2 = 0.0;
+                            double sumX = 0.0, sumY = 0.0, sumXY = 0.0, sumX2 = 0.0;
                             for (int i = 0; i < n; i++) {
-                                sumX += velocitySamples.get(i);
-                                sumY += voltageSamples.get(i);
+                                sumX  += velocitySamples.get(i);
+                                sumY  += voltageSamples.get(i);
                                 sumXY += velocitySamples.get(i) * voltageSamples.get(i);
                                 sumX2 += velocitySamples.get(i) * velocitySamples.get(i);
                             }
                             double kS = (sumY * sumX2 - sumX * sumXY) / (n * sumX2 - sumX * sumX);
-                            double kV = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                            double kV = (n * sumXY - sumX * sumY)      / (n * sumX2 - sumX * sumX);
 
                             NumberFormat formatter = new DecimalFormat("#0.00000");
                             System.out.println("********** Drive FF Characterization Results **********");
@@ -211,48 +164,29 @@ public class DriveCommands {
                         }));
     }
 
-    /** Measures the robot's wheel radius by spinning in a circle. */
     public static Command wheelRadiusCharacterization(Drive drive) {
         SlewRateLimiter limiter = new SlewRateLimiter(WHEEL_RADIUS_RAMP_RATE);
         WheelRadiusCharacterizationState state = new WheelRadiusCharacterizationState();
 
         return Commands.parallel(
-                // Drive control sequence
                 Commands.sequence(
-                        // Reset acceleration limiter
-                        Commands.runOnce(() -> {
-                            limiter.reset(0.0);
-                        }),
-
-                        // Turn in place, accelerating up to full speed
+                        Commands.runOnce(() -> limiter.reset(0.0)),
                         Commands.run(
-                                () -> {
-                                    double speed = limiter.calculate(WHEEL_RADIUS_MAX_VELOCITY);
-                                    drive.runVelocity(new ChassisSpeeds(0.0, 0.0, speed));
-                                },
+                                () -> drive.runVelocity(
+                                        new ChassisSpeeds(0.0, 0.0, limiter.calculate(WHEEL_RADIUS_MAX_VELOCITY))),
                                 drive)),
-
-                // Measurement sequence
                 Commands.sequence(
-                        // Wait for modules to fully orient before starting measurement
                         Commands.waitSeconds(1.0),
-
-                        // Record starting measurement
                         Commands.runOnce(() -> {
                             state.positions = drive.getWheelRadiusCharacterizationPositions();
                             state.lastAngle = drive.getRotation();
                             state.gyroDelta = 0.0;
                         }),
-
-                        // Update gyro delta
                         Commands.run(() -> {
                                     var rotation = drive.getRotation();
-                                    state.gyroDelta += Math.abs(
-                                            rotation.minus(state.lastAngle).getRadians());
+                                    state.gyroDelta += Math.abs(rotation.minus(state.lastAngle).getRadians());
                                     state.lastAngle = rotation;
                                 })
-
-                                // When cancelled, calculate and print results
                                 .finallyDo(() -> {
                                     double[] positions = drive.getWheelRadiusCharacterizationPositions();
                                     double wheelDelta = 0.0;
@@ -264,14 +198,10 @@ public class DriveCommands {
 
                                     NumberFormat formatter = new DecimalFormat("#0.000");
                                     System.out.println("********** Wheel Radius Characterization Results **********");
-                                    System.out.println("\tWheel Delta: " + formatter.format(wheelDelta) + " radians");
-                                    System.out.println(
-                                            "\tGyro Delta: " + formatter.format(state.gyroDelta) + " radians");
-                                    System.out.println("\tWheel Radius: "
-                                            + formatter.format(wheelRadius)
-                                            + " meters, "
-                                            + formatter.format(Units.metersToInches(wheelRadius))
-                                            + " inches");
+                                    System.out.println("\tWheel Delta: "  + formatter.format(wheelDelta)  + " radians");
+                                    System.out.println("\tGyro Delta: "   + formatter.format(state.gyroDelta) + " radians");
+                                    System.out.println("\tWheel Radius: " + formatter.format(wheelRadius)
+                                            + " meters, " + formatter.format(Units.metersToInches(wheelRadius)) + " inches");
                                 })));
     }
 
@@ -281,28 +211,30 @@ public class DriveCommands {
         double gyroDelta = 0.0;
     }
 
-    private static Pose2d getBotPoseWithIntake(Drive drive){
+    private static Pose2d getBotPoseWithIntake(Drive drive) {
         Pose2d currentPose = drive.getPose();
-        double newY = currentPose.getY() + Constants.IntakeConstants.intakeLength/2.0;
-        return new Pose2d(currentPose.getX(), newY, currentPose.getRotation());
+        return new Pose2d(
+                currentPose.getX(),
+                currentPose.getY() + Constants.IntakeConstants.intakeLength / 2.0,
+                currentPose.getRotation());
     }
 
-    private static boolean isInTrenchArea(Drive drive){
+    private static boolean isInTrenchArea(Drive drive) {
         Pose2d botPose = getBotPoseWithIntake(drive);
-        if(PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueUpperTrench) || PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueLowerTrench) ||
-           PointInPolygon.pointInPolygon(botPose, PointInPolygon.redUpperTrench) || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redLowerTrench)){
-            return true;
-        }
-        return false;
+        return PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueUpperTrench)
+                || PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueLowerTrench)
+                || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redUpperTrench)
+                || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redLowerTrench);
     }
 
-    private static double getTrenchAreaY(Drive drive){
+    private static double getTrenchAreaY(Drive drive) {
         Pose2d botPose = getBotPoseWithIntake(drive);
-        if(PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueUpperTrench) || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redUpperTrench)){
-            return (Field.LeftBlueTrench.openingTopLeft.getY() + Field.LeftBlueTrench.openingTopRight.getY())/2.0;
-        }
-        else if(PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueLowerTrench) || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redLowerTrench)){
-            return (Field.RightBlueTrench.openingTopLeft.getY() + Field.RightBlueTrench.openingTopRight.getY())/2.0;
+        if (PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueUpperTrench)
+                || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redUpperTrench)) {
+            return (Field.LeftBlueTrench.openingTopLeft.getY() + Field.LeftBlueTrench.openingTopRight.getY()) / 2.0;
+        } else if (PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueLowerTrench)
+                || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redLowerTrench)) {
+            return (Field.RightBlueTrench.openingTopLeft.getY() + Field.RightBlueTrench.openingTopRight.getY()) / 2.0;
         }
         return botPose.getY();
     }
