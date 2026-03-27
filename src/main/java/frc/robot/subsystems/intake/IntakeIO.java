@@ -32,7 +32,7 @@ public interface IntakeIO {
     public default void setRollerVoltage(double volts) {
     }
 
-    public default void setOpenerSetPoint(double setPoint, ControlType controlType) {
+    public default void setOpenerSetPoint(double setPoint) {
     }
 
     public default void setRollerRPM(double rpm) {
@@ -57,5 +57,8 @@ public interface IntakeIO {
 
     public default boolean isOpenerAtSetpoint() {
         return false;
+    }
+    public default void setBrake(boolean brake) {
+        
     }
 }

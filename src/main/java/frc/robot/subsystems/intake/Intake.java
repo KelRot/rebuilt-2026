@@ -4,12 +4,11 @@ import static edu.wpi.first.units.Units.*;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.revrobotics.spark.SparkBase.ControlType;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SparkTunablePID;
 import frc.robot.util.TalonTunablePID;
 import frc.robot.util.SparkTunablePID.DriverType;
@@ -28,11 +27,12 @@ public class Intake extends SubsystemBase {
     TESTING
   }
 
-  private SystemState systemState = SystemState.INTAKING;
+  private SystemState systemState = SystemState.IDLE;
 
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
   private final IntakeVisualizer visualizer = new IntakeVisualizer("Measured", Color.kGreen);
+  private final LoggedTunableNumber setpoint = new LoggedTunableNumber("rollersetpoint", 0);
   private SparkTunablePID sparkTunablePID;
   private TalonTunablePID talonTunablePID;
 
@@ -40,8 +40,10 @@ public class Intake extends SubsystemBase {
 
   public Intake(IntakeIO io) {
     this.io = io;
-    sparkTunablePID = new SparkTunablePID(this.io.getLeadOpenerMotor(), "IntakeOpener", DriverType.MAX, 0, 0, 0);
-    talonTunablePID = new TalonTunablePID(this.io.getRollerMotor(), "IntakeRoller", 0, 0, 0, 1 / 509.3 / 60, 0);
+    sparkTunablePID = new SparkTunablePID(this.io.getLeadOpenerMotor(), "IntakeOpener", DriverType.MAX, 0.011, 0, 0.65);
+    talonTunablePID = new TalonTunablePID(this.io.getRollerMotor(), "IntakeRoller", 0.8, 0, 0.001, 1 / 509.3 * 60, 0);
+    io.updateInputs(inputs);
+    Logger.processInputs("Intake", inputs);
 
   }
 
@@ -53,7 +55,7 @@ public class Intake extends SubsystemBase {
   }
 
   public void moveToPosition(double position) {
-    io.setOpenerSetPoint(position, ControlType.kPosition);
+    io.setOpenerSetPoint(position);
     systemState = SystemState.POSITION_CONTROL;
   }
 
@@ -65,7 +67,7 @@ public class Intake extends SubsystemBase {
   private void handleIntaking(double rollerVoltage) {
     if (!inputs.isIntakeOpen) {
       io.setRollerVoltage(0.0);
-      io.setOpenerSetPoint(Constants.IntakeConstants.intakeOpenPosition - 5, ControlType.kPosition);
+      io.setOpenerSetPoint(Constants.IntakeConstants.intakeOpenPosition);
     } else {
       io.setOpenerVoltage(0);
       io.setRollerRPM(rollerVoltage);
@@ -74,6 +76,11 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
+    if(isOpened()) {
+      io.setBrake(false);
+    } else {
+      io.setBrake(true);
+    }
     io.updateInputs(inputs);
     visualizer.update(Degrees.of(inputs.IntakePosition).in(Radians));
 
@@ -92,16 +99,16 @@ public class Intake extends SubsystemBase {
 
       case OPENING:
         io.setRollerVoltage(0.0);
-        io.setOpenerSetPoint(Constants.IntakeConstants.intakeOpenPosition, ControlType.kPosition);
+        io.setOpenerSetPoint(Constants.IntakeConstants.intakeOpenPosition);
         if (io.isOpenerAtSetpoint()) {
-          io.setOpenerSetPoint(0, ControlType.kVoltage);
+          io.setOpenerVoltage(0);
           systemState = SystemState.IDLE;
         }
         break;
 
       case CLOSING:
         io.setRollerVoltage(0.0);
-        io.setOpenerSetPoint(Constants.IntakeConstants.intakeClosedPosition, ControlType.kPosition);
+        io.setOpenerSetPoint(Constants.IntakeConstants.intakeClosedPosition);
         if (io.isOpenerAtSetpoint()) {
           systemState = SystemState.IDLE;
         }
@@ -129,7 +136,8 @@ public class Intake extends SubsystemBase {
         break;
 
       case MANUAL:
-        io.setRollerVoltage(0.0);
+        // io.setRollerRPM(setpoint.get());
+        io.setOpenerSetPoint(setpoint.get());
         break;
 
       case IDLE:
@@ -145,12 +153,14 @@ public class Intake extends SubsystemBase {
           io.setOpenerVoltage(0.0);
           break;
         }
-
-        sparkTunablePID.periodic();
-        talonTunablePID.periodic();
-        Logger.recordOutput("Intake/SystemState", systemState.toString());
-        Logger.processInputs("Intake", inputs);
     }
+
+    sparkTunablePID.periodic();
+    talonTunablePID.periodic();
+    
+
+    Logger.recordOutput("Intake/SystemState", systemState.toString());
+    Logger.processInputs("Intake", inputs);
   }
 
   public boolean isOpened() {

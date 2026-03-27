@@ -64,7 +64,7 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
-  public void setOpenerSetPoint(double encoderDegrees, ControlType controlType) {
+  public void setOpenerSetPoint(double encoderDegrees) {
 
     targetMechRad =
         Degrees.of(encoderDegrees).in(Radians)

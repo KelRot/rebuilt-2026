@@ -8,6 +8,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -18,15 +20,17 @@ import frc.robot.Constants;
 
 public class IntakeIOHardware implements IntakeIO {
   private SparkMax openerMotor = new SparkMax(Constants.IntakeConstants.openerMotorID, MotorType.kBrushless);
-  private static SparkMax secondOpenerMotor = new SparkMax(Constants.IntakeConstants.secondOpenerMotorID,
+  private SparkMax secondOpenerMotor = new SparkMax(Constants.IntakeConstants.secondOpenerMotorID,
       MotorType.kBrushless);
   private TalonFX rollerMotor = new TalonFX(Constants.IntakeConstants.rollerMotorID);
 
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
 
   public IntakeIOHardware() {
-    openerMotor.getEncoder().setPosition(37);
+    openerMotor.getEncoder().setPosition(-37);
     rollerMotor.optimizeBusUtilization();
+    config();
+    setOpenerSetPoint(-37);
   }
 
   @Override
@@ -41,8 +45,8 @@ public class IntakeIOHardware implements IntakeIO {
   }
 
   @Override
-  public void setOpenerSetPoint(double setPoint, ControlType controlType) {
-    openerMotor.getClosedLoopController().setSetpoint(setPoint, controlType);
+  public void setOpenerSetPoint(double setPoint) {
+    openerMotor.getClosedLoopController().setSetpoint(setPoint, ControlType.kPosition);
   }
 
   public TalonFX getRollerMotor() {
@@ -58,7 +62,7 @@ public class IntakeIOHardware implements IntakeIO {
   }
 
   public void zeroEncoder() {
-    openerMotor.getEncoder().setPosition(37);
+    openerMotor.getEncoder().setPosition(-37);
   }
 
   public void stopAllMotors() {
@@ -71,36 +75,49 @@ public class IntakeIOHardware implements IntakeIO {
     return isAtSetpoint;
   }
 
+  public void setBrake(boolean brake) {
+    SparkMaxConfig conf = new SparkMaxConfig();
+    if (brake) {
+      conf.idleMode(IdleMode.kBrake);
+    } else {
+      conf.idleMode(IdleMode.kCoast);
+    }
+    openerMotor.configure(conf, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    secondOpenerMotor.configure(conf, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+  }
+
   public void config() {
+    // --- SparkMax Opener Config ---
+    SparkMaxConfig openerConfig = new SparkMaxConfig();
+    openerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(40);
+    openerConfig.closedLoop.pid(0, 0, 0).feedbackSensor(FeedbackSensor.kPrimaryEncoder).allowedClosedLoopError(4,
+        ClosedLoopSlot.kSlot0);
+    openerConfig.encoder.positionConversionFactor(1.0 / Constants.IntakeConstants.openerGearRatio * 360.0);
+    tryUntilOk(openerMotor, 5,
+        () -> openerMotor.configure(openerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+    SparkMaxConfig opener2Config = new SparkMaxConfig();
+    opener2Config.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(40);
+    opener2Config.follow(3, true);
+    tryUntilOk(secondOpenerMotor, 5,
+        () -> secondOpenerMotor.configure(opener2Config, ResetMode.kResetSafeParameters,
+            PersistMode.kPersistParameters));
     // --- TalonFX Roller Config ---
     TalonFXConfiguration rollerConfig = new TalonFXConfiguration();
 
     rollerConfig.Audio.BeepOnBoot = true;
     rollerConfig.Feedback.RotorToSensorRatio = 1.0;
     rollerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    rollerConfig.CurrentLimits.SupplyCurrentLimit = 40;
+    rollerConfig.CurrentLimits.SupplyCurrentLimit = 30;
+    rollerConfig.CurrentLimits.StatorCurrentLimit = 120;
     rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     rollerConfig.Slot0.kP = 0.001;
     rollerConfig.Slot0.kI = 0.0;
-    rollerConfig.Slot0.kD = 0.08;
+    rollerConfig.Slot0.kD = 0.0;
     rollerConfig.Slot0.kV = 1 / 509.3 / 60;
 
     rollerMotor.getConfigurator().apply(rollerConfig);
 
-    // --- SparkMax Opener Config ---
-    SparkMaxConfig openerConfig = new SparkMaxConfig();
-    openerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(30);
-    openerConfig.closedLoop.pid(0, 0, 0);
-    openerConfig.encoder.positionConversionFactor(1.0 / Constants.IntakeConstants.openerGearRatio * 360.0);
-
-    tryUntilOk(openerMotor, 5,
-        () -> openerMotor.configure(openerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
-
-    openerConfig.follow(openerMotor, true);
-    tryUntilOk(secondOpenerMotor, 5,
-        () -> secondOpenerMotor.configure(openerConfig, ResetMode.kResetSafeParameters,
-            PersistMode.kPersistParameters));
   }
 
   public void updateInputs(IntakeIOInputs inputs) {
@@ -114,6 +131,6 @@ public class IntakeIOHardware implements IntakeIO {
     inputs.openerMotorCurrentAmps = openerMotor.getOutputCurrent();
     inputs.openerMotorVoltageVolts = openerMotor.getBusVoltage();
     inputs.IntakePosition = openerMotor.getEncoder().getPosition();
-    inputs.isIntakeOpen = inputs.IntakePosition > Constants.IntakeConstants.intakeOpenPosition;
+    inputs.isIntakeOpen = inputs.IntakePosition + 3 > Constants.IntakeConstants.intakeOpenPosition;
   }
 }

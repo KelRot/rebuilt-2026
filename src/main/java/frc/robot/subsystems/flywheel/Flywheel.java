@@ -54,7 +54,6 @@ public class Flywheel extends SubsystemBase {
     @Override
     public void periodic() {
         io.updateInputs(inputs);
-        targetRpm = setpoint.get();
         sparkTunablePID.periodic();
         
         switch (systemState) {
@@ -71,7 +70,7 @@ public class Flywheel extends SubsystemBase {
                 break;
             case IDLE:
             default:
-                io.setRpm(0.0);
+                io.setAppliedVoltage(0.0);
                 break;
             case TESTING:
                 io.setAppliedVoltage(1.0);

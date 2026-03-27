@@ -26,9 +26,11 @@ public class Index extends SubsystemBase {
     this.io = io;
   }
 
-
   public void requestState(SystemState wantedState) {
     systemState = wantedState;
+  }
+  public SystemState getCurrentState() {
+    return systemState;
   }
 
   public void stop() {
@@ -54,12 +56,12 @@ public class Index extends SubsystemBase {
         io.setSpinnerVoltage(0.0);
         break;
 
-        case OUTTAKING:
-          io.setSpinnerVoltage(Constants.IndexConstants.OUTTAKING_VOLTAGE);
-          break;
-          case TESTING:
-            io.setSpinnerVoltage(1);
-            break;
+      case OUTTAKING:
+        io.setSpinnerVoltage(Constants.IndexConstants.OUTTAKING_VOLTAGE);
+        break;
+      case TESTING:
+        io.setSpinnerVoltage(1);
+        break;
     }
 
     Logger.recordOutput("Index/SystemState", systemState.toString());

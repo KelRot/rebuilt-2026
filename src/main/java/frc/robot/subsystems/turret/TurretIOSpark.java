@@ -7,21 +7,24 @@ import java.util.function.DoubleSupplier;
 import frc.robot.Constants.TurretConstants;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.ClosedLoopConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkBase.ControlType;
 
 import edu.wpi.first.math.filter.Debouncer;
 
 public class TurretIOSpark implements TurretIO {
     // Hardware components
-    private final SparkMax turretMotor;
+    private final SparkFlex turretMotor;
     private final RelativeEncoder turretEncoder;
 
     private double targetPositionDeg;
@@ -33,7 +36,7 @@ public class TurretIOSpark implements TurretIO {
     private final Debouncer turretDebouncer = new Debouncer(0.5);
 
     public TurretIOSpark() {
-        turretMotor = new SparkMax(TurretConstants.turretID, MotorType.kBrushless);
+        turretMotor = new SparkFlex(TurretConstants.turretID, MotorType.kBrushless);
         turretEncoder = turretMotor.getEncoder();
         turretController = turretMotor.getClosedLoopController();
 
@@ -67,7 +70,7 @@ public class TurretIOSpark implements TurretIO {
     @Override
     public void setPosition(double setpoint) {
         targetPositionDeg = setpoint;
-        turretController.setSetpoint(setpoint, ControlType.kPosition);
+        turretController.setSetpoint(setpoint, ControlType.kPosition, ClosedLoopSlot.kSlot0);
     }
 
     @Override
@@ -86,13 +89,13 @@ public class TurretIOSpark implements TurretIO {
 
     private void configure() {
         ClosedLoopConfig closedLoopConfig = new ClosedLoopConfig();
-        closedLoopConfig.pid(TurretConstants.kP, 0, TurretConstants.kD);
+        closedLoopConfig.pid(TurretConstants.kP, 0, TurretConstants.kD).allowedClosedLoopError(2, ClosedLoopSlot.kSlot0);
 
-        SparkMaxConfig turretConfig = new SparkMaxConfig();
+        SparkFlexConfig turretConfig = new SparkFlexConfig();
         turretConfig
                 .idleMode(IdleMode.kBrake)
                 .voltageCompensation(12)
-                .smartCurrentLimit(20)
+                .smartCurrentLimit(25)
                 .apply(closedLoopConfig);
         turretConfig.encoder.positionConversionFactor(TurretConstants.positionConversionFactor)
                 .velocityConversionFactor(TurretConstants.velocityConversionFactor);
@@ -104,6 +107,11 @@ public class TurretIOSpark implements TurretIO {
 
         tryUntilOk(turretMotor, 5, () -> turretMotor.configure(turretConfig, ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters));
+    }
+
+    @Override
+    public SparkBase getMotor() {
+        return turretMotor;
     }
 
     @Override

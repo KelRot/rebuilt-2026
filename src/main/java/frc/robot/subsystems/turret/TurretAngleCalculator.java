@@ -11,13 +11,14 @@ public class TurretAngleCalculator {
     private static final int SMALL_GEAR = 24;
     private static final int BIG_GEAR = 25;
     private static final int DRIVEN_GEAR = 108;
-    private static final int SCAN_RANGE = 10;
+    private static final int SCAN_RANGE = 15;
 
     public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
-    public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(540);
+    public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(420);
 
-    private static final double SMALL_ENCODER_OFFSET = 0.703602917590073;
-    private static final double BIG_ENCODER_OFFSET = 0.7689608942240224;
+    private static final double SMALL_ENCODER_OFFSET = 0.5824441645611041 
+;
+    private static final double BIG_ENCODER_OFFSET = 0.008507250212681255;
 
     private final DutyCycleEncoder smallEncoder;
     private final DutyCycleEncoder bigEncoder;
@@ -43,10 +44,10 @@ public class TurretAngleCalculator {
         SmartDashboard.putNumber("Turret/CRT/ErrorDeg", lastCRTError.getDegrees());
         SmartDashboard.putNumber(
                 "Turret/CRT/SmallEncoderRaw",
-                smallEncoder.isConnected() ? applyOffset(smallEncoder.get(), SMALL_ENCODER_OFFSET) : -1);
+                smallEncoder.isConnected() ? applyOffset(1 - smallEncoder.get(), SMALL_ENCODER_OFFSET) : -1);
         SmartDashboard.putNumber(
                 "Turret/CRT/BigEncoderRaw",
-                bigEncoder.isConnected() ? applyOffset(bigEncoder.get(), BIG_ENCODER_OFFSET) : -1);
+                bigEncoder.isConnected() ? applyOffset(1 - bigEncoder.get(), BIG_ENCODER_OFFSET) : -1);
         SmartDashboard.putBoolean("Turret/CRT/SmallEncOK", smallEncoder.isConnected());
         SmartDashboard.putBoolean("Turret/CRT/BigEncOK", bigEncoder.isConnected());
         SmartDashboard.putBoolean("Turret/CRT/IsCalibrated", isCalibrated);
@@ -57,8 +58,8 @@ public class TurretAngleCalculator {
         if (!smallEncoder.isConnected() || !bigEncoder.isConnected())
             return null;
 
-        double smallPos = applyOffset(smallEncoder.get(), SMALL_ENCODER_OFFSET);
-        double bigPos = applyOffset(bigEncoder.get(), BIG_ENCODER_OFFSET);
+        double smallPos = applyOffset(1 - smallEncoder.get(), SMALL_ENCODER_OFFSET);
+        double bigPos = applyOffset(1 - bigEncoder.get(), BIG_ENCODER_OFFSET);
 
         double[] smallPositions = new double[SCAN_RANGE];
         double[] bigPositions = new double[SCAN_RANGE];
@@ -119,13 +120,13 @@ public class TurretAngleCalculator {
     }
 
     private double applyOffset(double raw, double offset) {
-        return ((raw - offset) % 1.0 + 1.0) % 1.0;
+        return ((raw + offset) % 1.0 + 1.0) % 1.0;
     }
-
 
     public double getBigEncoder() {
         return bigEncoder.get();
     }
+
     public double getSmallEncoder() {
         return smallEncoder.get();
     }

@@ -8,9 +8,6 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Meters;
-
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Distance;
@@ -38,71 +35,63 @@ public final class Constants {
     public static class TurretConstants {
         public static final double kP = 0.0;
         public static final double kD = 0.0;
-    
-        public static final int turretID = 28;
-        public static final int absEncoder1ID = 2;
-        public static final int absEncoder2ID = 3;
 
-        public static final double positionConversionFactor = 1; // Example conversion factor
-        public static final double velocityConversionFactor = 1; 
+        public static final int turretID = 9;
+        public static final int absEncoder1ID = 3;
+        public static final int absEncoder2ID = 0;
+
+        public static final double positionConversionFactor = 360/18;
+        public static final double velocityConversionFactor = 1;
 
         public static final DCMotor turretGearbox = DCMotor.getNEO(1);
-        public static final double turretMotorReduction = 25;
+        public static final double turretMotorReduction = 18;
 
         public static final double minAngle = 0;
-        public static final double maxAngle = 540;
+        public static final double maxAngle = 360;
 
         public static final double cruiseVelocity = 0.0;
         public static final double maxAcceleration = 0.0;
 
-        public static final int turretGearboxTeeth = 220;
-        public static final int absEncoder1Teeth = 25;
-        public static final int absEncoder2Teeth = 24;
+        public static final int turretGearboxTeeth = 108;
+        public static final int absEncoder1Teeth = 24;
+        public static final int absEncoder2Teeth = 25;
         public static final double abs1Offset = 0.0;
         public static final double abs2Offset = 0.0;
 
-        public static final Translation2d turretOffset = new Translation2d(0.0, 0.0);
+        public static final Translation2d turretOffset = new Translation2d(0.135, 0.0);
     }
 
-    
     public static class IntakeConstants {
-        public static final int rollerMotorID = 7;
-        public static final int openerMotorID = 8;
-        public static final int secondOpenerMotorID = 9;
+        public static final int rollerMotorID = 0;
+        public static final int openerMotorID = 3;
+        public static final int secondOpenerMotorID = 7;
         public static final double zeroWaitSeconds = 2;
         public static final double zeroVoltage = 0;
-        public static double openerGearRatio = 3.2;
-        public static double INTAKING_RPM = 2400.0;
-        public static double OUTTAKING_RPM = -2400.0;
-        public static double intakeOpenPosition = -133;
+        public static double openerGearRatio = 112 / 14 * 23 / 13;
+        public static double INTAKING_RPM = 1600.0;
+        public static double OUTTAKING_RPM = -1800.0;
+        public static double intakeOpenPosition = 85;
         public static double openVoltage;
         public static Time openWaitSeconds;
-        public static double intakeClosedPosition = 0;
+        public static double intakeClosedPosition = -34;
         public static final double ZERO_CONFIRM_TIME = 0;
         public static final int ZERO_VELOCITY_EPS = 0;
-        public static final double RotPerVolt = 5906/12;
+        public static final double RotPerVolt = 5906 / 12;
         public static final double intakeLength = 0.0;
     }
 
     public static class IndexConstants {
-        public static final int spinnerMotorID = 3;
+        public static final int spinnerMotorID = 4;
 
         public static final double PASSIVE_MODE_VOLTAGE = -1.0;
-        public static final double INDEXING_VOLTAGE = -12 * 0.45;
+        public static final double INDEXING_VOLTAGE = -12 * 0.6;
         public static final double OUTTAKING_VOLTAGE = 12 * 0.3;
 
-        public static final int topRollerMotorID = 22;
-
-        public static final double PASSIVE_MODE_TOPROLLER_VOLTAGE = 0.0;
-
-        public static final double OUTTAKING_TOPROLLER_VOLTAGE = 0.0;
-
-        public static final double INDEXING_TOPROLLER_VOLTAGE = 0.0;
     }
 
     public static class KickerConstants {
-        public static final int kickerMotorID = 4;
-        public static final double defaultKickerVoltage = -6.5;
+        public static final int kickerMotorID = 8;
+        public static final double defaultKickerVoltage = -5.5;
     }
 
     public static class FlywheelConstants {
@@ -113,19 +102,19 @@ public final class Constants {
 
     public static final class HoodConstants {
 
-        public static final int hoodID = 0;
+        public static final int hoodID = 5;
 
         public static final double kP = 0.0;
         public static final double kD = 0.0;
 
-        public static final double positionConversionFactorDeg = 1.0;
+        public static final double positionConversionFactorDeg = 1 / (27 * 48 / 15) / 360;
 
         public static final double cruiseVelocityDegPerSec = 0.0;
 
         public static final double maxAccelerationDegPerSec2 = 0.0;
 
         public static final double minAngleDeg = 0.0;
-        public static final double maxAngleDeg = 0.0;
+        public static final double maxAngleDeg = 50.0;
 
     }
 

@@ -2,6 +2,8 @@ package frc.robot.subsystems.turret;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.revrobotics.spark.SparkBase;
+
 public interface TurretIO {
     @AutoLog
     public static class TurretIOInputs {
@@ -46,4 +48,7 @@ public interface TurretIO {
         return null;
     }
 
+    public default SparkBase getMotor() {
+        return null;
+    }
 }

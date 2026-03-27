@@ -7,19 +7,16 @@
 
 package frc.robot;
 
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
-import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -28,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.LedSubsystem;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.SuperstructureState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -42,11 +40,11 @@ import frc.robot.subsystems.hood.HoodIOSpark;
 import frc.robot.subsystems.index.Index;
 import frc.robot.subsystems.index.IndexIO;
 import frc.robot.subsystems.index.IndexIOSpark;
+import frc.robot.subsystems.index.Index.SystemState;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
-import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOHardware;
-import frc.robot.subsystems.intake.Intake.SystemState;
+import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.kicker.KickerIO;
 import frc.robot.subsystems.kicker.KickerIOSpark;
@@ -94,6 +92,8 @@ public class RobotContainer {
         public static Hood hood;
         @Getter
         public static Turret turret;
+        @Getter
+        public static LedSubsystem ledsub;
         // Controller
         @Getter
         public static FuelSim fuelSim = new FuelSim("FuelSim"); // creates a new fuelSim of FuelSim
@@ -121,18 +121,21 @@ public class RobotContainer {
                                                 new ModuleIOSpark(3));
 
                                 index = new Index(new IndexIOSpark());
+                                kicker = new Kicker(new KickerIOSpark());
                                 turret = new Turret(new TurretIOSpark());
 
                                 vision = new Vision(
                                                 drive::addVisionMeasurement,
+                                                new VisionIOPhotonVision(VisionConstants.camera0Name,
+                                                                VisionConstants.robotToCamera0),
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name,
                                                                 VisionConstants.robotToCamera1));
                                 flywheel = new Flywheel(new FlywheelIOSparkFlex());
 
-                                kicker = new Kicker(new KickerIOSpark());
                                 intake = new Intake(new IntakeIOHardware());
                                 hood = new Hood(new HoodIOSpark());
-                                superstructure = new Superstructure(intake, flywheel, kicker, hood, turret, drive,
+                                superstructure = new Superstructure(intake, flywheel, kicker, hood, turret,
+                                                drive,
                                                 index);
                                 LedSubsystem ledsub = new LedSubsystem(led, superstructure);
                                 break;
@@ -189,11 +192,8 @@ public class RobotContainer {
                                 ledsub = new LedSubsystem(led, superstructure);
                                 break;
                 }
-                NamedCommands.registerCommand("intake",
-                                Commands.runOnce(() -> intake.requestState(SystemState.INTAKING), intake));
                 // Set up auto routines
                 autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-                autoChooser.addOption("pathplanner oto", new PathPlannerAuto("Example Auto"));
                 // Set up SysId routines
                 autoChooser.addOption("Drive Wheel Radius Characterization",
                                 DriveCommands.wheelRadiusCharacterization(drive));
@@ -209,6 +209,7 @@ public class RobotContainer {
                                 drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
                 autoChooser.addOption("Drive SysId (Dynamic Reverse)",
                                 drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+                NamedCommands.registerCommand("intake", Commands.none());
 
                 // Configure the button bindings
                 configureButtonBindings();
@@ -244,14 +245,25 @@ public class RobotContainer {
                 controller
                                 .b()
                                 .onTrue(Commands.runOnce(
-                                                () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(),
+                                                () -> drive.setPose(new Pose2d(3.548, 3.978,
                                                                 new Rotation2d())),
                                                 drive)
-                                                .ignoringDisable(true));
-                controller.button(6).onTrue(superstructure.intakeCommand());
+                                                .ignoringDisable(true)); 
 
-                controller.button(7).onTrue(superstructure.shootCommand());
-                controller.leftBumper().whileTrue(Commands.runOnce(() -> turret.launchFuel(), turret).repeatedly());
+                controller.rightBumper().onTrue(superstructure.shootCommand());
+                controller.leftBumper()
+                                .onTrue(Commands.runOnce(() -> intake.requestState(Intake.SystemState.CLOSING)));
+                controller.button(4)
+                                .whileTrue(Commands.runOnce(() -> intake.requestState(Intake.SystemState.INTAKING)));
+                controller.button(7)
+                                .whileTrue(Commands.runOnce(() -> turret.requestState(Turret.SystemState.TRACKING)));
+                controller.button(7)
+                                .whileTrue(Commands.runOnce(() -> superstructure.setState(SuperstructureState.PREP_SHOOTING)));
+                controller.button(9)
+                                .toggleOnTrue(Commands.runEnd(() -> hood.requestState(Hood.SystemState.ZEROING),
+                                                () -> hood.zeroEncoder()));
+                controller.button(10)
+                                .onTrue(Commands.runOnce(() -> hood.setEncoder()));
         }
 
         /**
