@@ -25,6 +25,7 @@ public class Led extends SubsystemBase {
 
     private final AddressableLEDBuffer buffer;
     private final AnimationController controller;
+    
 
     public Led() {
         System.out.println("[Led] Constructing Led Subsystem...");
@@ -70,6 +71,10 @@ public class Led extends SubsystemBase {
         LedPattern.SolidColor solid = new LedPattern.SolidColor(color);
         setAnimation(solid, startIndex, length);
     }
+
+    public int getLength() {
+        return buffer.getLength();
+}
 
     /**
      * Sets the entire strip to a static color.
