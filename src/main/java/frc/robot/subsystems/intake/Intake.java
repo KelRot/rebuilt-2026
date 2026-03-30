@@ -37,11 +37,12 @@ public class Intake extends SubsystemBase {
   private TalonTunablePID talonTunablePID;
 
   private double zeroStillTime = 0.0;
+  private boolean isZeroed = false;
 
   public Intake(IntakeIO io) {
     this.io = io;
     sparkTunablePID = new SparkTunablePID(this.io.getLeadOpenerMotor(), "IntakeOpener", DriverType.MAX, 0.011, 0, 0.65);
-    talonTunablePID = new TalonTunablePID(this.io.getRollerMotor(), "IntakeRoller", 0.8, 0, 0.001, 1 / 509.3 * 60, 0);
+    talonTunablePID = new TalonTunablePID(this.io.getRollerMotor(), "IntakeRoller", 0.08, 0, 0.05, 1 / 509.3 * 60, 0);
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
 
@@ -163,6 +164,12 @@ public class Intake extends SubsystemBase {
     Logger.processInputs("Intake", inputs);
   }
 
+  public void setZeroed(boolean zeroed) {
+    isZeroed = zeroed;
+  }
+  public void setEncoder() {
+    io.getLeadOpenerMotor().getEncoder().setPosition(0);
+  }
   public boolean isOpened() {
     return inputs.isIntakeOpen;
   }

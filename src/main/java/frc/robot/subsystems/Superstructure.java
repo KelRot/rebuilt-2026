@@ -3,10 +3,15 @@ package frc.robot.subsystems;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.Drive;
@@ -14,6 +19,7 @@ import frc.robot.subsystems.drive.Drive.RobotZone;
 import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.hood.Hood;
 import frc.robot.subsystems.index.Index;
+import frc.robot.subsystems.index.Index.SystemState;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.turret.Turret;
@@ -23,6 +29,7 @@ import frc.robot.util.shotutil.ShotCalculator;
 import frc.robot.util.shotutil.ShotLUT;
 import frc.robot.util.shotutil.ShotParameters;
 import lombok.Getter;
+import lombok.extern.java.Log;
 
 public class Superstructure extends SubsystemBase {
 
@@ -56,6 +63,8 @@ public class Superstructure extends SubsystemBase {
 
     private SuperstructureState currentState = SuperstructureState.IDLE;
     private SuperstructureState wantedState = SuperstructureState.IDLE;
+    private boolean isFixed = false;
+    public double headingRet;
 
     /* ================= ENUM ================= */
 
@@ -72,6 +81,7 @@ public class Superstructure extends SubsystemBase {
         SHOOTING,
         SHOOTING_AND_INTAKING,
 
+        ZEROING,
         DEFAULT,
         IDLE,
         TESTING
@@ -108,13 +118,12 @@ public class Superstructure extends SubsystemBase {
         lut.put(5.58, new ShotParameters(-3580, 585, 0.5));
         lut.put(4.9, new ShotParameters(-3400, 400, 0.5));
         lut.put(4.32, new ShotParameters(-3500, 460, 0.5));
-        lut.put(2.68, new ShotParameters(-3300, 0, 0.5));
         lut.put(2, new ShotParameters(-2830, 0, 0.5));
         lut.put(3.41, new ShotParameters(-3150, 230, 0.5));
         lut.put(4.05, new ShotParameters(-3300, 300, 0.5));
         lut.put(8.45, new ShotParameters(-3800, 1100, 0.5));
-        lut.put(3.1, new ShotParameters(-3200, 100, 0.5));
-        lut.put(2.3, new ShotParameters(-3100, 100, 0.5));
+        lut.put(3.1, new ShotParameters(-3200, 85, 0.5));
+        lut.put(2.3, new ShotParameters(-2850, 65, 0.5));
         shotCalc.loadShotLUT(lut);
 
     }
@@ -130,12 +139,10 @@ public class Superstructure extends SubsystemBase {
             applyState(wantedState);
             currentState = wantedState;
         }
-        if (hood.isAtSetpoint()
-                && currentState == SuperstructureState.PREP_SHOOTING) {
+        if (currentState == SuperstructureState.PREP_SHOOTING) {
             wantedState = SuperstructureState.SHOOTING;
         }
-        if (hood.isAtSetpoint()
-                && currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING) {
+        if (currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING) {
             wantedState = SuperstructureState.SHOOTING_AND_INTAKING;
         }
 
@@ -144,14 +151,16 @@ public class Superstructure extends SubsystemBase {
                     swerve.getPose(),
                     swerve.getChassisSpeeds(),
                     swerve.getFieldSpeeds(),
-                    1// vision confidence, 0 to 1
+                    0.9// vision confidence, 0 to 1
             );
             ShotCalculator.LaunchParameters result = shotCalc.calculate(inputs, getTarget());
             flywheel.setTargetRpm(result.rpm());
-            turret.setTargetAngle(result.predictiveTurretAngleDeg());
             hood.setTargetPositionDeg(shotCalc.getHoodAngle(result.solvedDistanceM()));
+            Logger.recordOutput("turretTargetAngle", result.driveHeadingDeg());
         }
+        headingRet = getAlignmentHeading(drive.getPose(), getTarget());
         Logger.recordOutput("SuperStructure/State", currentState.toString());
+        Logger.recordOutput("SuperStructure/AlignmentHeading", headingRet);
     }
 
     /* ================= STATE APPLY ================= */
@@ -162,16 +171,29 @@ public class Superstructure extends SubsystemBase {
 
             case OPENING_INTAKE:
                 intake.requestState(Intake.SystemState.OPENING);
+                if (!isAnyShootingState(currentState)) {
+                    index.requestState(Index.SystemState.IDLE);
+                    kicker.requestState(Kicker.SystemState.IDLE);
+                }
                 break;
 
             case INTAKING:
                 intake.requestState(Intake.SystemState.INTAKING);
-                index.requestState(Index.SystemState.PASSIVE);
+
+                if (!isAnyShootingState(currentState)) {
+                    index.requestState(Index.SystemState.PASSIVE);
+                    
+                    kicker.requestState(Kicker.SystemState.IDLE);
+                }
                 break;
 
             case CLOSING_AND_STOPPING_INTAKE:
                 intake.requestState(Intake.SystemState.CLOSING);
-                index.requestState(Index.SystemState.IDLE);
+                if (isAnyShootingState(currentState)) {
+                    index.requestState(Index.SystemState.IDLE);
+                    kicker.requestState(Kicker.SystemState.IDLE);
+                }
+
                 break;
 
             case REJECTING_INTAKE:
@@ -183,7 +205,7 @@ public class Superstructure extends SubsystemBase {
                 hood.requestState(Hood.SystemState.POSITION);
                 turret.requestState(Turret.SystemState.SHOOTING);
                 flywheel.requestState(Flywheel.SystemState.TARGET_RPM);
-                
+
                 kicker.requestState(Kicker.SystemState.ENABLED);
                 index.requestState(Index.SystemState.INDEXING);
                 break;
@@ -191,6 +213,7 @@ public class Superstructure extends SubsystemBase {
             case PREP_SHOOTING_AND_INTAKING:
                 applyState(SuperstructureState.PREP_SHOOTING);
                 applyState(SuperstructureState.INTAKING);
+                applyState(SuperstructureState.SHOOTING);
                 break;
 
             case SHOOTING:
@@ -210,17 +233,20 @@ public class Superstructure extends SubsystemBase {
                 break;
 
             case TESTING:
-                hood.requestState(Hood.SystemState.TESTING);
+                //hood.requestState(Hood.SystemState.TESTING);
                 turret.requestState(Turret.SystemState.TESTING);
-                flywheel.requestState(Flywheel.SystemState.TESTING);
-                index.requestState(Index.SystemState.TESTING);
-                kicker.requestState(Kicker.SystemState.TESTING);
+                //flywheel.requestState(Flywheel.SystemState.TESTING);
+                //index.requestState(Index.SystemState.TESTING);
+                //kicker.requestState(Kicker.SystemState.TESTING);
                 break;
 
             case DEFAULT:
                 turret.requestState(Turret.SystemState.TRACKING);
                 break;
 
+            case ZEROING:
+                intake.requestState(Intake.SystemState.ZEROING);
+                hood.requestState(Hood.SystemState.ZEROING);
             case IDLE:
             default:
                 stopAll();
@@ -253,6 +279,25 @@ public class Superstructure extends SubsystemBase {
     public Command intakeCommand() {
         return new InstantCommand(() -> {
 
+            if (currentState == SuperstructureState.INTAKING) {
+                wantedState = SuperstructureState.OPENING_INTAKE;
+            } else if (currentState == SuperstructureState.SHOOTING_AND_INTAKING) {
+                wantedState = SuperstructureState.SHOOTING;
+                applyState(SuperstructureState.OPENING_INTAKE);
+
+            } else if (currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING) {
+                wantedState = SuperstructureState.PREP_SHOOTING;
+                applyState(SuperstructureState.OPENING_INTAKE);
+            } else {
+                wantedState = SuperstructureState.INTAKING;
+            }
+
+        }, this);
+    }
+
+    public Command closeIntakeCommand() {
+        return new InstantCommand(() -> {
+
             if (currentState == SuperstructureState.INTAKING || currentState == SuperstructureState.OPENING_INTAKE) {
                 wantedState = SuperstructureState.CLOSING_AND_STOPPING_INTAKE;
             } else if (currentState == SuperstructureState.SHOOTING_AND_INTAKING) {
@@ -262,13 +307,39 @@ public class Superstructure extends SubsystemBase {
                 wantedState = SuperstructureState.PREP_SHOOTING;
                 applyState(SuperstructureState.CLOSING_AND_STOPPING_INTAKE);
             } else {
-                wantedState = SuperstructureState.INTAKING;
+                wantedState = SuperstructureState.CLOSING_AND_STOPPING_INTAKE;
             }
 
         }, this);
     }
 
-    /** Shoot toggle (shoot + shoot&intake birleşik) */
+    public Command cancelShootCommand() {
+        return new InstantCommand(() -> {
+            index.requestState(SystemState.OUTTAKING);
+        }, this);
+
+    }
+
+    public Command zeroCommand() {
+        return Commands.sequence(
+                Commands.runOnce(() -> setState(SuperstructureState.ZEROING)),
+                Commands.waitSeconds(2),
+                Commands.runOnce(() -> setState(SuperstructureState.IDLE)),
+                Commands.runOnce(() -> intake.setEncoder()),
+                Commands.runOnce(() -> intake.setZeroed(true)),
+                Commands.runOnce(() -> hood.setEncoder()),
+                Commands.runOnce(() -> hood.setZeroed(true)));
+
+    }
+
+    public Command robotOffZeroCommand() {
+        return Commands.sequence(
+                Commands.runOnce(() -> intake.setEncoder()),
+                Commands.runOnce(() -> intake.setZeroed(true)),
+                Commands.runOnce(() -> hood.setEncoder()),
+                Commands.runOnce(() -> hood.setZeroed(true)));
+    }
+
     public Command shootCommand() {
         return new InstantCommand(() -> {
 
@@ -281,6 +352,7 @@ public class Superstructure extends SubsystemBase {
                 wantedState = intakeWasActive
                         ? SuperstructureState.INTAKING
                         : SuperstructureState.IDLE;
+                flywheel.setTargetRpm(0);
 
                 return;
             }
@@ -295,7 +367,9 @@ public class Superstructure extends SubsystemBase {
 
         }, this);
     }
-
+    public Command Testing(){
+        return new InstantCommand(()-> wantedState = SuperstructureState.TESTING );
+    }
     /** Emergency stop */
     public Command stopCommand() {
         return new InstantCommand(() -> {
@@ -315,6 +389,13 @@ public class Superstructure extends SubsystemBase {
         return currentState;
     }
 
+    public void fixIt() {
+        isFixed = !isFixed;
+    }
+
+    public double getHeading(){
+        return headingRet;
+    }
     public Translation2d getTarget() {
 
         RobotZone robotPose = RobotContainer.getDrive().getRobotZone();
@@ -364,4 +445,34 @@ public class Superstructure extends SubsystemBase {
             }
         }
     }
+  
+
+/**
+ * Hedefe hizalanmak için gereken field-frame robot heading'ini döndürür.
+ * Launcher sol yüzde olduğundan -90° offset uygulanır.
+ *
+ * @param robotPose  mevcut robot pozu
+ * @param target     field-frame hedef koordinatı
+ * @return field-frame heading [-180, 180) derece
+ */
+public static double getAlignmentHeading(Pose2d robotPose, Translation2d target) {
+    double heading = robotPose.getRotation().getRadians();
+    double cosH = Math.cos(heading);
+    double sinH = Math.sin(heading);
+
+    // Launcher pozisyonu (13.5 cm ileri, tam orta)
+    double launcherOffsetX = 0.135;
+    double launcherOffsetY = 0.0;
+
+    double launcherX = robotPose.getX() + launcherOffsetX * cosH - launcherOffsetY * sinH;
+    double launcherY = robotPose.getY() + launcherOffsetX * sinH + launcherOffsetY * cosH;
+
+    double aimDx = target.getX() - launcherX;
+    double aimDy = target.getY() - launcherY;
+
+    double headingDeg = Math.toDegrees(Math.atan2(aimDy, aimDx)) - 90.0;
+
+    // [-180, 180) normalize
+    return ((headingDeg + 180.0) % 360.0 + 360.0) % 360.0 - 180.0;
+}
 }

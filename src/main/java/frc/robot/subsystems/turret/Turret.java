@@ -108,7 +108,7 @@ public class Turret extends SubsystemBase {
                 break;
 
             case TESTING:
-                io.setVoltage(1.0);
+                io.setVoltage(0.2);
                 break;
         }
         SmartDashboard.putNumber("turretdegree", io.getAngleCalculator().getAngle().getDegrees());

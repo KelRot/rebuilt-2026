@@ -108,7 +108,7 @@ public class IntakeIOHardware implements IntakeIO {
     rollerConfig.Feedback.RotorToSensorRatio = 1.0;
     rollerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     rollerConfig.CurrentLimits.SupplyCurrentLimit = 30;
-    rollerConfig.CurrentLimits.StatorCurrentLimit = 120;
+    rollerConfig.CurrentLimits.StatorCurrentLimit = 80;
     rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     rollerConfig.Slot0.kP = 0.001;

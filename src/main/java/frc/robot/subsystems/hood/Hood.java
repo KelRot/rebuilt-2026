@@ -30,6 +30,7 @@ public class Hood extends SubsystemBase {
 
     private double targetPositionDeg = 0.0;
     private LoggedTunableNumber setpoint = new LoggedTunableNumber("hoodsetpoint", 0);
+    private boolean isZeroed = false;
 
     private final HoodIO io;
     private final HoodIOInputsAutoLogged inputs = new HoodIOInputsAutoLogged();
@@ -68,12 +69,11 @@ public class Hood extends SubsystemBase {
 
     @Override
     public void periodic() {
-        double hoodSetpoint = getHoodSetpoint();
         SmartDashboard.putNumber("distance", getDistanceNotClamped());
         io.updateInputs(inputs);
         switch (systemState) {
             case MANUAL:
-                // io.setPosition(setpoint.get());
+                io.setPosition(setpoint.get());
                 break;
             case POSITION:
                 io.setPosition(targetPositionDeg);
@@ -87,13 +87,18 @@ public class Hood extends SubsystemBase {
                 io.setAppliedVoltage(-6.0);
                 break;
             case ZEROING:
-                io.setAppliedVoltage(-2);
+                io.setAppliedVoltage(-3.5);
         }
 
         Logger.recordOutput("Hood/SystemState", systemState.toString());
         Logger.recordOutput("Hood/TargetDeg", targetPositionDeg);
+        Logger.recordOutput("Hood/isZeroed", isZeroed);
         Logger.processInputs("Hood", inputs);
         tSparkTunablePID.periodic();
+    }
+
+    public void setZeroed(boolean zeroed) {
+        isZeroed = zeroed;
     }
 
     public boolean isAtSetpoint() {

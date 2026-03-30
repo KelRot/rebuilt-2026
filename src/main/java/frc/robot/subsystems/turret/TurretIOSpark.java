@@ -89,7 +89,7 @@ public class TurretIOSpark implements TurretIO {
 
     private void configure() {
         ClosedLoopConfig closedLoopConfig = new ClosedLoopConfig();
-        closedLoopConfig.pid(TurretConstants.kP, 0, TurretConstants.kD).allowedClosedLoopError(2, ClosedLoopSlot.kSlot0);
+        closedLoopConfig.pid(TurretConstants.kP, 0, TurretConstants.kD).allowedClosedLoopError(3, ClosedLoopSlot.kSlot0);
 
         SparkFlexConfig turretConfig = new SparkFlexConfig();
         turretConfig
@@ -100,9 +100,9 @@ public class TurretIOSpark implements TurretIO {
         turretConfig.encoder.positionConversionFactor(TurretConstants.positionConversionFactor)
                 .velocityConversionFactor(TurretConstants.velocityConversionFactor);
         turretConfig.softLimit
-                .forwardSoftLimit(TurretConstants.maxAngle)
+                .forwardSoftLimit(TurretConstants.maxAngle + 50)
                 .forwardSoftLimitEnabled(true)
-                .reverseSoftLimit(TurretConstants.minAngle)
+                .reverseSoftLimit(TurretConstants.minAngle - 50)
                 .reverseSoftLimitEnabled(true);
 
         tryUntilOk(turretMotor, 5, () -> turretMotor.configure(turretConfig, ResetMode.kResetSafeParameters,

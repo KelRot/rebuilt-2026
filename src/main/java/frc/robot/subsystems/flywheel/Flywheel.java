@@ -73,7 +73,7 @@ public class Flywheel extends SubsystemBase {
                 io.setAppliedVoltage(0.0);
                 break;
             case TESTING:
-                io.setAppliedVoltage(1.0);
+                io.setRpm(setpoint.get());;
                 break;
         }
         inputs.isAtSetpoint = io.isAtSetpoint();

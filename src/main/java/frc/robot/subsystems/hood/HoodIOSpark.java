@@ -98,7 +98,7 @@ public class HoodIOSpark implements HoodIO {
 
   @Override
   public boolean isAtSetpoint() {
-    return Math.abs(targetPositionDeg - encoder.getPosition() * 360) < 1.0;
+    return Math.abs(targetPositionDeg - encoder.getPosition()) < 5.0;
   }
 
 }

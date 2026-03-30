@@ -7,10 +7,14 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -192,9 +196,15 @@ public class RobotContainer {
                                 ledsub = new LedSubsystem(led, superstructure);
                                 break;
                 }
+
+                NamedCommands.registerCommand("intake", superstructure.intakeCommand());
+                NamedCommands.registerCommand("shoot", superstructure.shootCommand());
+                NamedCommands.registerCommand("cancelShoot", superstructure.cancelShootCommand());
                 // Set up auto routines
                 autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
                 // Set up SysId routines
+                autoChooser.addOption("Upper_Trench Mid Rush", new PathPlannerAuto("upper_trench_mid_rush"));
+
                 autoChooser.addOption("Drive Wheel Radius Characterization",
                                 DriveCommands.wheelRadiusCharacterization(drive));
                 autoChooser.addOption("Drive Simple FF Characterization",
@@ -209,7 +219,6 @@ public class RobotContainer {
                                 drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
                 autoChooser.addOption("Drive SysId (Dynamic Reverse)",
                                 drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-                NamedCommands.registerCommand("intake", Commands.none());
 
                 // Configure the button bindings
                 configureButtonBindings();
@@ -233,13 +242,13 @@ public class RobotContainer {
 
                 // Lock to 0° when A button is held
                 controller
-                                .a()
+                                .button(1)
                                 .whileTrue(DriveCommands.joystickDriveAtAngle(
                                                 drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(),
-                                                () -> new Rotation2d()));
+                                                () -> new Rotation2d(Degrees.of(superstructure.getHeading()))));
 
                 // Switch to X pattern when X button is pressed
-                controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+                controller.button(3).whileTrue(Commands.runOnce(drive::stopWithX, drive).repeatedly());
 
                 // Reset gyro to 0° when B button is pressed
                 controller
@@ -248,22 +257,23 @@ public class RobotContainer {
                                                 () -> drive.setPose(new Pose2d(3.548, 3.978,
                                                                 new Rotation2d())),
                                                 drive)
-                                                .ignoringDisable(true)); 
-
+                                                .ignoringDisable(true));
+                
                 controller.rightBumper().onTrue(superstructure.shootCommand());
                 controller.leftBumper()
-                                .onTrue(Commands.runOnce(() -> intake.requestState(Intake.SystemState.CLOSING)));
-                controller.button(4)
-                                .whileTrue(Commands.runOnce(() -> intake.requestState(Intake.SystemState.INTAKING)));
-                controller.button(7)
-                                .whileTrue(Commands.runOnce(() -> turret.requestState(Turret.SystemState.TRACKING)));
-                controller.button(7)
-                                .whileTrue(Commands.runOnce(() -> superstructure.setState(SuperstructureState.PREP_SHOOTING)));
+                                .onTrue(superstructure.Testing());
+                controller.button(7).onTrue(superstructure.closeIntakeCommand());
+                
+                controller.button(8).onTrue(Commands.runOnce(() -> superstructure.setState(SuperstructureState.IDLE)));
+                
                 controller.button(9)
                                 .toggleOnTrue(Commands.runEnd(() -> hood.requestState(Hood.SystemState.ZEROING),
                                                 () -> hood.zeroEncoder()));
                 controller.button(10)
-                                .onTrue(Commands.runOnce(() -> hood.setEncoder()));
+                                .onTrue(Commands.runOnce(() -> hood.setEncoder()).ignoringDisable(true));
+
+                controller.povUp().onTrue(Commands.runOnce(() -> flywheel.requestState(Flywheel.SystemState.TESTING)));
+                controller.povUp().onTrue(Commands.runOnce(() -> hood.requestState(Hood.SystemState.MANUAL)));
         }
 
         /**
