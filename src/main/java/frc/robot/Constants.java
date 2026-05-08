@@ -33,7 +33,7 @@ public final class Constants {
     }
 
     public static class TurretConstants {
-        public static final double kP = 0.0;
+        public static final double kP = 0.0001;
         public static final double kD = 0.0;
 
         public static final int turretID = 9;
