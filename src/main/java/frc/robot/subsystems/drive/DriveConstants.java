@@ -53,7 +53,7 @@ public class DriveConstants {
     public static final int backRightTurnAbsId = 3;
 
     // Drive motor configuration
-    public static final int driveMotorCurrentLimit = 60; // 60 looks like a good but can be lower. Look at later.
+    public static final int driveMotorCurrentLimit = 30; // 60 looks like a good but can be lower. Look at later.
     public static final double wheelRadiusMeters = Units.inchesToMeters(2);
     public static final double driveMotorReduction = 6.0;
     public static final DCMotor driveGearbox = DCMotor.getNeoVortex(1);
@@ -77,7 +77,7 @@ public class DriveConstants {
 
     // Turn motor configuration
     public static final boolean turnInverted = false;
-    public static final int turnMotorCurrentLimit = 20;
+    public static final int turnMotorCurrentLimit = 15;
     public static final double turnMotorReduction = 25.0;
     public static final DCMotor turnGearbox = DCMotor.getNEO(1);
 
@@ -95,7 +95,7 @@ public class DriveConstants {
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
     // PathPlanner configuration
-    public static final double robotMassKg = 50;
+    public static final double robotMassKg = 55;
     public static final double robotMOI = 4.5;
     public static final double wheelCOF = 1.2;
     public static final RobotConfig ppConfig = new RobotConfig(

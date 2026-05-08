@@ -69,7 +69,7 @@ public class HoodIOSpark implements HoodIO {
     config
         .idleMode(IdleMode.kBrake)
         .voltageCompensation(12.0)
-        .smartCurrentLimit(25)
+        .smartCurrentLimit(13)
         .inverted(true)
         .apply(closedLoop);
 
