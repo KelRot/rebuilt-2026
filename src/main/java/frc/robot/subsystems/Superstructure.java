@@ -149,11 +149,11 @@ public class Superstructure extends SubsystemBase {
             wantedState = SuperstructureState.SHOOTING_AND_INTAKING;
         }
 
-        if (isAnyIntakingState(currentState)) {
-        targetDriveMode = DriveMode.INTAKE;
+        if (isAnyShootingState(currentState)) {
+        targetDriveMode = DriveMode.SHOOTING;
         } 
-        if (!isAnyIntakingState(currentState)) {
-        targetDriveMode = DriveMode.AGGRESSIVE;
+        if (!isAnyShootingState(currentState)) {
+        targetDriveMode = DriveMode.DEFAULT;
         }
         if (drive.getDriveMode() != targetDriveMode) {
         drive.setDriveState(targetDriveMode);
@@ -283,11 +283,6 @@ public class Superstructure extends SubsystemBase {
         return state == SuperstructureState.PREP_SHOOTING
                 || state == SuperstructureState.PREP_SHOOTING_AND_INTAKING
                 || state == SuperstructureState.SHOOTING
-                || state == SuperstructureState.SHOOTING_AND_INTAKING;
-    }
-    public boolean isAnyIntakingState(SuperstructureState state){
-        return state == SuperstructureState.INTAKING
-                || state == SuperstructureState.PREP_SHOOTING_AND_INTAKING
                 || state == SuperstructureState.SHOOTING_AND_INTAKING;
     }
     /* ================= COMMAND API ================= */

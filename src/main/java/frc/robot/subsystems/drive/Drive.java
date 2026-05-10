@@ -105,11 +105,11 @@ public class Drive extends SubsystemBase {
                 new SysIdRoutine.Mechanism((voltage) -> runCharacterization(voltage.in(Volts)), null, this));
     }
     public enum DriveMode{
-        AGGRESSIVE,
-        INTAKE
+        DEFAULT,
+        SHOOTING
     }
 
-    private DriveMode driveMode = DriveMode.AGGRESSIVE;
+    private DriveMode driveMode = DriveMode.DEFAULT;
 
     public void setDriveState(DriveMode state){
         driveMode = state;
@@ -311,16 +311,16 @@ public class Drive extends SubsystemBase {
     /** Returns the maximum linear speed in meters per sec. */
     public double getMaxLinearSpeedMetersPerSec() {
     return switch (driveMode) {
-        case AGGRESSIVE -> maxSpeedMetersPerSec;
-        case INTAKE -> 2.0;
+        case DEFAULT -> maxSpeedMetersPerSec;
+        case SHOOTING -> 3.0;
     };
 }
 
     /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec() {
         return switch (driveMode) {
-        case AGGRESSIVE -> maxSpeedMetersPerSec / driveBaseRadius;
-        case INTAKE -> 2.0/driveBaseRadius;
+        case DEFAULT -> maxSpeedMetersPerSec / driveBaseRadius;
+        case SHOOTING -> 3.0/driveBaseRadius;
     };
     }
     public ChassisSpeeds getFieldSpeeds() {
