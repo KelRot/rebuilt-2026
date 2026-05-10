@@ -104,6 +104,19 @@ public class Drive extends SubsystemBase {
                         null, null, null, (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
                 new SysIdRoutine.Mechanism((voltage) -> runCharacterization(voltage.in(Volts)), null, this));
     }
+    public enum DriveMode{
+        AGGRESSIVE,
+        INTAKE
+    }
+
+    private DriveMode driveMode = DriveMode.AGGRESSIVE;
+
+    public void setDriveState(DriveMode state){
+        driveMode = state;
+    }
+    public DriveMode getDriveMode(){
+        return driveMode;
+    }
 
     @Override
     public void periodic() {
@@ -112,6 +125,7 @@ public class Drive extends SubsystemBase {
         odometryLock.lock(); // Prevents odometry updates while reading data
         gyroIO.updateInputs(gyroInputs);
         Logger.processInputs("Drive/Gyro", gyroInputs);
+
         for (var module : modules) {
             module.periodic();
         }
@@ -296,15 +310,18 @@ public class Drive extends SubsystemBase {
 
     /** Returns the maximum linear speed in meters per sec. */
     public double getMaxLinearSpeedMetersPerSec() {
-       /*  if(RobotContainer.getSuperstructure().isAnyShootingState(RobotContainer.getSuperstructure().getCurrentState())) {
-            return 3;
-        } */
-        return maxSpeedMetersPerSec;
-    }
+    return switch (driveMode) {
+        case AGGRESSIVE -> maxSpeedMetersPerSec;
+        case INTAKE -> 2.0;
+    };
+}
 
     /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec() {
-        return maxSpeedMetersPerSec / driveBaseRadius;
+        return switch (driveMode) {
+        case AGGRESSIVE -> maxSpeedMetersPerSec / driveBaseRadius;
+        case INTAKE -> 2.0/driveBaseRadius;
+    };
     }
     public ChassisSpeeds getFieldSpeeds() {
         return ChassisSpeeds.fromRobotRelativeSpeeds(getChassisSpeeds(), getRotation());
