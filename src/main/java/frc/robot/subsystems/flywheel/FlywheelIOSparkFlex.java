@@ -114,11 +114,11 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
         this.targetRpm = targetRpm;
         leadMotor.getClosedLoopController().setSetpoint(targetRpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0, (targetRpm - 112) / Constants.FlywheelConstants.RotPerVolt);
     }
+    public double getLeadVelocityRpm(){
+        return leadEncoder.getVelocity();
+    }
 
-    public boolean isAtSetpoint() {
-            double currentRPM = leadEncoder.getVelocity();
-            return Math.abs(currentRPM - targetRpm) < 30;
-}
+
     }
 
 

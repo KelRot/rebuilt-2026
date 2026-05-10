@@ -10,6 +10,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Superstructure.SuperstructureState;
 import frc.robot.util.BrakeController;
 import frc.robot.util.battery.BatteryUtils;
 import frc.robot.util.rebuilt.ShiftGetter;
@@ -122,6 +123,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void disabledInit() {
         BrakeController.setAllBrake(false);
+        RobotContainer.getSuperstructure().setState(SuperstructureState.IDLE);
     }
 
     /** This function is called periodically when disabled. */
@@ -155,6 +157,8 @@ public class Robot extends LoggedRobot {
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
         // this line or comment it out.
+
+        RobotContainer.getSuperstructure().setState(SuperstructureState.IDLE);
         BrakeController.setAllBrake(true);
         if (autonomousCommand != null) {
             autonomousCommand.cancel();
@@ -186,6 +190,6 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically whilst in simulation. */
     @Override
     public void simulationPeriodic() {
-    RobotContainer.getFuelSim().updateSim();
+        RobotContainer.getFuelSim().updateSim();
     }
 }

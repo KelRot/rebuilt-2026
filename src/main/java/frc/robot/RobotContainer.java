@@ -200,6 +200,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("intake", superstructure.intakeCommand());
                 NamedCommands.registerCommand("shoot", superstructure.shootCommand());
                 NamedCommands.registerCommand("cancelShoot", superstructure.cancelShootCommand());
+                NamedCommands.registerCommand("closeIntake", superstructure.closeIntakeCommand());
                 // Set up auto routines
                 autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
                 // Set up SysId routines

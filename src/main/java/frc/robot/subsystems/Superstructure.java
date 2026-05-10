@@ -139,10 +139,10 @@ public class Superstructure extends SubsystemBase {
             applyState(wantedState);
             currentState = wantedState;
         }
-        if (currentState == SuperstructureState.PREP_SHOOTING) {
+        if (currentState == SuperstructureState.PREP_SHOOTING && flywheel.isAtSetpoint()) {
             wantedState = SuperstructureState.SHOOTING;
         }
-        if (currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING) {
+        if (currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING && flywheel.isAtSetpoint()) {
             wantedState = SuperstructureState.SHOOTING_AND_INTAKING;
         }
 
