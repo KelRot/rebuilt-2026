@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.Drive.DriveMode;
+import frc.robot.subsystems.drive.Drive.DriveMode;
 import frc.robot.subsystems.drive.Drive.RobotZone;
 import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.hood.Hood;
@@ -65,6 +67,7 @@ public class Superstructure extends SubsystemBase {
     private SuperstructureState wantedState = SuperstructureState.IDLE;
     private boolean isFixed = false;
     public double headingRet;
+    private DriveMode targetDriveMode;
 
     /* ================= ENUM ================= */
 
@@ -145,6 +148,16 @@ public class Superstructure extends SubsystemBase {
         if (currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING) {
             wantedState = SuperstructureState.SHOOTING_AND_INTAKING;
         }
+
+        if (isAnyIntakingState(currentState)) {
+        targetDriveMode = DriveMode.INTAKE;
+        } 
+        if (!isAnyIntakingState(currentState)) {
+        targetDriveMode = DriveMode.AGGRESSIVE;
+        }
+        if (drive.getDriveMode() != targetDriveMode) {
+        drive.setDriveState(targetDriveMode);
+}
 
         if (isAnyShootingState(currentState)) {
             inputs = new ShotCalculator.ShotInputs(
@@ -272,7 +285,11 @@ public class Superstructure extends SubsystemBase {
                 || state == SuperstructureState.SHOOTING
                 || state == SuperstructureState.SHOOTING_AND_INTAKING;
     }
-
+    public boolean isAnyIntakingState(SuperstructureState state){
+        return state == SuperstructureState.INTAKING
+                || state == SuperstructureState.PREP_SHOOTING_AND_INTAKING
+                || state == SuperstructureState.SHOOTING_AND_INTAKING;
+    }
     /* ================= COMMAND API ================= */
 
     /** Intake toggle */
