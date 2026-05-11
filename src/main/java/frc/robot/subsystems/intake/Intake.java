@@ -71,13 +71,13 @@ public class Intake extends SubsystemBase {
     systemState = SystemState.MANUAL;
   }
 
-  private void handleIntaking(double rollerVoltage) {
+  private void handleIntaking(double rollerRpm) {
     if (!inputs.isIntakeOpen) {
       io.setRollerVoltage(0.0);
       io.setOpenerSetPoint(Constants.IntakeConstants.intakeOpenPosition);
     } else {
       io.setOpenerVoltage(0);
-      io.setRollerRPM(rollerVoltage);
+      io.setRollerRPM(rollerRpm);
     }
   }
 
