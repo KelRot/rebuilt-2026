@@ -8,6 +8,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.drive.GyroIOPigeon2;
+import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SparkTunablePID;
 import frc.robot.util.TalonTunablePID;
@@ -29,6 +33,7 @@ public class Intake extends SubsystemBase {
 
   private SystemState systemState = SystemState.IDLE;
 
+  private final Drive drive;
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
   private final IntakeVisualizer visualizer = new IntakeVisualizer("Measured", Color.kGreen);
@@ -39,13 +44,14 @@ public class Intake extends SubsystemBase {
   private double zeroStillTime = 0.0;
   private boolean isZeroed = false;
 
-  public Intake(IntakeIO io) {
+  public Intake(IntakeIO io, Drive drive) {
+   
     this.io = io;
     sparkTunablePID = new SparkTunablePID(this.io.getLeadOpenerMotor(), "IntakeOpener", DriverType.MAX, 0.011, 0, 0.65);
     talonTunablePID = new TalonTunablePID(this.io.getRollerMotor(), "IntakeRoller", 0.08, 0, 0.05, 1 / 509.3 * 60, 0);
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
-
+    this.drive = drive;
   }
 
   public void requestState(SystemState wantedState) {
@@ -91,7 +97,7 @@ public class Intake extends SubsystemBase {
     switch (systemState) {
 
       case INTAKING:
-        handleIntaking(Constants.IntakeConstants.INTAKING_RPM);
+        handleIntaking((2000 * Math.abs(drive.getChassisSpeeds().vxMetersPerSecond / DriveConstants.maxSpeedMetersPerSec)) + Constants.IntakeConstants.INTAKING_RPM);
         break;
 
       case OUTTAKING:

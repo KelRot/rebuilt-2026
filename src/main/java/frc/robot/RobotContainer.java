@@ -136,7 +136,7 @@ public class RobotContainer {
                                                                 VisionConstants.robotToCamera1));
                                 flywheel = new Flywheel(new FlywheelIOSparkFlex());
 
-                                intake = new Intake(new IntakeIOHardware());
+                                intake = new Intake(new IntakeIOHardware(), drive);
                                 hood = new Hood(new HoodIOSpark());
                                 superstructure = new Superstructure(intake, flywheel, kicker, hood, turret,
                                                 drive,
@@ -158,7 +158,7 @@ public class RobotContainer {
 
                                 kicker = new Kicker(new KickerIOSpark());
                                 flywheel = new Flywheel(new FlywheelIOSparkFlex());
-                                intake = new Intake(new IntakeIOSim());
+                                intake = new Intake(new IntakeIOSim(), drive);
                                 index = new Index(new IndexIOSpark());
                                 turret = new Turret(new TurretIOSim(fuelSim));
                                 hood = new Hood(new HoodIOSpark());
@@ -184,7 +184,7 @@ public class RobotContainer {
                                 kicker = new Kicker(new KickerIO() {
                                 });
                                 intake = new Intake(new IntakeIO() {
-                                });
+                                }, drive);
                                 index = new Index(new IndexIO() {
                                 });
                                 flywheel = new Flywheel(new FlywheelIO() {
