@@ -95,10 +95,11 @@ public class HoodIOSpark implements HoodIO {
   public SparkBase getMotor() {
     return motor;
   }
-
   @Override
-  public boolean isAtSetpoint() {
-    return Math.abs(targetPositionDeg - encoder.getPosition()) < 5.0;
+  public double getPosition(){
+    return encoder.getPosition();
   }
+
+
 
 }

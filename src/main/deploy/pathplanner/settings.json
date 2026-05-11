@@ -3,6 +3,7 @@
   "robotLength": 0.733,
   "holonomicMode": true,
   "pathFolders": [
+    "under_the_hub",
     "lower_trench_mid_rush",
     "upper_trench_mid_rush"
   ],

@@ -101,9 +101,10 @@ public class Hood extends SubsystemBase {
         isZeroed = zeroed;
     }
 
+     
     public boolean isAtSetpoint() {
-        return io.isAtSetpoint();
-    }
+    return Math.abs(targetPositionDeg - io.getPosition()) < 50.0;
+  }
 
     public Translation2d getTarget() {
 
@@ -186,4 +187,5 @@ public class Hood extends SubsystemBase {
         double hoodRot = 500 * getDistance() / 5.5;
         return hoodRot;
     }
+    
 }
