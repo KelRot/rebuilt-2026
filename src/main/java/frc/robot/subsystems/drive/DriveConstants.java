@@ -16,7 +16,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 
 public class DriveConstants {
-    public static final double maxSpeedMetersPerSec = 4.5; // 16.9 ft/s = 5.15 m/s
+    public static final double maxSpeedMetersPerSec = 5.5; // 16.9 ft/s = 5.15 m/s
     public static final double odometryFrequency = 100.0; // Hz
     public static final double trackWidth = 0.725;
     public static final double wheelBase = 0.625;
@@ -66,10 +66,10 @@ public class DriveConstants {
     // Wheel Rad/Sec
 
     // Drive PID configuration
-    public static final double driveKp = 0.0005; // Tune later
-    public static final double driveKd = 0.00000000028;
-    public static final double driveKs = 0.07735;
-    public static final double driveKv = 0.10215;
+    public static final double driveKp = 0.015;//Tune later
+    public static final double driveKd = 0.0000;
+    public static final double driveKs = 0.01652;
+    public static final double driveKv = 0.09943;
     public static final double driveSimP = 0.05;
     public static final double driveSimD = 0.0;
     public static final double driveSimKs = 0.0;

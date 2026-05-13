@@ -111,10 +111,10 @@ public class IntakeIOHardware implements IntakeIO {
     rollerConfig.CurrentLimits.StatorCurrentLimit = 80;
     rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    rollerConfig.Slot0.kP = 0.001;
+    rollerConfig.Slot0.kP = 0.5;
     rollerConfig.Slot0.kI = 0.0;
-    rollerConfig.Slot0.kD = 0.0;
-    rollerConfig.Slot0.kV = 1 / 509.3 / 60;
+    rollerConfig.Slot0.kD = 0.00001;
+    rollerConfig.Slot0.kV = 0 ; //1 / 509.3 / 60; check later
 
     rollerMotor.getConfigurator().apply(rollerConfig);
 

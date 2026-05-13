@@ -139,10 +139,10 @@ public class Superstructure extends SubsystemBase {
             applyState(wantedState);
             currentState = wantedState;
         }
-        if (currentState == SuperstructureState.PREP_SHOOTING && flywheel.isAtSetpoint()) {
+        if (currentState == SuperstructureState.PREP_SHOOTING && flywheel.isAtSetpoint() && hood.isAtSetpoint() && turret.isAtSetpoint()) {
             wantedState = SuperstructureState.SHOOTING;
         }
-        if (currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING && flywheel.isAtSetpoint()) {
+        if (currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING && flywheel.isAtSetpoint() && hood.isAtSetpoint() && turret.isAtSetpoint()) {
             wantedState = SuperstructureState.SHOOTING_AND_INTAKING;
         }
 
@@ -205,15 +205,11 @@ public class Superstructure extends SubsystemBase {
                 hood.requestState(Hood.SystemState.POSITION);
                 turret.requestState(Turret.SystemState.SHOOTING);
                 flywheel.requestState(Flywheel.SystemState.TARGET_RPM);
-
-                kicker.requestState(Kicker.SystemState.ENABLED);
-                index.requestState(Index.SystemState.INDEXING);
                 break;
 
             case PREP_SHOOTING_AND_INTAKING:
                 applyState(SuperstructureState.PREP_SHOOTING);
                 applyState(SuperstructureState.INTAKING);
-                applyState(SuperstructureState.SHOOTING);
                 break;
 
             case SHOOTING:
@@ -308,6 +304,7 @@ public class Superstructure extends SubsystemBase {
                 applyState(SuperstructureState.CLOSING_AND_STOPPING_INTAKE);
             } else {
                 wantedState = SuperstructureState.CLOSING_AND_STOPPING_INTAKE;
+                index.requestState(Index.SystemState.IDLE);
             }
 
         }, this);
@@ -473,6 +470,6 @@ public static double getAlignmentHeading(Pose2d robotPose, Translation2d target)
     double headingDeg = Math.toDegrees(Math.atan2(aimDy, aimDx)) - 90.0;
 
     // [-180, 180) normalize
-    return ((headingDeg + 180.0) % 360.0 + 360.0) % 360.0 - 180.0;
+    return ((headingDeg + 180.0) % 360.0 + 360.0) % 360.0;
 }
 }
