@@ -20,7 +20,6 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
     private final SparkFlex followerMotor;
     private final RelativeEncoder leadEncoder;
     private double targetRpm;
-
     private final SparkFlexConfig leadConfig = new SparkFlexConfig();
     private final SparkFlexConfig followerConfig = new SparkFlexConfig();
 
@@ -74,13 +73,13 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
 
         leadConfig
                 .voltageCompensation(12.0)
-                .smartCurrentLimit(80,10)
+                .smartCurrentLimit(40,10)
                 .idleMode(IdleMode.kCoast).closedLoop.allowedClosedLoopError(5, ClosedLoopSlot.kSlot0).iZone(0.5);
 
         followerConfig
                 .follow(leadMotor, true)
                 .voltageCompensation(12.0)
-                .smartCurrentLimit(80,10)
+                .smartCurrentLimit(40,10)
                 .idleMode(IdleMode.kCoast);
 
         leadMotor.configure(

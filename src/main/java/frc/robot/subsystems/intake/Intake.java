@@ -10,8 +10,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SparkTunablePID;
 import frc.robot.util.TalonTunablePID;
@@ -48,7 +46,7 @@ public class Intake extends SubsystemBase {
    
     this.io = io;
     sparkTunablePID = new SparkTunablePID(this.io.getLeadOpenerMotor(), "IntakeOpener", DriverType.MAX, 0.011, 0, 0.65);
-    talonTunablePID = new TalonTunablePID(this.io.getRollerMotor(), "IntakeRoller", 0.08, 0, 0.05, 1 / 509.3 * 60, 0);
+    talonTunablePID = new TalonTunablePID(this.io.getRollerMotor(), "IntakeRoller", 0.002, 0, 0, 0.141, 0);
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
     this.drive = drive;
@@ -97,12 +95,10 @@ public class Intake extends SubsystemBase {
     switch (systemState) {
 
       case INTAKING:
-        handleIntaking(
+      handleIntaking(
         drive.getChassisSpeeds().vxMetersPerSecond < 0
         ? 2000 * drive.getChassisSpeeds().vxMetersPerSecond / DriveConstants.maxSpeedMetersPerSec + Constants.IntakeConstants.INTAKING_RPM
         : Constants.IntakeConstants.INTAKING_RPM);
-
-        break;
 
       case OUTTAKING:
         handleIntaking(Constants.IntakeConstants.OUTTAKING_RPM);
@@ -147,8 +143,8 @@ public class Intake extends SubsystemBase {
         break;
 
       case MANUAL:
-        // io.setRollerRPM(setpoint.get());
-        io.setOpenerSetPoint(setpoint.get());
+        io.setRollerRPM(setpoint.get());
+        //io.setOpenerSetPoint(setpoint.get());
         break;
 
       case IDLE:
