@@ -3,6 +3,7 @@ package frc.robot.subsystems.flywheel;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.Superstructure;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SparkTunablePID;
 import frc.robot.util.SparkTunablePID.DriverType;
@@ -81,13 +82,12 @@ public class Flywheel extends SubsystemBase {
         Logger.processInputs("Flywheel", inputs);
     }
         public boolean isAtSetpoint() {
-            if (systemState == SystemState.IDLE){
+            double currentRPM = io.getLeadVelocityRpm();
+            if (systemState == SystemState.IDLE || Math.abs(currentRPM) < 500){
                 return false;
             }
             else{
-                double currentRPM = io.getLeadVelocityRpm();
                 return Math.abs(currentRPM - targetRpm) < 500;
         }
 
-}
-}
+}}
