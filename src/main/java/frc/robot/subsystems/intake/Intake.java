@@ -10,8 +10,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SparkTunablePID;
 import frc.robot.util.TalonTunablePID;

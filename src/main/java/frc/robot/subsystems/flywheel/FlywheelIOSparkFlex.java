@@ -20,7 +20,6 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
     private final SparkFlex followerMotor;
     private final RelativeEncoder leadEncoder;
     private double targetRpm;
-
     private final SparkFlexConfig leadConfig = new SparkFlexConfig();
     private final SparkFlexConfig followerConfig = new SparkFlexConfig();
 

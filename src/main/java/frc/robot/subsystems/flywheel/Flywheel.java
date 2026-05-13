@@ -3,7 +3,6 @@ package frc.robot.subsystems.flywheel;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.Superstructure;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SparkTunablePID;
 import frc.robot.util.SparkTunablePID.DriverType;
