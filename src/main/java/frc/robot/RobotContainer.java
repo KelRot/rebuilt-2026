@@ -242,7 +242,11 @@ public class RobotContainer {
                                 () -> -controller.getRawAxis(2)));
 
                 // Lock to 0° when A button is held
-                
+                controller
+                                .button(1)
+                                .whileTrue(DriveCommands.joystickDriveAtAngle(
+                                                drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(),
+                                                () -> new Rotation2d(Degrees.of(superstructure.getHeading()))));
 
                 // Switch to X pattern when X button is pressed
                 controller.button(3).whileTrue(Commands.runOnce(drive::stopWithX, drive).repeatedly());
@@ -269,7 +273,11 @@ public class RobotContainer {
                 controller.button(10)
                                 .onTrue(Commands.runOnce(() -> hood.setEncoder()).ignoringDisable(true));
 
-                controller.povUp().onTrue(Commands.runOnce(() -> intake.requestState(Intake.SystemState.MANUAL)));
+                controller.povUp().onTrue(Commands.runOnce(() -> flywheel.requestState(Flywheel.SystemState.TESTING)));
+                controller.povUp().onTrue(Commands.runOnce(() -> hood.requestState(Hood.SystemState.MANUAL)));
+                controller.povUp().onTrue(Commands.runOnce(() -> turret.requestState(Turret.SystemState.TRACKING)));
+
+
         }
 
         /**
