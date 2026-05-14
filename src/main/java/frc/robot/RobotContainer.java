@@ -141,6 +141,7 @@ public class RobotContainer {
                                 superstructure = new Superstructure(intake, flywheel, kicker, hood, turret,
                                                 drive,
                                                 index);
+                                                turret.setLut(superstructure.getLut());
                                 LedSubsystem ledsub = new LedSubsystem(led, superstructure);
                                 break;
 
@@ -165,6 +166,7 @@ public class RobotContainer {
 
                                 superstructure = new Superstructure(intake, flywheel, kicker, hood, turret, drive,
                                                 index);
+                                                turret.setLut(superstructure.getLut());
                                 ledsub = new LedSubsystem(led, superstructure);
                                 configureFuelSim();
                                 break;

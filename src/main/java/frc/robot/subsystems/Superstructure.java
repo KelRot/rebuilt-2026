@@ -6,6 +6,7 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -116,7 +117,7 @@ public class Superstructure extends SubsystemBase {
         config.headingReferenceDistance = 2.5; // heading tolerance scales with distance from hub
 
         shotCalc = new ShotCalculator(config);
-        lut.put(8,new ShotParameters(-5200, 1100, 180));
+        lut.put(8,new ShotParameters(-5200, 1100, 1.80));
         lut.put(5.821,new ShotParameters(-4200, 650, 1.16));
         lut.put(4.8226,new ShotParameters(-3950, 165, 1.35));
         lut.put(4.3006,new ShotParameters(-3670, 145, 1.20));
@@ -135,38 +136,57 @@ public class Superstructure extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (currentState != wantedState) {
-            applyState(wantedState);
-            currentState = wantedState;
-        }
-        if (currentState == SuperstructureState.PREP_SHOOTING && flywheel.isAtSetpoint() && hood.isAtSetpoint() && turret.isAtSetpoint()) {
-            wantedState = SuperstructureState.SHOOTING;
-        }
-        if (currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING && flywheel.isAtSetpoint() && hood.isAtSetpoint() && turret.isAtSetpoint()) {
-            wantedState = SuperstructureState.SHOOTING_AND_INTAKING;
-        }
-
-        if (isAnyShootingState(currentState)) {
-            inputs = new ShotCalculator.ShotInputs(
-                    swerve.getPose(),
-                    swerve.getChassisSpeeds(),
-                    swerve.getFieldSpeeds(),
-                    0.9// vision confidence, 0 to 1
-            );
-            ShotCalculator.LaunchParameters result = shotCalc.calculate(inputs, getTarget());
-            flywheel.setTargetRpm(result.rpm());
-            hood.setTargetPositionDeg(shotCalc.getHoodAngle(result.solvedDistanceM()));
-
-            double turretTarget = MathUtil.inputModulus(result.driveHeadingDeg(), 0, 360);
-            turret.setPosition(turretTarget);
-            
-            Logger.recordOutput("turretTargetAngle", result.driveHeadingDeg());
-        }
-        headingRet = getAlignmentHeading(drive.getPose(), getTarget());
-        Logger.recordOutput("SuperStructure/State", currentState.toString());
-        Logger.recordOutput("SuperStructure/AlignmentHeading", headingRet);
+    if (currentState != wantedState) {
+        applyState(wantedState);
+        currentState = wantedState;
+    }
+    if (currentState == SuperstructureState.PREP_SHOOTING && flywheel.isAtSetpoint() && hood.isAtSetpoint() && turret.isAtSetpoint()) {
+        wantedState = SuperstructureState.SHOOTING;
+    }
+    if (currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING && flywheel.isAtSetpoint() && hood.isAtSetpoint() && turret.isAtSetpoint()) {
+        wantedState = SuperstructureState.SHOOTING_AND_INTAKING;
     }
 
+    if (isAnyShootingState(currentState)) {
+        Translation2d target = getTarget();
+        Pose2d robotPose = swerve.getPose();
+        ChassisSpeeds fieldSpeeds = swerve.getFieldSpeeds();
+
+        // 1. direkt mesafe
+        double directDistance = Math.hypot(
+            target.getX() - robotPose.getX(),
+            target.getY() - robotPose.getY()
+        );
+
+        // 2. iteratif tof hesabı
+        double tof = lut.getTOF(directDistance);
+        for (int i = 0; i < 3; i++) {
+            double cx = target.getX() - fieldSpeeds.vxMetersPerSecond * tof;
+            double cy = target.getY() - fieldSpeeds.vyMetersPerSecond * tof;
+            double dist = Math.hypot(cx - robotPose.getX(), cy - robotPose.getY());
+            tof = lut.getTOF(dist);
+        }
+
+        // 3. final compensated mesafe
+        double compensatedX = target.getX() - fieldSpeeds.vxMetersPerSecond * tof;
+        double compensatedY = target.getY() - fieldSpeeds.vyMetersPerSecond * tof;
+        double finalDistance = Math.hypot(
+            compensatedX - robotPose.getX(),
+            compensatedY - robotPose.getY()
+        );
+
+        // 4. rpm ve hood
+        flywheel.setTargetRpm(lut.getRPM(finalDistance));
+        hood.setTargetPositionDeg(lut.getAngle(finalDistance));
+
+        Logger.recordOutput("Superstructure/FinalDistance", finalDistance);
+        Logger.recordOutput("Superstructure/TOF", tof);
+    }
+
+    headingRet = getAlignmentHeading(drive.getPose(), getTarget());
+    Logger.recordOutput("SuperStructure/State", currentState.toString());
+    Logger.recordOutput("SuperStructure/AlignmentHeading", headingRet);
+}
     /* ================= STATE APPLY ================= */
 
     private void applyState(SuperstructureState state) {
