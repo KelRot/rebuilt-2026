@@ -115,15 +115,14 @@ public class Superstructure extends SubsystemBase {
         config.headingReferenceDistance = 2.5; // heading tolerance scales with distance from hub
 
         shotCalc = new ShotCalculator(config);
-        lut.put(5.58, new ShotParameters(-3580, 585, 0.5));
-        lut.put(4.9, new ShotParameters(-3400, 400, 0.5));
-        lut.put(4.32, new ShotParameters(-3500, 460, 0.5));
-        lut.put(2, new ShotParameters(-2830, 0, 0.5));
-        lut.put(3.41, new ShotParameters(-3150, 230, 0.5));
-        lut.put(4.05, new ShotParameters(-3300, 300, 0.5));
-        lut.put(8.45, new ShotParameters(-3800, 1100, 0.5));
-        lut.put(3.1, new ShotParameters(-3200, 85, 0.5));
-        lut.put(2.3, new ShotParameters(-2850, 65, 0.5));
+        lut.put(8,new ShotParameters(-5200, 1100, 180));
+        lut.put(5.821016806997571,new ShotParameters(-4200, 650, 1.16));
+        lut.put(4.8226,new ShotParameters(-3950, 165, 1.35));
+        lut.put(4.3006,new ShotParameters(-3670, 145, 1.20));
+        lut.put(3.80429,new ShotParameters(-3550, 125, 1.16));//not tht good
+        lut.put(3.3164, new ShotParameters(-3450, 105, 1.14));//notthat good
+        lut.put(2.808, new ShotParameters(-3300, 85, 1.10));
+        lut.put(2.314780, new ShotParameters(-3000, 65, 1.01));
         shotCalc.loadShotLUT(lut);
 
     }
@@ -349,7 +348,8 @@ public class Superstructure extends SubsystemBase {
                 wantedState = intakeWasActive
                         ? SuperstructureState.INTAKING
                         : SuperstructureState.IDLE;
-                flywheel.setTargetRpm(0);
+                flywheel.requestState(Flywheel.SystemState.IDLE);
+                kicker.requestState(Kicker.SystemState.IDLE);
 
                 return;
             }

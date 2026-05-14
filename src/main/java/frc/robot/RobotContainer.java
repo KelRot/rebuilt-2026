@@ -276,6 +276,10 @@ public class RobotContainer {
                 controller.povUp().onTrue(Commands.runOnce(() -> flywheel.requestState(Flywheel.SystemState.TESTING)));
                 controller.povUp().onTrue(Commands.runOnce(() -> hood.requestState(Hood.SystemState.MANUAL)));
                 controller.povUp().onTrue(Commands.runOnce(() -> turret.requestState(Turret.SystemState.TRACKING)));
+                controller.povUp().onTrue(Commands.runOnce(() -> kicker.requestState(Kicker.SystemState.ENABLED)));
+                controller.povUp().onTrue(Commands.runOnce(() -> index.requestState(Index.SystemState.INDEXING)));
+
+
 
 
         }
