@@ -279,6 +279,8 @@ public class RobotContainer {
                 controller.povUp().onTrue(Commands.runOnce(() -> kicker.requestState(Kicker.SystemState.ENABLED)));
                 controller.povUp().onTrue(Commands.runOnce(() -> index.requestState(Index.SystemState.INDEXING)));
 
+                controller.povDown().onTrue(superstructure.stuckedRecoveryCommand());
+
 
 
 

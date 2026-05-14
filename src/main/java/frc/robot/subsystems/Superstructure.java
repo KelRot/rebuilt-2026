@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -116,7 +117,7 @@ public class Superstructure extends SubsystemBase {
 
         shotCalc = new ShotCalculator(config);
         lut.put(8,new ShotParameters(-5200, 1100, 180));
-        lut.put(5.821016806997571,new ShotParameters(-4200, 650, 1.16));
+        lut.put(5.821,new ShotParameters(-4200, 650, 1.16));
         lut.put(4.8226,new ShotParameters(-3950, 165, 1.35));
         lut.put(4.3006,new ShotParameters(-3670, 145, 1.20));
         lut.put(3.80429,new ShotParameters(-3550, 125, 1.16));//not tht good
@@ -155,6 +156,10 @@ public class Superstructure extends SubsystemBase {
             ShotCalculator.LaunchParameters result = shotCalc.calculate(inputs, getTarget());
             flywheel.setTargetRpm(result.rpm());
             hood.setTargetPositionDeg(shotCalc.getHoodAngle(result.solvedDistanceM()));
+
+            double turretTarget = MathUtil.inputModulus(result.driveHeadingDeg(), 0, 360);
+            turret.setPosition(turretTarget);
+            
             Logger.recordOutput("turretTargetAngle", result.driveHeadingDeg());
         }
         headingRet = getAlignmentHeading(drive.getPose(), getTarget());
@@ -202,7 +207,7 @@ public class Superstructure extends SubsystemBase {
 
             case PREP_SHOOTING:
                 hood.requestState(Hood.SystemState.POSITION);
-                turret.requestState(Turret.SystemState.SHOOTING);
+                turret.requestState(Turret.SystemState.POSITION);
                 flywheel.requestState(Flywheel.SystemState.TARGET_RPM);
                 break;
 
@@ -371,6 +376,12 @@ public class Superstructure extends SubsystemBase {
     public Command stopCommand() {
         return new InstantCommand(() -> {
             wantedState = SuperstructureState.IDLE;
+        }, this);
+    }
+
+    public Command stuckedRecoveryCommand() {
+        return new InstantCommand(() -> {
+            wantedState = SuperstructureState.STUCKED_RECOVERY;
         }, this);
     }
 
