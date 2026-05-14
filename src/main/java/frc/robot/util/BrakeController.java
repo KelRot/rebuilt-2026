@@ -18,7 +18,7 @@ public final class BrakeController {
 
     public static void setAllBrake(boolean brake) {
         for (SparkBase motor : motors) {
-            SparkBaseExtensions.setBrakeMode(motor, brake);
+           
         }
     }
 }

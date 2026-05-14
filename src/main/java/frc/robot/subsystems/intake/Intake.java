@@ -46,7 +46,7 @@ public class Intake extends SubsystemBase {
    
     this.io = io;
     sparkTunablePID = new SparkTunablePID(this.io.getLeadOpenerMotor(), "IntakeOpener", DriverType.MAX, 0.011, 0, 0.65);
-    talonTunablePID = new TalonTunablePID(this.io.getRollerMotor(), "IntakeRoller", 0.002, 0, 0, 0.141, 0);
+    talonTunablePID = new TalonTunablePID(this.io.getRollerMotor(), "IntakeRoller", 0.08, 0, 0, 0.141, 0);
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
     this.drive = drive;
@@ -97,7 +97,7 @@ public class Intake extends SubsystemBase {
       case INTAKING:
       handleIntaking(
         drive.getChassisSpeeds().vxMetersPerSecond < 0
-        ? 2000 * drive.getChassisSpeeds().vxMetersPerSecond / DriveConstants.maxSpeedMetersPerSec + Constants.IntakeConstants.INTAKING_RPM
+        ? -Math.abs(1000 * drive.getChassisSpeeds().vxMetersPerSecond) / DriveConstants.maxSpeedMetersPerSec + Constants.IntakeConstants.INTAKING_RPM
         : Constants.IntakeConstants.INTAKING_RPM);
 
       case OUTTAKING:

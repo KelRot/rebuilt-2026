@@ -66,10 +66,10 @@ public class DriveConstants {
     // Wheel Rad/Sec
 
     // Drive PID configuration
-    public static final double driveKp = 0.015;//Tune later
-    public static final double driveKd = 0.0000;
-    public static final double driveKs = 0.01652;
-    public static final double driveKv = 0.09943;
+    public static final double driveKp = 0.0005;//Tune later
+    public static final double driveKd =  0.00000000028;
+    public static final double driveKs = 0.06798;
+    public static final double driveKv = 0.09904;
     public static final double driveSimP = 0.05;
     public static final double driveSimD = 0.0;
     public static final double driveSimKs = 0.0;
