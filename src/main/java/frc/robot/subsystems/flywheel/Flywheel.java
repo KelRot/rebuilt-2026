@@ -82,7 +82,7 @@ public class Flywheel extends SubsystemBase {
     }
         public boolean isAtSetpoint() {
             double currentRPM = io.getLeadVelocityRpm();
-            if (systemState == SystemState.IDLE || Math.abs(currentRPM) < 500){
+            if (systemState == SystemState.IDLE || Math.abs(currentRPM) < 800){
                 return false;
             }
             else{
