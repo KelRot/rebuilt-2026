@@ -15,6 +15,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import lombok.Getter;
 
 /**
  * Shoot-on-the-move fire control solver with drive heading alignment.
@@ -133,6 +135,8 @@ public class ShotCalculator {
     // Tilt gate: eğim bu değeri geçerse atış reddedilir (derece). 90 = kapalı.
     public double maxTiltDeg = 5.0;
 
+   
+
     // Confidence scoring ağırlıkları
     public double wConvergence = 1.0;
     public double wVelocityStability = 0.8;
@@ -140,8 +144,11 @@ public class ShotCalculator {
     public double wHeadingAccuracy = 1.5;
     public double wDistanceInRange = 0.5;
   }
+  
 
   private final Config config;
+
+ private double shootConfidence;
 
   private final InterpolatingDoubleTreeMap rpmMap = new InterpolatingDoubleTreeMap();
   private final InterpolatingDoubleTreeMap tofMap = new InterpolatingDoubleTreeMap();
@@ -385,7 +392,7 @@ public class ShotCalculator {
     // Launcher pozisyonundan hedef açısı, sonra -180° offset
     double aimDx = compTargetX - launcherX;
     double aimDy = compTargetY - launcherY;
-    double driveHeadingDeg = Math.toDegrees(Math.atan2(aimDy, aimDx)) - 180.0;
+    double driveHeadingDeg = Math.toDegrees(Math.atan2(aimDy, aimDx)) - 180.0; //CHECK THIS MIGHT BE POSITIVE OR 0
 
     // [-180, 180) aralığına normalize et
     driveHeadingDeg = ((driveHeadingDeg + 180.0) % 360.0 + 360.0) % 360.0 - 180.0;
@@ -440,7 +447,7 @@ public class ShotCalculator {
   // -------------------------------------------------------------------------
   // Confidence scoring
   // -------------------------------------------------------------------------
-
+  
   private double computeConfidence(
       double solverQuality, double currentSpeed, double headingErrorDeg,
       double distance, double visionConfidence) {
@@ -477,8 +484,8 @@ public class ShotCalculator {
       logSum += w[i] * Math.log(c[i]);
       sumW += w[i];
     }
-
-    return sumW <= 0 ? 0 : MathUtil.clamp(Math.exp(logSum / sumW) * 100.0, 0, 100);
+    shootConfidence = sumW <= 0 ? 0 : MathUtil.clamp(Math.exp(logSum / sumW) * 100.0, 0, 100);
+    return shootConfidence;
   }
 
   // -------------------------------------------------------------------------
@@ -554,4 +561,7 @@ public class ShotCalculator {
   InterpolatingDoubleTreeMap getTofMap() {
     return tofMap;
   }
-}
+  public void periodic() {
+    // Debug output
+    SmartDashboard.putNumber("ShotCalc/LastConfidence", shootConfidence);}
+  }
