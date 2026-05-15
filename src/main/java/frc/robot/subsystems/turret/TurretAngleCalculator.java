@@ -16,10 +16,10 @@ public class TurretAngleCalculator {
     public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
     public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(420);
 
-    private static final double SMALL_ENCODER_OFFSET = 0.5825931145648279
+    private static final double SMALL_ENCODER_OFFSET = 0.415818760395469;
 
     ;
-    private static final double BIG_ENCODER_OFFSET = 0.37421950935548776;
+    private static final double BIG_ENCODER_OFFSET = 0.9296136732403418;
 
     private final DutyCycleEncoder smallEncoder;
     private final DutyCycleEncoder bigEncoder;

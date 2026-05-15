@@ -41,7 +41,6 @@ public class Turret extends SubsystemBase {
     private final double CAPACITY = 10;
     private double fuelStored = 0;
     private boolean zeroed = false;
-    private boolean just_work = false;
 
     public Turret(TurretIO io) {
         this.io = io;
@@ -68,7 +67,7 @@ public class Turret extends SubsystemBase {
 
     public void setPosition(double position) {
         requestState(SystemState.POSITION);
-        just_work = true;
+        manual_setpoint = position;
     }
 
     public void setTargetAngle(double angle) {
@@ -77,7 +76,6 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
-            
         hub_setpoint = angleToTarget();
         if (zeroed == false) {
             setInitialMotorPosition();
@@ -226,7 +224,7 @@ public class Turret extends SubsystemBase {
 
         double targetRad = Math.atan2(dy, dx);
 
-        double turretRad = Degrees.convertFrom(targetRad, Radians) - robotPose.getRotation().getDegrees() - 90;
+        double turretRad = Degrees.convertFrom(targetRad, Radians) - robotPose.getRotation().getDegrees() - 180;
 
         if (turretRad < minAngle) {
             turretRad += 360;
