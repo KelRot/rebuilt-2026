@@ -116,7 +116,7 @@ public class Superstructure extends SubsystemBase {
         config.headingReferenceDistance = 2.5; // heading tolerance scales with distance from hub
 
         shotCalc = new ShotCalculator(config);
-        lut.put(8,new ShotParameters(-5200, 1100, 180));
+        lut.put(8,new ShotParameters(-5200, 1100, 1.80));
         lut.put(5.821,new ShotParameters(-4200, 650, 1.16));
         lut.put(4.8226,new ShotParameters(-3950, 165, 1.35));
         lut.put(4.3006,new ShotParameters(-3670, 145, 1.20));
