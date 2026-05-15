@@ -97,7 +97,7 @@ public class Intake extends SubsystemBase {
       case INTAKING:
       handleIntaking(
         drive.getChassisSpeeds().vxMetersPerSecond < 0
-        ? Constants.IntakeConstants.INTAKING_RPM - (Math.abs(1000 * drive.getChassisSpeeds().vxMetersPerSecond) / DriveConstants.maxSpeedMetersPerSec) 
+        ? Constants.IntakeConstants.INTAKING_RPM + (Math.abs(500 * drive.getChassisSpeeds().vxMetersPerSecond) / DriveConstants.maxSpeedMetersPerSec) 
         : Constants.IntakeConstants.INTAKING_RPM);
 
       case OUTTAKING:

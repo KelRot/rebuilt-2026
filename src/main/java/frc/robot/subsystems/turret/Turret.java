@@ -41,6 +41,7 @@ public class Turret extends SubsystemBase {
     private final double CAPACITY = 10;
     private double fuelStored = 0;
     private boolean zeroed = false;
+    private boolean just_work = false;
 
     public Turret(TurretIO io) {
         this.io = io;
@@ -67,7 +68,7 @@ public class Turret extends SubsystemBase {
 
     public void setPosition(double position) {
         requestState(SystemState.POSITION);
-        manual_setpoint = position;
+        just_work = true;
     }
 
     public void setTargetAngle(double angle) {
@@ -76,6 +77,7 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
+            
         hub_setpoint = angleToTarget();
         if (zeroed == false) {
             setInitialMotorPosition();
@@ -104,7 +106,7 @@ public class Turret extends SubsystemBase {
                 break;
 
             case POSITION:
-                io.setPosition(manual_setpoint);
+                io.setPosition(hub_setpoint);
                 break;
 
             case TESTING:

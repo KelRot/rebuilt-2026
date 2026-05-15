@@ -21,7 +21,7 @@ public class VisionConstants {
     // AprilTag layout
     public static Path path = Filesystem.getDeployDirectory()
             .toPath()
-            .resolve("apriltags/field_map_mar_27_15_25_15.json"); // Turkey uses andymark version of layouts
+            .resolve("apriltags/2026-rebuilt-andymark.json"); // Turkey uses andymark version of layouts
     public static AprilTagFieldLayout aprilTagLayout;
     static {
         try {
@@ -38,7 +38,7 @@ public class VisionConstants {
     // Robot to camera transforms
     // (Not used by Limelight, configure in web UI instead)
     public static Transform3d robotToCamera0 = new Transform3d(0.284371, 0.233836, 0.266783, new Rotation3d(0.0, Radians.convertFrom(-35, Degrees), Math.PI/2));
-    public static Transform3d robotToCamera1 = new Transform3d(0.30, -0.115, 0.29, new Rotation3d(0.0, Radians.convertFrom(-35, Degrees), 0));
+    public static Transform3d robotToCamera1 = new Transform3d(0.305, -0.137, 0.29, new Rotation3d(0.0, Radians.convertFrom(-35, Degrees), 0));
 
     // Basic filtering thresholds
     public static double maxAmbiguity = 0.3; // -29,5
