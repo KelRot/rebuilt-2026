@@ -68,8 +68,8 @@ public final class Constants {
         public static final double zeroWaitSeconds = 2;
         public static final double zeroVoltage = -2.5;
         public static double openerGearRatio = 112 / 14 * 23 / 13;
-        public static double INTAKING_RPM = 2000.0;
-        public static double OUTTAKING_RPM = -1800.0;
+        public static double INTAKING_RPM = -2000.0;
+        public static double OUTTAKING_RPM = +1800.0;
         public static double intakeOpenPosition = 85;
         public static double openVoltage;
         public static Time openWaitSeconds;

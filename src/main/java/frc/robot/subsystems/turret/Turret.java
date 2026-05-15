@@ -109,7 +109,7 @@ public class Turret extends SubsystemBase {
                 break;
 
             case POSITION:
-                io.setPosition(manual_setpoint);
+                io.setPosition(hub_setpoint);
                 break;
 
             case TESTING:
