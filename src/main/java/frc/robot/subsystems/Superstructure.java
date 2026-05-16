@@ -124,6 +124,10 @@ public class Superstructure extends SubsystemBase {
         lut.put(3.3164, new ShotParameters(-3450, 105, 1.14));//notthat good
         lut.put(2.808, new ShotParameters(-3300, 85, 1.10));
         lut.put(2.314780, new ShotParameters(-3000, 65, 1.01));
+        lut.put(2.0, new ShotParameters(-2800, 55, 1.01));
+                lut.put(1.3, new ShotParameters(-2800, 10, 1.01));
+
+
         shotCalc.loadShotLUT(lut);
 
     }
