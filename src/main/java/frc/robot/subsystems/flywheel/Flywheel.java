@@ -17,7 +17,6 @@ public class Flywheel extends SubsystemBase {
         TARGET_RPM,
         VOLTAGE,
         TESTING
-
     }
 
     private SystemState systemState = SystemState.IDLE;
@@ -26,12 +25,27 @@ public class Flywheel extends SubsystemBase {
 
     private final FlywheelIO io;
     private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
+
     private final SparkTunablePID sparkTunablePID;
-    private final LoggedTunableNumber setpoint = new LoggedTunableNumber("flywheelsetpoint", 0);
-    private final LoggedTunableNumber voltsetpoint = new LoggedTunableNumber("flywheelvoltsetpoint", 0);
+
+    private final LoggedTunableNumber setpoint =
+            new LoggedTunableNumber("flywheelsetpoint", 0);
+
+    private final LoggedTunableNumber voltsetpoint =
+            new LoggedTunableNumber("flywheelvoltsetpoint", 0);
+
     public Flywheel(FlywheelIO io) {
+
         this.io = io;
-        sparkTunablePID = new SparkTunablePID(io.getMotor(), "Flywheel", DriverType.VORTEX, 0.00019, 0, 0.008);
+
+        sparkTunablePID =
+                new SparkTunablePID(
+                        io.getMotor(),
+                        "Flywheel",
+                        DriverType.VORTEX,
+                        0.00019,
+                        0,
+                        0.008);
     }
 
     public void requestState(SystemState wantedState) {
@@ -47,15 +61,17 @@ public class Flywheel extends SubsystemBase {
         systemState = SystemState.IDLE;
     }
 
-    public void setVoltage(){
+    public void setVoltage() {
         io.setAppliedVoltage(voltsetpoint.get());
     }
 
     @Override
     public void periodic() {
+
         io.updateInputs(inputs);
-        sparkTunablePID.periodic();
-        
+
+        //sparkTunablePID.periodic();
+
         switch (systemState) {
 
             case TARGET_RPM:
@@ -63,30 +79,37 @@ public class Flywheel extends SubsystemBase {
                 break;
 
             case PASSIVE:
-                io.setRpm(500.0); // standby spin
+                io.setRpm(500.0);
                 break;
-            case VOLTAGE: 
+
+            case VOLTAGE:
                 setVoltage();
                 break;
+
+            case TESTING:
+                io.setRpm(setpoint.get());
+                break;
+
             case IDLE:
             default:
                 io.setAppliedVoltage(0.0);
                 break;
-            case TESTING:
-                io.setRpm(setpoint.get());;
-                break;
-        }
-        inputs.isAtSetpoint = isAtSetpoint();
-        Logger.recordOutput("Flywheel/SystemState", systemState.toString());
-        Logger.processInputs("Flywheel", inputs);
-    }
-        public boolean isAtSetpoint() {
-            double currentRPM = io.getLeadVelocityRpm();
-            if (systemState == SystemState.IDLE || Math.abs(currentRPM) < 800){
-                return false;
-            }
-            else{
-                return Math.abs(currentRPM - targetRpm) < 500;
         }
 
-}}
+        inputs.isAtSetpoint = isAtSetpoint();
+
+        //Logger.recordOutput("Flywheel/SystemState", systemState.toString());
+        //Logger.processInputs("Flywheel", inputs);
+    }
+
+    public boolean isAtSetpoint() {
+
+        double currentRPM = io.getLeadVelocityRpm();
+
+        if (systemState == SystemState.IDLE || Math.abs(currentRPM) < 800) {
+            return false;
+        } else {
+            return Math.abs(currentRPM - targetRpm) < 500;
+        }
+    }
+}

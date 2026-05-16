@@ -4,13 +4,14 @@ import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.SparkBase.ControlType;
 
 import frc.robot.Constants;
 
@@ -18,23 +19,31 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
 
     private final SparkFlex leadMotor;
     private final SparkFlex followerMotor;
+
     private final RelativeEncoder leadEncoder;
+
+    private final SparkClosedLoopController controller;
+
     private double targetRpm;
+
     private final SparkFlexConfig leadConfig = new SparkFlexConfig();
     private final SparkFlexConfig followerConfig = new SparkFlexConfig();
 
     public FlywheelIOSparkFlex() {
 
+        leadMotor =
+                new SparkFlex(
+                        Constants.FlywheelConstants.kMasterMotorId,
+                        MotorType.kBrushless);
 
-        leadMotor = new SparkFlex(
-                Constants.FlywheelConstants.kMasterMotorId,
-                MotorType.kBrushless);
-
-        followerMotor = new SparkFlex(
-                Constants.FlywheelConstants.kFollowerMotorId,
-                MotorType.kBrushless);
+        followerMotor =
+                new SparkFlex(
+                        Constants.FlywheelConstants.kFollowerMotorId,
+                        MotorType.kBrushless);
 
         leadEncoder = leadMotor.getEncoder();
+
+        controller = leadMotor.getClosedLoopController();
 
         configureMotors();
     }
@@ -44,27 +53,37 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
     @Override
     public void updateInputs(FlywheelIOInputs inputs) {
 
-        inputs.leadConnected = leadMotor.getLastError() == REVLibError.kOk;
+        inputs.leadConnected =
+                leadMotor.getLastError() == REVLibError.kOk;
 
-        inputs.followerConnected = followerMotor.getLastError() == REVLibError.kOk;
+        inputs.followerConnected =
+                followerMotor.getLastError() == REVLibError.kOk;
 
         // Lead motor
-        inputs.leadVelocityPerSec = leadEncoder.getVelocity() / 60.0;
+        inputs.leadVelocityPerSec =
+                leadEncoder.getVelocity() / 60.0;
 
-        inputs.leadCurrentRpm = leadEncoder.getVelocity();
+        inputs.leadCurrentRpm =
+                leadEncoder.getVelocity();
 
-        inputs.leadAppliedVoltage = leadMotor.getAppliedOutput() * 12.0;
+        inputs.leadAppliedVoltage =
+                leadMotor.getAppliedOutput() * 12.0;
 
-        inputs.leadCurrentAmps = leadMotor.getOutputCurrent();
+        inputs.leadCurrentAmps =
+                leadMotor.getOutputCurrent();
 
         // Follower motor
-        inputs.followerVelocityPerSec = followerMotor.getEncoder().getVelocity() / 60.0;
+        inputs.followerVelocityPerSec =
+                followerMotor.getEncoder().getVelocity() / 60.0;
 
-        inputs.followerCurrentRpm = followerMotor.getEncoder().getVelocity();
+        inputs.followerCurrentRpm =
+                followerMotor.getEncoder().getVelocity();
 
-        inputs.followerAppliedVoltage = followerMotor.getAppliedOutput() * 12.0;
+        inputs.followerAppliedVoltage =
+                followerMotor.getAppliedOutput() * 12.0;
 
-        inputs.followerCurrentAmps = followerMotor.getOutputCurrent();
+        inputs.followerCurrentAmps =
+                followerMotor.getOutputCurrent();
     }
 
     /* ---------------- Motor config ---------------- */
@@ -73,13 +92,16 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
 
         leadConfig
                 .voltageCompensation(12.0)
-                .smartCurrentLimit(40,25)
-                .idleMode(IdleMode.kCoast).closedLoop.allowedClosedLoopError(5, ClosedLoopSlot.kSlot0).iZone(0.5);
+                .smartCurrentLimit(40, 25)
+                .idleMode(IdleMode.kCoast)
+                .closedLoop
+                .allowedClosedLoopError(5, ClosedLoopSlot.kSlot0)
+                .iZone(0.5);
 
         followerConfig
                 .follow(leadMotor, true)
                 .voltageCompensation(12.0)
-                .smartCurrentLimit(25,25)
+                .smartCurrentLimit(25, 25)
                 .idleMode(IdleMode.kCoast);
 
         leadMotor.configure(
@@ -99,10 +121,12 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
     public void stop() {
         leadMotor.stopMotor();
     }
+
     @Override
-    public SparkBase getMotor(){
+    public SparkBase getMotor() {
         return leadMotor;
     }
+
     @Override
     public void setAppliedVoltage(double volts) {
         leadMotor.setVoltage(volts);
@@ -110,15 +134,22 @@ public class FlywheelIOSparkFlex implements FlywheelIO {
 
     @Override
     public void setRpm(double targetRpm) {
+
         this.targetRpm = targetRpm;
-        leadMotor.getClosedLoopController().setSetpoint(targetRpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0, (targetRpm - 112) / Constants.FlywheelConstants.RotPerVolt);
+
+        double ffVolts =
+                (targetRpm - 112.0)
+                        / Constants.FlywheelConstants.RotPerVolt;
+
+        controller.setSetpoint(
+                targetRpm,
+                ControlType.kVelocity,
+                ClosedLoopSlot.kSlot0,
+                ffVolts);
     }
-    public double getLeadVelocityRpm(){
+
+    @Override
+    public double getLeadVelocityRpm() {
         return leadEncoder.getVelocity();
     }
-
-
-    }
-
-
-    
+}

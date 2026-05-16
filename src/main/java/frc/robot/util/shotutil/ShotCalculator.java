@@ -392,7 +392,7 @@ public class ShotCalculator {
     // Launcher pozisyonundan hedef açısı, sonra -180° offset
     double aimDx = compTargetX - launcherX;
     double aimDy = compTargetY - launcherY;
-    double driveHeadingDeg = Math.toDegrees(Math.atan2(aimDy, aimDx)) - 180.0; //CHECK THIS MIGHT BE POSITIVE OR 0
+    double driveHeadingDeg = Math.toDegrees(Math.atan2(aimDy, aimDx)) +180 ; //CHECK THIS MIGHT BE POSITIVE OR 0
 
     // [-180, 180) aralığına normalize et
     driveHeadingDeg = ((driveHeadingDeg + 180.0) % 360.0 + 360.0) % 360.0 - 180.0;

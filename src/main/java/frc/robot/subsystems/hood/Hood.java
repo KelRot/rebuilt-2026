@@ -69,10 +69,10 @@ public class Hood extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("distance", getDistanceNotClamped());
-        SmartDashboard.putNumber("suggestedRPM", 2650 + 105*getDistanceNotClamped() + (31*getDistanceNotClamped()*getDistanceNotClamped()));
-        SmartDashboard.putNumber("suggestedHoodAngle", 65 + Math.pow(14*(getDistanceNotClamped()-2.5), 2) + Math.pow(8*(getDistanceNotClamped()-2), 3));
-        io.updateInputs(inputs);
+        double dist = getDistanceNotClamped();
+SmartDashboard.putNumber("distance", dist);
+SmartDashboard.putNumber("suggestedRPM", 2650 + 105*dist + (31*dist*dist));
+SmartDashboard.putNumber("suggestedHoodAngle", 65 + Math.pow(14*(dist-2.5), 2) + Math.pow(8*(dist-2), 3));
         switch (systemState) {
             case MANUAL:
                 io.setPosition(setpoint.get());
