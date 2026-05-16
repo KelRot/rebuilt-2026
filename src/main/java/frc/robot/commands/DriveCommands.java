@@ -71,12 +71,7 @@ public class DriveCommands {
                             ? drive.getRotation().plus(new Rotation2d(Math.PI))
                             : drive.getRotation();
 
-                        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                                new ChassisSpeeds(
-                                        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                                        linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                                        omega * drive.getMaxAngularSpeedRadPerSec()),
-                                fieldRelativeRotation));
+                    
                     
                 },
                 drive);
