@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.1;
-    private static final double ANGLE_KP = 5.0;
+    private static final double ANGLE_KP = 1.0;
     private static final double ANGLE_KD = 0.4;
     private static final double ANGLE_MAX_VELOCITY = 5.0;
     private static final double ANGLE_MAX_ACCELERATION = 15.0;
@@ -71,25 +71,8 @@ public class DriveCommands {
                             ? drive.getRotation().plus(new Rotation2d(Math.PI))
                             : drive.getRotation();
 
-                    if (isInTrenchArea(drive)) {
-                        double ySpeed = MathUtil.clamp(
-                                yController.calculate(drive.getPose().getY(), getTrenchAreaY(drive)),
-                                -drive.getMaxLinearSpeedMetersPerSec(),
-                                drive.getMaxLinearSpeedMetersPerSec());
-                        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                                new ChassisSpeeds(
-                                        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                                        -ySpeed,
-                                        omega * drive.getMaxAngularSpeedRadPerSec()),
-                                fieldRelativeRotation));
-                    } else {
-                        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                                new ChassisSpeeds(
-                                        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                                        linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                                        omega * drive.getMaxAngularSpeedRadPerSec()),
-                                fieldRelativeRotation));
-                    }
+                    
+                    
                 },
                 drive);
     }
@@ -211,31 +194,4 @@ public class DriveCommands {
         double gyroDelta = 0.0;
     }
 
-    private static Pose2d getBotPoseWithIntake(Drive drive) {
-        Pose2d currentPose = drive.getPose();
-        return new Pose2d(
-                currentPose.getX(),
-                currentPose.getY() + Constants.IntakeConstants.intakeLength / 2.0,
-                currentPose.getRotation());
-    }
-
-    private static boolean isInTrenchArea(Drive drive) {
-        Pose2d botPose = getBotPoseWithIntake(drive);
-        return PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueUpperTrench)
-                || PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueLowerTrench)
-                || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redUpperTrench)
-                || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redLowerTrench);
-    }
-
-    private static double getTrenchAreaY(Drive drive) {
-        Pose2d botPose = getBotPoseWithIntake(drive);
-        if (PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueUpperTrench)
-                || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redUpperTrench)) {
-            return (Field.LeftBlueTrench.openingTopLeft.getY() + Field.LeftBlueTrench.openingTopRight.getY()) / 2.0;
-        } else if (PointInPolygon.pointInPolygon(botPose, PointInPolygon.blueLowerTrench)
-                || PointInPolygon.pointInPolygon(botPose, PointInPolygon.redLowerTrench)) {
-            return (Field.RightBlueTrench.openingTopLeft.getY() + Field.RightBlueTrench.openingTopRight.getY()) / 2.0;
-        }
-        return botPose.getY();
-    }
 }

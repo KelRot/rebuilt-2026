@@ -16,6 +16,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 public class BatteryMonitor extends Command {
 
+    private boolean isLow;
     private static final int SAMPLE_COUNT = 50;
     private static final double MIN_VOLTAGE = 12.35;
     private static final String NT_TOPIC = "Battery/";
@@ -44,7 +45,7 @@ public class BatteryMonitor extends Command {
     public void execute() {
         avgVoltage = filter.calculate(BatteryUtils.getCurrentVoltage());
 
-        boolean isLow = avgVoltage <= MIN_VOLTAGE;
+        isLow = avgVoltage <= MIN_VOLTAGE;
 
         if (isLow && !DriverStation.isEnabled()) {
             lowBattery.set(true);
@@ -57,6 +58,6 @@ public class BatteryMonitor extends Command {
     }
 
     public boolean isFinished() {
-        return DriverStation.isEnabled();
+        return DriverStation.isEnabled() || isLow ;
     }
 }

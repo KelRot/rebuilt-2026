@@ -17,13 +17,12 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkBase.ControlType;
 
 import edu.wpi.first.math.filter.Debouncer;
 
 public class TurretIOSpark implements TurretIO {
-    // Hardware components
+
     private final SparkFlex turretMotor;
     private final RelativeEncoder turretEncoder;
 
@@ -34,6 +33,9 @@ public class TurretIOSpark implements TurretIO {
     private final TurretAngleCalculator angleCalculator = new TurretAngleCalculator();
 
     private final Debouncer turretDebouncer = new Debouncer(0.5);
+
+    // Açı hesabını ve log'u her 5 döngüde bir yap (100ms)
+    private int angleCounter = 0;
 
     public TurretIOSpark() {
         turretMotor = new SparkFlex(TurretConstants.turretID, MotorType.kBrushless);
@@ -54,7 +56,12 @@ public class TurretIOSpark implements TurretIO {
         inputs.motorConnected = turretDebouncer.calculate(!sparkStickyFault);
         inputs.absPositionTours1 = angleCalculator.getSmallEncoder();
         inputs.absPositionTours2 = angleCalculator.getBigEncoder();
-        angleCalculator.log();
+
+        // Ağır CRT hesabını ve SmartDashboard log'unu her 5 döngüde bir çalıştır
+        if (angleCounter++ >= 5) {
+            angleCounter = 0;
+            angleCalculator.log();
+        }
     }
 
     @Override

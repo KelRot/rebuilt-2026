@@ -1,0 +1,49 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "hub_to_depot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "still_has_time"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "still_has_time_mid_rush"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "mid_to_base"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

@@ -28,12 +28,12 @@ public final class Constants {
 
     public static class LedConstants {
         public static final int kLedPort = 0;
-        public static final int kLedLength = 24;
-        public static final Distance kLedSpacing = Meters.of(0.05);
+        public static final int kLedLength = 20;
+        public static final Distance kLedSpacing = Meters.of(0.02);
     }
 
     public static class TurretConstants {
-        public static final double kP = 0.0;
+        public static final double kP = 0.0001;
         public static final double kD = 0.0;
 
         public static final int turretID = 9;
@@ -66,16 +66,16 @@ public final class Constants {
         public static final int openerMotorID = 3;
         public static final int secondOpenerMotorID = 7;
         public static final double zeroWaitSeconds = 2;
-        public static final double zeroVoltage = 0;
+        public static final double zeroVoltage = -2.5;
         public static double openerGearRatio = 112 / 14 * 23 / 13;
-        public static double INTAKING_RPM = 1600.0;
-        public static double OUTTAKING_RPM = -1800.0;
+        public static double INTAKING_RPM = -2000.0;
+        public static double OUTTAKING_RPM = +1800.0;
         public static double intakeOpenPosition = 85;
         public static double openVoltage;
         public static Time openWaitSeconds;
         public static double intakeClosedPosition = -34;
-        public static final double ZERO_CONFIRM_TIME = 0;
-        public static final int ZERO_VELOCITY_EPS = 0;
+        public static final double ZERO_CONFIRM_TIME = 0.5;
+        public static final int ZERO_VELOCITY_EPS = 3;
         public static final double RotPerVolt = 5906 / 12;
         public static final double intakeLength = 0.0;
     }
@@ -112,9 +112,6 @@ public final class Constants {
         public static final double cruiseVelocityDegPerSec = 0.0;
 
         public static final double maxAccelerationDegPerSec2 = 0.0;
-
-        public static final double minAngleDeg = 0.0;
-        public static final double maxAngleDeg = 50.0;
 
     }
 

@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SparkTunablePID;
 import frc.robot.util.TalonTunablePID;
@@ -29,6 +31,7 @@ public class Intake extends SubsystemBase {
 
   private SystemState systemState = SystemState.IDLE;
 
+  private final Drive drive;
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
   private final IntakeVisualizer visualizer = new IntakeVisualizer("Measured", Color.kGreen);
@@ -37,14 +40,16 @@ public class Intake extends SubsystemBase {
   private TalonTunablePID talonTunablePID;
 
   private double zeroStillTime = 0.0;
+  private boolean isZeroed = false;
 
-  public Intake(IntakeIO io) {
+  public Intake(IntakeIO io, Drive drive) {
+   
     this.io = io;
     sparkTunablePID = new SparkTunablePID(this.io.getLeadOpenerMotor(), "IntakeOpener", DriverType.MAX, 0.011, 0, 0.65);
-    talonTunablePID = new TalonTunablePID(this.io.getRollerMotor(), "IntakeRoller", 0.8, 0, 0.001, 1 / 509.3 * 60, 0);
+    talonTunablePID = new TalonTunablePID(this.io.getRollerMotor(), "IntakeRoller", 0.08, 0, 0, 0.141, 0);
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
-
+    this.drive = drive;
   }
 
   public void requestState(SystemState wantedState) {
@@ -64,13 +69,13 @@ public class Intake extends SubsystemBase {
     systemState = SystemState.MANUAL;
   }
 
-  private void handleIntaking(double rollerVoltage) {
+  private void handleIntaking(double rollerRpm) {
     if (!inputs.isIntakeOpen) {
       io.setRollerVoltage(0.0);
       io.setOpenerSetPoint(Constants.IntakeConstants.intakeOpenPosition);
     } else {
       io.setOpenerVoltage(0);
-      io.setRollerRPM(rollerVoltage);
+      io.setRollerRPM(rollerRpm);
     }
   }
 
@@ -90,8 +95,10 @@ public class Intake extends SubsystemBase {
     switch (systemState) {
 
       case INTAKING:
-        handleIntaking(Constants.IntakeConstants.INTAKING_RPM);
-        break;
+      handleIntaking(
+        drive.getChassisSpeeds().vxMetersPerSecond < 0
+        ? Constants.IntakeConstants.INTAKING_RPM + (Math.abs(500 * drive.getChassisSpeeds().vxMetersPerSecond) / DriveConstants.maxSpeedMetersPerSec) 
+        : Constants.IntakeConstants.INTAKING_RPM);
 
       case OUTTAKING:
         handleIntaking(Constants.IntakeConstants.OUTTAKING_RPM);
@@ -136,8 +143,8 @@ public class Intake extends SubsystemBase {
         break;
 
       case MANUAL:
-        // io.setRollerRPM(setpoint.get());
-        io.setOpenerSetPoint(setpoint.get());
+        io.setRollerRPM(setpoint.get());
+        //io.setOpenerSetPoint(setpoint.get());
         break;
 
       case IDLE:
@@ -163,6 +170,12 @@ public class Intake extends SubsystemBase {
     Logger.processInputs("Intake", inputs);
   }
 
+  public void setZeroed(boolean zeroed) {
+    isZeroed = zeroed;
+  }
+  public void setEncoder() {
+    io.getLeadOpenerMotor().getEncoder().setPosition(0);
+  }
   public boolean isOpened() {
     return inputs.isIntakeOpen;
   }

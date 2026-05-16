@@ -69,7 +69,7 @@ public class HoodIOSpark implements HoodIO {
     config
         .idleMode(IdleMode.kBrake)
         .voltageCompensation(12.0)
-        .smartCurrentLimit(25)
+        .smartCurrentLimit(13)
         .inverted(true)
         .apply(closedLoop);
 
@@ -95,10 +95,11 @@ public class HoodIOSpark implements HoodIO {
   public SparkBase getMotor() {
     return motor;
   }
-
   @Override
-  public boolean isAtSetpoint() {
-    return Math.abs(targetPositionDeg - encoder.getPosition() * 360) < 1.0;
+  public double getPosition(){
+    return encoder.getPosition();
   }
+
+
 
 }

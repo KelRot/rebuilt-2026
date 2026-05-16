@@ -34,4 +34,7 @@ public interface HoodIO {
     public default boolean isAtSetpoint() {
         return false;
     }
+    public default double getPosition(){
+        return 0.0;
+    }
 }

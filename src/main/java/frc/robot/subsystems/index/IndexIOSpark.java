@@ -32,7 +32,7 @@ public class IndexIOSpark implements IndexIO {
   public void config() {
     SparkMaxConfig spinnerConfig = new SparkMaxConfig();
 
-    spinnerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(30);
+    spinnerConfig.voltageCompensation(12).idleMode(IdleMode.kCoast).smartCurrentLimit(20);
 
     tryUntilOk(
         spinnerMotor,
