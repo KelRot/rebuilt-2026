@@ -59,7 +59,7 @@ public class Drive extends SubsystemBase {
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(moduleTranslations);
     private Rotation2d rawGyroRotation = new Rotation2d();
-    private SwerveModulePosition[] lastModulePositions = // For delta tracking
+    private SwerveModulePosition[] lastModulePositions =
             new SwerveModulePosition[] {
                     new SwerveModulePosition(),
                     new SwerveModulePosition(),
@@ -68,6 +68,9 @@ public class Drive extends SubsystemBase {
             };
     private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation,
             lastModulePositions, new Pose2d());
+
+    // field2d'yi her 5 döngüde bir güncelle (100ms = 10Hz)
+    private int dashboardCounter = 0;
 
     public Drive(GyroIO gyroIO, ModuleIO flModuleIO, ModuleIO frModuleIO, ModuleIO blModuleIO, ModuleIO brModuleIO) {
         System.out.println("[Drive] Constructing Drive Subsystem...");
@@ -107,104 +110,90 @@ public class Drive extends SubsystemBase {
 
     @Override
     public void periodic() {
-        field2d.setRobotPose(getPose());
-        SmartDashboard.putData(field2d);
-        odometryLock.lock(); // Prevents odometry updates while reading data
+        odometryLock.lock();
+
         gyroIO.updateInputs(gyroInputs);
         Logger.processInputs("Drive/Gyro", gyroInputs);
+
         for (var module : modules) {
             module.periodic();
         }
+
         odometryLock.unlock();
 
-        // Stop moving when disabled
+        // Disabled modda motorları durdur ve boş setpoint logla
         if (DriverStation.isDisabled()) {
             for (var module : modules) {
                 module.stop();
             }
-        }
-
-        // Log empty setpoint states when disabled
-        if (DriverStation.isDisabled()) {
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
             Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
         }
+
         Logger.recordOutput("Drive/RobotZone", getRobotZone().toString());
-        // Update odometry
-        double[] sampleTimestamps = modules[0].getOdometryTimestamps(); // All signals are sampled together
+
+        // Odometry güncelle
+        double[] sampleTimestamps = modules[0].getOdometryTimestamps();
         int sampleCount = sampleTimestamps.length;
+
         for (int i = 0; i < sampleCount; i++) {
-            // Read wheel positions and deltas from each module
             SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
             SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
+
             for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
                 modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
                 moduleDeltas[moduleIndex] = new SwerveModulePosition(
-                        modulePositions[moduleIndex].distanceMeters - lastModulePositions[moduleIndex].distanceMeters,
+                        modulePositions[moduleIndex].distanceMeters
+                                - lastModulePositions[moduleIndex].distanceMeters,
                         modulePositions[moduleIndex].angle);
                 lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
             }
 
-            // Update gyro angle
             if (gyroInputs.connected) {
-                // Use the real gyro angle
                 rawGyroRotation = gyroInputs.odometryYawPositions[i];
             } else {
-                // Use the angle delta from the kinematics and module deltas
                 Twist2d twist = kinematics.toTwist2d(moduleDeltas);
                 rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
             }
 
-            // Apply update
             poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
         }
 
-        // Update gyro alert
+        // field2d'yi her 5 döngüde bir güncelle (yaklaşık 100ms)
+        if (dashboardCounter++ >= 5) {
+            dashboardCounter = 0;
+            field2d.setRobotPose(getPose());
+            SmartDashboard.putData(field2d);
+        }
+
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
     }
 
-    /**
-     * Runs the drive at the desired velocity.
-     *
-     * @param speeds Speeds in meters/sec
-     */
     public void runVelocity(ChassisSpeeds speeds) {
-        // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, maxSpeedMetersPerSec);
 
-        // Log unoptimized setpoints
         Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
         Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
 
-        // Send setpoints to modules
         for (int i = 0; i < 4; i++) {
             modules[i].runSetpoint(setpointStates[i]);
         }
 
-        // Log optimized setpoints (runSetpoint mutates each state)
         Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
     }
 
-    /** Runs the drive in a straight line with the specified drive output. */
     public void runCharacterization(double output) {
         for (int i = 0; i < 4; i++) {
             modules[i].runCharacterization(output);
         }
     }
-    
 
-    /** Stops the drive. */
     public void stop() {
         runVelocity(new ChassisSpeeds());
     }
 
-    /**
-     * Stops the drive and turns the modules to an X arrangement to resist movement.
-     * The modules will return to their
-     * normal orientations the next time a nonzero velocity is requested.
-     */
     public void stopWithX() {
         Rotation2d[] headings = new Rotation2d[4];
         for (int i = 0; i < 4; i++) {
@@ -214,20 +203,14 @@ public class Drive extends SubsystemBase {
         stop();
     }
 
-    /** Returns a command to run a quasistatic test in the specified direction. */
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
         return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.quasistatic(direction));
     }
 
-    /** Returns a command to run a dynamic test in the specified direction. */
     public Command sysIdDynamic(SysIdRoutine.Direction direction) {
         return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.dynamic(direction));
     }
 
-    /**
-     * Returns the module states (turn angles and drive velocities) for all of the
-     * modules.
-     */
     @AutoLogOutput(key = "SwerveStates/Measured")
     private SwerveModuleState[] getModuleStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
@@ -237,10 +220,6 @@ public class Drive extends SubsystemBase {
         return states;
     }
 
-    /**
-     * Returns the module positions (turn angles and drive positions) for all of the
-     * modules.
-     */
     private SwerveModulePosition[] getModulePositions() {
         SwerveModulePosition[] states = new SwerveModulePosition[4];
         for (int i = 0; i < 4; i++) {
@@ -249,13 +228,11 @@ public class Drive extends SubsystemBase {
         return states;
     }
 
-    /** Returns the measured chassis speeds of the robot. */
     @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
     public ChassisSpeeds getChassisSpeeds() {
         return kinematics.toChassisSpeeds(getModuleStates());
     }
 
-    /** Returns the position of each module in radians. */
     public double[] getWheelRadiusCharacterizationPositions() {
         double[] values = new double[4];
         for (int i = 0; i < 4; i++) {
@@ -264,7 +241,6 @@ public class Drive extends SubsystemBase {
         return values;
     }
 
-    /** Returns the average velocity of the modules in rad/sec. */
     public double getFFCharacterizationVelocity() {
         double output = 0.0;
         for (int i = 0; i < 4; i++) {
@@ -273,43 +249,36 @@ public class Drive extends SubsystemBase {
         return output;
     }
 
-    /** Returns the current odometry pose. */
     @AutoLogOutput(key = "Odometry/Robot")
     public Pose2d getPose() {
         return poseEstimator.getEstimatedPosition();
     }
 
-    /** Returns the current odometry rotation. */
     public Rotation2d getRotation() {
         return getPose().getRotation();
     }
 
-    /** Resets the current odometry pose. */
     public void setPose(Pose2d pose) {
         poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
     }
 
-    /** Adds a new timestamped vision measurement. */
     public void addVisionMeasurement(
             Pose2d visionRobotPoseMeters, double timestampSeconds, Matrix<N3, N1> visionMeasurementStdDevs) {
         poseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
     }
 
-    /** Returns the maximum linear speed in meters per sec. */
     public double getMaxLinearSpeedMetersPerSec() {
-       /*  if(RobotContainer.getSuperstructure().isAnyShootingState(RobotContainer.getSuperstructure().getCurrentState())) {
-            return 3;
-        } */
         return maxSpeedMetersPerSec;
     }
 
-    /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec() {
         return maxSpeedMetersPerSec / driveBaseRadius;
     }
+
     public ChassisSpeeds getFieldSpeeds() {
         return ChassisSpeeds.fromRobotRelativeSpeeds(getChassisSpeeds(), getRotation());
     }
+
     public static enum RobotZone {
         BLUE_ALLIANCE_ZONE,
         RED_ALLIANCE_ZONE,
@@ -317,28 +286,24 @@ public class Drive extends SubsystemBase {
         LOWER_NEUTRAL_ZONE
     }
 
-   public RobotZone getRobotZone() {
-    double robotX = getPose().getX();
-    double robotY = getPose().getY();
+    public RobotZone getRobotZone() {
+        double robotX = getPose().getX();
+        double robotY = getPose().getY();
 
-    // Neutral Zone: sahayı ortalayan 283in (7.19 m) derinlik
-    double neutralStartX = Field.getHalfLength() - Units.inchesToMeters(283) / 2.0;
-    double neutralEndX   = Field.getHalfLength() + Units.inchesToMeters(283) / 2.0;
+        double neutralStartX = Field.getHalfLength() - Units.inchesToMeters(283) / 2.0;
+        double neutralEndX   = Field.getHalfLength() + Units.inchesToMeters(283) / 2.0;
+        double halfY = Field.getHalfWidth();
 
-    // Y koordinatının orta noktası
-    double halfY = Field.getHalfWidth();
-
-    if (robotX < neutralStartX) {
-        return RobotZone.BLUE_ALLIANCE_ZONE;
-    } else if (robotX > neutralEndX) {
-        return RobotZone.RED_ALLIANCE_ZONE;
-    } else {
-        // Neutral Zone içindeyiz, şimdi Upper ve Lower olarak ayırıyoruz
-        if (robotY > halfY) {
-            return RobotZone.UPPER_NEUTRAL_ZONE;
+        if (robotX < neutralStartX) {
+            return RobotZone.BLUE_ALLIANCE_ZONE;
+        } else if (robotX > neutralEndX) {
+            return RobotZone.RED_ALLIANCE_ZONE;
         } else {
-            return RobotZone.LOWER_NEUTRAL_ZONE;
+            if (robotY > halfY) {
+                return RobotZone.UPPER_NEUTRAL_ZONE;
+            } else {
+                return RobotZone.LOWER_NEUTRAL_ZONE;
+            }
         }
     }
-}
 }
