@@ -104,7 +104,7 @@ public class Turret extends SubsystemBase {
                 break;
 
             case POSITION:
-                io.setPosition(hub_setpoint);
+                io.setPosition(manual_setpoint);
                 break;
 
             case TESTING:
@@ -224,7 +224,7 @@ public class Turret extends SubsystemBase {
 
         double targetRad = Math.atan2(dy, dx);
 
-        double turretRad = Degrees.convertFrom(targetRad, Radians) - robotPose.getRotation().getDegrees() - 180;
+        double turretRad = Degrees.convertFrom(targetRad, Radians) - robotPose.getRotation().getDegrees() - 90;
 
         if (turretRad < minAngle) {
             turretRad += 360;

@@ -161,6 +161,8 @@ public class Superstructure extends SubsystemBase {
             flywheel.setTargetRpm(result.rpm());
             hood.setTargetPositionDeg(shotCalc.getHoodAngle(result.solvedDistanceM()));
 
+            double turretTarget = MathUtil.inputModulus(result.driveHeadingDeg(), 0, 360);
+            turret.setPosition(turretTarget);
             
             
             Logger.recordOutput("turretTargetAngle", result.driveHeadingDeg());
