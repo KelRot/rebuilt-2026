@@ -25,13 +25,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "mid_rush"
+            "pathName": "OLD_mid_rush"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "mid_to_base"
+            "pathName": "OLD_mid_to_base"
           }
         },
         {
@@ -55,13 +55,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "mid_rush"
+            "pathName": "OLD_mid_rush"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "mid_to_base"
+            "pathName": "OLD_mid_to_base"
           }
         },
         {
