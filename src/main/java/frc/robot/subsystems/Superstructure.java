@@ -121,9 +121,9 @@ public class Superstructure extends SubsystemBase {
         lut.put(4.8226,new ShotParameters(-3950, 165, 1.35));
         lut.put(4.3006,new ShotParameters(-3670, 145, 1.20));
         lut.put(3.80429,new ShotParameters(-3550, 125, 1.16));//not tht good
-        lut.put(3.3164, new ShotParameters(-3450, 105, 1.14));//notthat good
+        lut.put(3.3164, new ShotParameters(-3350, 105, 1.14));//notthat good
         lut.put(2.808, new ShotParameters(-3300, 85, 1.10));
-        lut.put(2.314780, new ShotParameters(-3000, 65, 1.01));
+        lut.put(2.314780, new ShotParameters(-2900, 65, 1.01));
         lut.put(2.0, new ShotParameters(-2800, 55, 1.01));
                 lut.put(1.3, new ShotParameters(-2800, 10, 1.01));
 
@@ -143,10 +143,10 @@ public class Superstructure extends SubsystemBase {
             applyState(wantedState);
             currentState = wantedState;
         }
-        if (currentState == SuperstructureState.PREP_SHOOTING && flywheel.isAtSetpoint() && hood.isAtSetpoint() && turret.isAtSetpoint()) {
+        if (currentState == SuperstructureState.PREP_SHOOTING && flywheel.isAtSetpoint() && hood.isAtSetpoint() ) {
             wantedState = SuperstructureState.SHOOTING;
         }
-        if (currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING && flywheel.isAtSetpoint() && hood.isAtSetpoint() && turret.isAtSetpoint()) {
+        if (currentState == SuperstructureState.PREP_SHOOTING_AND_INTAKING && flywheel.isAtSetpoint() && hood.isAtSetpoint()) {
             wantedState = SuperstructureState.SHOOTING_AND_INTAKING;
         }
 
@@ -303,6 +303,7 @@ public class Superstructure extends SubsystemBase {
 
             if (currentState == SuperstructureState.INTAKING || currentState == SuperstructureState.OPENING_INTAKE) {
                 wantedState = SuperstructureState.CLOSING_AND_STOPPING_INTAKE;
+                applyState(SuperstructureState.CLOSING_AND_STOPPING_INTAKE);
             } else if (currentState == SuperstructureState.SHOOTING_AND_INTAKING) {
                 wantedState = SuperstructureState.SHOOTING;
                 applyState(SuperstructureState.CLOSING_AND_STOPPING_INTAKE);

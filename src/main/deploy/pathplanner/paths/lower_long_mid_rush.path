@@ -125,10 +125,10 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 3.1762322754895163,
+      "minWaypointRelativePos": 3.4841323430114786,
       "maxWaypointRelativePos": 5.49358541526001,
       "constraints": {
-        "maxVelocity": 2.0,
+        "maxVelocity": 2.5,
         "maxAcceleration": 9.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -161,7 +161,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 3.0,
+    "velocity": 4.5,
     "rotation": 180.0
   },
   "reversed": false,

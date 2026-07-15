@@ -33,7 +33,7 @@ public class Turret extends SubsystemBase {
     private final TurretVisualizer visualizer = new TurretVisualizer("Measured", Color.kRed);
     private SparkTunablePID tunablePID;
     private double targetAngle, targetFF;
-
+    private boolean turretEnabled = true;
     private LoggedTunableNumber setpoint;
     private double bestAngle = 0.0;
     private final double minAngle = 0;
@@ -55,7 +55,6 @@ public class Turret extends SubsystemBase {
         TESTING
     }
 
-
     private SystemState systemState = SystemState.IDLE;
 
     public double manual_setpoint;
@@ -63,6 +62,10 @@ public class Turret extends SubsystemBase {
 
     public void requestState(SystemState wantedState) {
         systemState = wantedState;
+    }
+
+    public void setTurretStatic() {
+        turretEnabled = !turretEnabled;
     }
 
     public void setPosition(double position) {
@@ -83,33 +86,35 @@ public class Turret extends SubsystemBase {
         if (Math.abs(io.getMotor().getEncoder().getPosition() - io.getAngleCalculator().getAngle().getDegrees()) < 3) {
             zeroed = true;
         }
-        if (Math.abs(io.getMotor().getEncoder().getPosition() - io.getAngleCalculator().getAngle().getDegrees()) > 3
-                && io.getAngleCalculator().isHealthy()) {
-            io.setEncoder(io.getAngleCalculator().getAngle().getDegrees());
+        if (Math.abs(io.getMotor().getEncoder().getPosition() - io.getAngleCalculator().getAngle().getDegrees()) > 10 && io.getAngleCalculator().getAngle().getDegrees() < 600 && io.getAngleCalculator().isHealthy() ) {
+            setInitialMotorPosition();
         }
         io.updateInputs(inputs);
+        if (turretEnabled) {
+            switch (systemState) {
 
-        switch (systemState) {
+                case IDLE:
+                    io.setVoltage(0);
+                    break;
 
-            case IDLE:
-                io.setVoltage(0);
-                break;
+                case TRACKING:
+                    io.setPosition(hub_setpoint);
+                    break;
 
-            case TRACKING:
-                io.setPosition(hub_setpoint);
-                break;
+                case SHOOTING:
+                    io.setPosition(hub_setpoint);
+                    break;
 
-            case SHOOTING:
-                io.setPosition(hub_setpoint);
-                break;
+                case POSITION:
+                    io.setPosition(hub_setpoint);
+                    break;
 
-            case POSITION:
-                io.setPosition(hub_setpoint);
-                break;
-
-            case TESTING:
-                io.setVoltage(1.0);
-                break;
+                case TESTING:
+                    io.setVoltage(1.0);
+                    break;
+            }
+        } else {
+            io.setVoltage(0);
         }
         SmartDashboard.putNumber("turretdegree", io.getAngleCalculator().getAngle().getDegrees());
         visualizer.update(inputs.positionRads, hub_setpoint);
@@ -133,7 +138,15 @@ public class Turret extends SubsystemBase {
     public void setInitialMotorPosition() {
         io.setEncoder(io.getAngleCalculator().getAngle().getDegrees());
         io.setPosition(io.getAngleCalculator().getAngle().getDegrees());
-        setpoint = new LoggedTunableNumber("turretsetpoint", io.getAngleCalculator().getAngle().getDegrees());
+    }
+
+    public void setEncoderPos(double pos) {
+        io.setEncoder(pos);
+        io.setPosition(pos);
+    }
+
+    public void setVolt(double volt) {
+        io.setVoltage(volt);
     }
 
     public void stop() {
@@ -224,7 +237,7 @@ public class Turret extends SubsystemBase {
 
         double targetRad = Math.atan2(dy, dx);
 
-        double turretRad = Degrees.convertFrom(targetRad, Radians) - robotPose.getRotation().getDegrees() - 180;
+        double turretRad = Degrees.convertFrom(targetRad, Radians) - robotPose.getRotation().getDegrees() - 90;
 
         if (turretRad < minAngle) {
             turretRad += 360;

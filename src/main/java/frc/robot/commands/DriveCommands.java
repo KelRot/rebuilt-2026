@@ -31,10 +31,10 @@ import java.util.function.Supplier;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.1;
-    private static final double ANGLE_KP = 1.0;
+    private static final double ANGLE_KP = 5.0;
     private static final double ANGLE_KD = 0.4;
-    private static final double ANGLE_MAX_VELOCITY = 5.0;
-    private static final double ANGLE_MAX_ACCELERATION = 15.0;
+    private static final double ANGLE_MAX_VELOCITY = 8.0;
+    private static final double ANGLE_MAX_ACCELERATION = 20.0;
     private static final double FF_START_DELAY = 2.0;
     private static final double FF_RAMP_RATE = 0.1;
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25;
@@ -56,7 +56,7 @@ public class DriveCommands {
                 .getTranslation();
     }
 
-    public static Command joystickDrive(
+        public static Command joystickDrive(
             Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
         return Commands.run(
                 () -> {
@@ -71,7 +71,13 @@ public class DriveCommands {
                             ? drive.getRotation().plus(new Rotation2d(Math.PI))
                             : drive.getRotation();
 
-                    
+                
+                        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                                new ChassisSpeeds(
+                                        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                                        linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                                        omega * drive.getMaxAngularSpeedRadPerSec()),
+                                fieldRelativeRotation));
                     
                 },
                 drive);

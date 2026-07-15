@@ -93,7 +93,6 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
-        BatteryUtils.scheduleMonitor();
     }
 
     /** This function is called periodically during all modes. */

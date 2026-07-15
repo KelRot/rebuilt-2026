@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -273,15 +274,10 @@ public class RobotContainer {
                 controller.button(10)
                                 .onTrue(Commands.runOnce(() -> hood.setEncoder()).ignoringDisable(true));
 
-                controller.povUp().onTrue(Commands.runOnce(() -> flywheel.requestState(Flywheel.SystemState.TESTING)));
-                controller.povUp().onTrue(Commands.runOnce(() -> hood.requestState(Hood.SystemState.MANUAL)));
-                controller.povUp().onTrue(Commands.runOnce(() -> turret.requestState(Turret.SystemState.TRACKING)));
                 controller.povUp().onTrue(Commands.runOnce(() -> kicker.requestState(Kicker.SystemState.ENABLED)));
-                controller.povUp().onTrue(Commands.runOnce(() -> index.requestState(Index.SystemState.INDEXING)));
 
                 controller.povDown().onTrue(superstructure.stuckedRecoveryCommand());
-
-
+                controller.povRight().onTrue(new InstantCommand(() -> turret.setTurretStatic()));
 
 
         }

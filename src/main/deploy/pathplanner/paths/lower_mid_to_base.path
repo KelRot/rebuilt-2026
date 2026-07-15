@@ -95,7 +95,7 @@
   "reversed": false,
   "folder": "lower_trench_mid_rush",
   "idealStartingState": {
-    "velocity": 3.0,
+    "velocity": 4.5,
     "rotation": 180.0
   },
   "useDefaultConstraints": true
